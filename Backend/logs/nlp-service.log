@@ -1,0 +1,20 @@
+2026-02-07 00:05:33 [ERROR]: Uncaught exception {"error":"authenticateToken is not defined","stack":"ReferenceError: authenticateToken is not defined\n    at Object.<anonymous> (S:\\Mini\\Backend\\server.js:539:35)\n    at Module._compile (node:internal/modules/cjs/loader:1706:14)\n    at Object..js (node:internal/modules/cjs/loader:1839:10)\n    at Module.load (node:internal/modules/cjs/loader:1441:32)\n    at Function._load (node:internal/modules/cjs/loader:1263:12)\n    at TracingChannel.traceSync (node:diagnostics_channel:322:14)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)\n    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)\n    at node:internal/main/run_main_module:36:49"}
+2026-02-07 00:05:33 [INFO]: UNCAUGHT_EXCEPTION received, shutting down gracefully...
+2026-02-07 00:05:33 [ERROR]: Failed to start server {"error":"database \"civix\" does not exist"}
+2026-02-07 00:06:06 [ERROR]: Failed to start server {"error":"database \"civix\" does not exist"}
+2026-02-07 00:06:27 [INFO]: ✅ PostgreSQL connected
+2026-02-07 00:06:27 [WARN]: ⚠️  Redis not available - caching disabled {"error":"Reached the max retries per request limit (which is 3). Refer to \"maxRetriesPerRequest\" option for details."}
+2026-02-07 00:06:27 [INFO]: 🚀 NLP Service running on port 3002
+2026-02-07 00:06:27 [INFO]: Environment: development
+2026-02-07 00:06:27 [INFO]: Socket.io enabled for real-time moderation
+2026-02-07 00:06:43 [INFO]: ✅ PostgreSQL connected
+2026-02-07 00:06:43 [WARN]: ⚠️  Redis not available - caching disabled {"error":"Reached the max retries per request limit (which is 3). Refer to \"maxRetriesPerRequest\" option for details."}
+2026-02-07 00:06:43 [INFO]: 🚀 NLP Service running on port 3002
+2026-02-07 00:06:43 [INFO]: Environment: development
+2026-02-07 00:06:43 [INFO]: Socket.io enabled for real-time moderation
+2026-02-07 00:06:43 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"11ms","ip":"::1"}
+2026-02-08 11:38:02 [WARN]: JWT verification failed {"error":"jwt malformed"}
+2026-02-08 11:38:02 [INFO]: HTTP Request {"method":"POST","path":"/analyze","status":401,"duration":"7573ms","ip":"::1"}
+2026-02-08 11:43:16 [WARN]: JWT verification failed {"error":"jwt malformed"}
+2026-02-08 11:43:16 [INFO]: HTTP Request {"method":"POST","path":"/analyze","status":401,"duration":"3812ms","ip":"::1"}
+2026-02-08 11:43:23 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"4ms","ip":"::1"}
