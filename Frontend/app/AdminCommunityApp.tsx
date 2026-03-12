@@ -21,8 +21,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import io, { Socket } from 'socket.io-client';
 import { API_BASE_URL, SOCKET_BASE_URL } from '../lib/api';
 
-// Chatbot imports
-// ...existing code...
+// Poll imports
+import PollCreateScreen from './PollCreateScreen';
+import PollMessageCard from './PollMessageCard';
+
 
 // Chatbot imports
 import nlpService from '../lib/nlpService';
@@ -47,7 +49,8 @@ interface Message {
   _id?: string; // Temporary client-side ID for optimistic updates
   message_id?: number;
   community_id?: number;
-  sender_id?: number;
+  sender_id?: number | null;
+
   full_name?: string;
   message_type?: 'text' | 'image' | 'audio' | 'announcement' | 'sos' | 'poll' | 'complaint' | 'petition';
   content?: string;
@@ -106,7 +109,7 @@ const useCommunityMessages = (communityId: number, currentUserId: number | null)
       const cleanup = setupSocket();
       return cleanup;
     }
-    return () => {};
+    return () => { };
   }, [communityId, currentUserId]);
 
   const fetchMessages = async () => {
@@ -143,9 +146,9 @@ const useCommunityMessages = (communityId: number, currentUserId: number | null)
       reconnectionDelay: 1000,
       reconnectionAttempts: 5,
     });
-    
+
     socketRef.current = socket;
-    
+
     socket.on('connect', () => {
       socket.emit('join_community', communityId);
     });
@@ -167,10 +170,10 @@ const useCommunityMessages = (communityId: number, currentUserId: number | null)
             ? Number(message.sender_id)
             : undefined,
       };
-      
+
       setMessages(prev => {
         // Check if message already exists by message_id
-        const exists = prev.some(msg => 
+        const exists = prev.some(msg =>
           msg.message_id && msg.message_id === normalizedMessage.message_id
         );
 
@@ -203,12 +206,12 @@ const useCommunityMessages = (communityId: number, currentUserId: number | null)
 
     socket.on('new_announcement', (announcement: Message) => {
       setMessages(prev => {
-        const exists = prev.some(msg => 
+        const exists = prev.some(msg =>
           (msg.message_id && msg.message_id === announcement.message_id) ||
           (msg.id && msg.id === announcement.id)
         );
         if (exists) return prev;
-        
+
         const updated = [...prev, { ...announcement, message_type: 'announcement' } as Message];
         return updated.sort((a, b) => {
           const dateA = new Date(a.created_at || 0).getTime();
@@ -220,12 +223,12 @@ const useCommunityMessages = (communityId: number, currentUserId: number | null)
 
     socket.on('sos_alert', (sos: Message) => {
       setMessages(prev => {
-        const exists = prev.some(msg => 
+        const exists = prev.some(msg =>
           (msg.message_id && msg.message_id === sos.message_id) ||
           (msg.id && msg.id === sos.id)
         );
         if (exists) return prev;
-        
+
         const updated = [...prev, { ...sos, message_type: 'sos' } as Message];
         return updated.sort((a, b) => {
           const dateA = new Date(a.created_at || 0).getTime();
@@ -237,12 +240,12 @@ const useCommunityMessages = (communityId: number, currentUserId: number | null)
 
     socket.on('new_complaint', (complaint: Message) => {
       setMessages(prev => {
-        const exists = prev.some(msg => 
+        const exists = prev.some(msg =>
           (msg.message_id && msg.message_id === complaint.message_id) ||
           (msg.id && msg.id === complaint.id)
         );
         if (exists) return prev;
-        
+
         const updated = [...prev, { ...complaint, message_type: 'complaint' } as Message];
         return updated.sort((a, b) => {
           const dateA = new Date(a.created_at || 0).getTime();
@@ -254,12 +257,12 @@ const useCommunityMessages = (communityId: number, currentUserId: number | null)
 
     socket.on('new_petition', (petition: Message) => {
       setMessages(prev => {
-        const exists = prev.some(msg => 
+        const exists = prev.some(msg =>
           (msg.message_id && msg.message_id === petition.message_id) ||
           (msg.id && msg.id === petition.id)
         );
         if (exists) return prev;
-        
+
         const updated = [...prev, { ...petition, message_type: 'petition' } as Message];
         return updated.sort((a, b) => {
           const dateA = new Date(a.created_at || 0).getTime();
@@ -274,7 +277,7 @@ const useCommunityMessages = (communityId: number, currentUserId: number | null)
       setMessages(prev => {
         return prev.map(msg => {
           if ((msg.message_id && msg.message_id === updatedMessage.message_id) ||
-              (msg.id && msg.id === updatedMessage.id)) {
+            (msg.id && msg.id === updatedMessage.id)) {
             return updatedMessage;
           }
           return msg;
@@ -285,7 +288,7 @@ const useCommunityMessages = (communityId: number, currentUserId: number | null)
     // Listen for message deletions
     socket.on('message_deleted', (deletedMessageId: number) => {
       setMessages(prev => {
-        return prev.filter(msg => 
+        return prev.filter(msg =>
           msg.message_id !== deletedMessageId && msg.id !== deletedMessageId
         );
       });
@@ -391,7 +394,7 @@ const useCommunityMessages = (communityId: number, currentUserId: number | null)
     setMessages((prev) =>
       prev.map((msg) =>
         (msg.message_id && msg.message_id === updatedMessage.message_id) ||
-        (msg.id && msg.id === updatedMessage.message_id)
+          (msg.id && msg.id === updatedMessage.message_id)
           ? { ...msg, ...updatedMessage }
           : msg
       )
@@ -462,9 +465,12 @@ const adminFeatures = [
   { id: 2, title: 'View Complaints', icon: 'CP', color: '#FF6B6B' },
   { id: 3, title: 'View Petitions', icon: 'PT', color: '#4ECDC4' },
   { id: 4, title: 'Manage Events', icon: 'EV', color: '#96CEB4' },
-  { id: 5, title: 'Member Management', icon: 'MM', color: '#45B7D1' },
-  { id: 6, title: 'Analytics', icon: 'ST', color: '#9B59B6' },
+  { id: 5, title: 'View Anonymous', icon: '💬', color: '#45B7D1' },
+  { id: 6, title: 'Member Management', icon: 'MM', color: '#45B7D1' },
+  { id: 7, title: 'Analytics', icon: 'ST', color: '#9B59B6' },
+  { id: 8, title: 'Polling', icon: '🗳️', color: '#667eea' },
 ];
+
 
 // Media options
 const mediaOptions = [
@@ -500,6 +506,8 @@ const AdminCommunityApp: React.FC = () => {
   const [sessionHash, setSessionHash] = useState<string | null>(null);
   const [stats, setStats] = useState<any>(null);
   const [hasLoadedBotHistory, setHasLoadedBotHistory] = useState(false);
+  const [pollModalVisible, setPollModalVisible] = useState(false);
+
 
   const navigation = useNavigation<AdminCommunityNavigationProp>();
   const community = route.params?.community;
@@ -631,7 +639,7 @@ const AdminCommunityApp: React.FC = () => {
       confidence: m.confidence,
       timestamp: m.timestamp instanceof Date ? m.timestamp.toISOString() : new Date().toISOString(),
     }));
-    AsyncStorage.setItem(cacheKey, JSON.stringify(payload)).catch(() => {});
+    AsyncStorage.setItem(cacheKey, JSON.stringify(payload)).catch(() => { });
   }, [chatbotMessages, communityId]);
 
   const loadBotHistory = useCallback(async () => {
@@ -692,8 +700,8 @@ const AdminCommunityApp: React.FC = () => {
       const history: BotHistoryItem[] = Array.isArray(response?.data?.history)
         ? response.data.history
         : Array.isArray(response?.history)
-        ? response.history
-        : [];
+          ? response.history
+          : [];
       if (!history.length) {
         const cached = await AsyncStorage.getItem(cacheKey);
         if (cached) {
@@ -802,6 +810,11 @@ const AdminCommunityApp: React.FC = () => {
         communityId: community?.id || community?.community_id || 36,
         community: community
       });
+    } else if (feature.title === 'View Anonymous') {
+      navigation.navigate('AnonymousMessagesAdminScreen' as any, {
+        communityId: community?.id || community?.community_id || 36,
+        communityName: community?.name || 'Community',
+      });
     } else if (feature.title === 'Manage Events') {
       navigation.navigate('EventsScreen' as any, {
         communityId: community?.id || community?.community_id || 36,
@@ -815,7 +828,14 @@ const AdminCommunityApp: React.FC = () => {
       navigation.navigate('AnalyticsScreen' as any, {
         communityId: community?.id || community?.community_id || 36,
       });
+    } else if (feature.title === 'Polling') {
+      navigation.navigate('PollsListScreen' as any, {
+        communityId: community?.id || community?.community_id || 36,
+        community: community,
+        isAdmin: true
+      });
     }
+
 
     closeModal();
   };
@@ -828,9 +848,9 @@ const AdminCommunityApp: React.FC = () => {
     if (messageText.trim() && currentUserId && currentUserName) {
       const messageContent = messageText.trim();
       setMessageText('');
-      
+
       const tempId = `temp-${Date.now()}-${Math.random()}`; // More unique temp ID
-      
+
       const tempMessage: Message = {
         _id: tempId,
         sender_id: Number(currentUserId),
@@ -843,11 +863,11 @@ const AdminCommunityApp: React.FC = () => {
 
       // Add optimistic message
       setMessages(prev => [...prev, tempMessage]);
-      
+
       setTimeout(() => {
         scrollViewRef.current?.scrollToEnd({ animated: true });
       }, 100);
-      
+
       // Send to server
       try {
         await sendMessage(messageContent, 'text', [], tempId);
@@ -857,7 +877,7 @@ const AdminCommunityApp: React.FC = () => {
       }
     }
   };
-  
+
   const handleSendOrEdit = async () => {
     const content = messageText.trim();
     if (!content || !currentUserId || !currentUserName) return;
@@ -931,7 +951,7 @@ const AdminCommunityApp: React.FC = () => {
 
     messages.forEach(msg => {
       const msgDate = msg.created_at ? new Date(msg.created_at).toDateString() : 'Unknown Date';
-      
+
       if (msgDate !== currentDate) {
         if (currentGroup.length > 0) {
           groups.push({ date: currentDate, messages: currentGroup });
@@ -1175,93 +1195,93 @@ const AdminCommunityApp: React.FC = () => {
       return null;
     }
     return (
-    <TouchableOpacity
-      key={message.id}
-      style={[
-        styles.chatbotMessageTouchableArea,
-        styles.chatbotMessageBubble,
-        message.isBot ? styles.chatbotBotBubble : styles.chatbotUserBubble,
-      ]}
-      activeOpacity={0.9}
-      onLongPress={() => handleBotMessageActions(message)}
-      delayLongPress={350}
-    >
-      {message.isBot ? (
-        (() => {
-          const { summary, recommendations } = splitBotSections(message.text);
-          return (
-            <View>
-              {summary ? (
-                <View style={styles.chatbotSectionBlock}>
-                  <Text style={styles.chatbotSectionTitle}>Summary</Text>
-                  <Text style={styles.chatbotMessageText} selectable>
-                    {summary}
-                  </Text>
-                </View>
-              ) : null}
-              {recommendations ? (
-                <View style={styles.chatbotSectionBlock}>
-                  <Text style={styles.chatbotSectionTitle}>Recommendations</Text>
-                  <Text style={styles.chatbotMessageText} selectable>
-                    {recommendations}
-                  </Text>
-                </View>
-              ) : null}
-            </View>
-          );
-        })()
-      ) : (
-        <Text style={styles.chatbotMessageText} selectable>
-          {message.text}
-        </Text>
-      )}
+      <TouchableOpacity
+        key={message.id}
+        style={[
+          styles.chatbotMessageTouchableArea,
+          styles.chatbotMessageBubble,
+          message.isBot ? styles.chatbotBotBubble : styles.chatbotUserBubble,
+        ]}
+        activeOpacity={0.9}
+        onLongPress={() => handleBotMessageActions(message)}
+        delayLongPress={350}
+      >
+        {message.isBot ? (
+          (() => {
+            const { summary, recommendations } = splitBotSections(message.text);
+            return (
+              <View>
+                {summary ? (
+                  <View style={styles.chatbotSectionBlock}>
+                    <Text style={styles.chatbotSectionTitle}>Summary</Text>
+                    <Text style={styles.chatbotMessageText} selectable>
+                      {summary}
+                    </Text>
+                  </View>
+                ) : null}
+                {recommendations ? (
+                  <View style={styles.chatbotSectionBlock}>
+                    <Text style={styles.chatbotSectionTitle}>Recommendations</Text>
+                    <Text style={styles.chatbotMessageText} selectable>
+                      {recommendations}
+                    </Text>
+                  </View>
+                ) : null}
+              </View>
+            );
+          })()
+        ) : (
+          <Text style={styles.chatbotMessageText} selectable>
+            {message.text}
+          </Text>
+        )}
 
-      {message.isBot && message.sources && message.sources.length > 0 && (
-        <View style={styles.chatbotSourcesContainer}>
-          <Text style={styles.chatbotSourcesTitle}>Sources:</Text>
-          {message.sources.map((source, idx) => (
-            <Text key={idx} style={styles.chatbotSourceText}>
-              - {source.title}
-            </Text>
-          ))}
-        </View>
-      )}
+        {message.isBot && message.sources && message.sources.length > 0 && (
+          <View style={styles.chatbotSourcesContainer}>
+            <Text style={styles.chatbotSourcesTitle}>Sources:</Text>
+            {message.sources.map((source, idx) => (
+              <Text key={idx} style={styles.chatbotSourceText}>
+                - {source.title}
+              </Text>
+            ))}
+          </View>
+        )}
 
-      {message.isBot && !splitBotSections(message.text).recommendations ? null : null}
+        {message.isBot && !splitBotSections(message.text).recommendations ? null : null}
 
-      {!message.isBot && message.historyId && (
-        <View style={styles.chatbotActionsRow}>
-          <TouchableOpacity
-            style={styles.chatbotActionButton}
-            onPress={() => {
-              setQuestion(message.text);
-              setEditingBotHistoryId(message.historyId || null);
-            }}
-          >
-            <Text style={styles.chatbotActionText}>Edit</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.chatbotActionButton, styles.chatbotDeleteActionButton]}
-            onPress={async () => {
-              try {
-                await nlpService.deleteBotHistoryItem(communityId, message.historyId as number);
-                removeBotHistoryPair(message.historyId as number);
-                if (editingBotHistoryId === message.historyId) {
-                  setEditingBotHistoryId(null);
-                  setQuestion('');
+        {!message.isBot && message.historyId && (
+          <View style={styles.chatbotActionsRow}>
+            <TouchableOpacity
+              style={styles.chatbotActionButton}
+              onPress={() => {
+                setQuestion(message.text);
+                setEditingBotHistoryId(message.historyId || null);
+              }}
+            >
+              <Text style={styles.chatbotActionText}>Edit</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.chatbotActionButton, styles.chatbotDeleteActionButton]}
+              onPress={async () => {
+                try {
+                  await nlpService.deleteBotHistoryItem(communityId, message.historyId as number);
+                  removeBotHistoryPair(message.historyId as number);
+                  if (editingBotHistoryId === message.historyId) {
+                    setEditingBotHistoryId(null);
+                    setQuestion('');
+                  }
+                } catch (error) {
+                  console.error('Failed to delete bot history item:', error);
+                  Alert.alert('Error', 'Failed to delete AI chat message');
                 }
-              } catch (error) {
-                console.error('Failed to delete bot history item:', error);
-                Alert.alert('Error', 'Failed to delete AI chat message');
-              }
-            }}
-          >
-            <Text style={styles.chatbotDeleteActionText}>Delete</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-      {null}
-    </TouchableOpacity>
+              }}
+            >
+              <Text style={styles.chatbotDeleteActionText}>Delete</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+        {null}
+      </TouchableOpacity>
     );
   };
 
@@ -1319,124 +1339,138 @@ const AdminCommunityApp: React.FC = () => {
       >
         {/* Replace the entire message groups mapping section (around line 450-550) */}
         {messageGroups.map((group, groupIndex) => (
-  <View key={`${group.date}-${groupIndex}`}>
-    {/* Date Header */}
-    <View style={styles.dateHeader}>
-      <View style={styles.dateHeaderBadge}>
-        <Text style={styles.dateHeaderText}>{formatDateHeader(group.date)}</Text>
-      </View>
-    </View>
-
-    {/* Messages for this date */}
-    {group.messages.map((message, msgIndex) => {
-      const messageSenderId = message.sender_id ? Number(message.sender_id) : null;
-      const currentUserIdNum = currentUserId ? Number(currentUserId) : null;
-      
-      const isMyMessage = messageSenderId !== null && 
-                         currentUserIdNum !== null && 
-                         messageSenderId === currentUserIdNum;
-      
-      const isAnnouncement = message.message_type === 'announcement';
-      const isSOS = message.message_type === 'sos';
-      const isComplaint = message.message_type === 'complaint';
-      const isPetition = message.message_type === 'petition';
-      const isSpecialMessage = isAnnouncement || isSOS || isComplaint || isPetition;
-
-
-      return (
-        <TouchableOpacity
-          key={`${message.message_id || message.id || message._id}-${msgIndex}`}
-          onLongPress={() => {
-            if (isMyMessage && !isSpecialMessage) {
-              handleMessageActions(message);
-            }
-          }}
-          delayLongPress={350}
-          activeOpacity={0.9}
-          style={[
-            styles.messageTouchableArea,
-            styles.messageWrapper,
-            isSpecialMessage
-              ? styles.specialMessageWrapper
-              : isMyMessage
-              ? styles.adminMessageWrapper  // âœ… Right side for my messages
-              : styles.memberMessageWrapper, // âœ… Left side for others
-          ]}
-        >
-          <View
-            style={[
-              styles.messageBubble,
-              isAnnouncement && styles.announcementMessage,
-              isSOS && styles.sosMessage,
-              isComplaint && styles.complaintMessage,
-              isPetition && styles.petitionMessage,
-              !isSpecialMessage && (isMyMessage ? styles.adminMessage : styles.memberMessage),
-            ]}
-          >
-            {!isMyMessage && !isSpecialMessage && message.full_name && (
-              <Text style={styles.senderName}>{message.full_name}</Text>
-            )}
-
-            {isAnnouncement && (
-              <Text style={styles.announcementLabel}>ANNOUNCEMENT</Text>
-            )}
-            {isSOS && (
-              <Text style={styles.sosLabel}>SOS ALERT</Text>
-            )}
-            {isComplaint && (
-              <Text style={styles.complaintLabel}>COMPLAINT</Text>
-            )}
-            {isPetition && (
-              <Text style={styles.petitionLabel}>PETITION</Text>
-            )}
-
-            <Text
-              style={[
-                styles.messageText,
-                isMyMessage && !isSpecialMessage && styles.adminMessageText,
-                isAnnouncement && styles.announcementText,
-                isSOS && styles.sosText,
-                isComplaint && styles.complaintText,
-                isPetition && styles.petitionText,
-              ]}
-            >
-              {message.content}
-            </Text>
-
-            <View style={styles.messageFooter}>
-              <Text
-                style={[
-                  styles.messageTime,
-                  isMyMessage && !isSpecialMessage && styles.adminMessageTime,
-                ]}
-              >
-                {message.created_at
-                  ? new Date(message.created_at).toLocaleTimeString([], {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })
-                  : ''}
-              </Text>
-              {isMyMessage && !isSpecialMessage && message.message_id && (
-                <Text style={styles.checkMark}>ok</Text>
-              )}
+          <View key={`${group.date}-${groupIndex}`}>
+            {/* Date Header */}
+            <View style={styles.dateHeader}>
+              <View style={styles.dateHeaderBadge}>
+                <Text style={styles.dateHeaderText}>{formatDateHeader(group.date)}</Text>
+              </View>
             </View>
 
-            {/* WhatsApp-style tail - only for non-special messages */}
-            {!isSpecialMessage && (
-              <View
-                style={[
-                  styles.messageTail,
-                  isMyMessage ? styles.adminMessageTail : styles.memberMessageTail,
-                ]}
-              />
-            )}
+            {/* Messages for this date */}
+            {group.messages.map((message, msgIndex) => {
+              const messageSenderId = message.sender_id ? Number(message.sender_id) : null;
+              const currentUserIdNum = currentUserId ? Number(currentUserId) : null;
+
+              const isMyMessage = messageSenderId !== null &&
+                currentUserIdNum !== null &&
+                messageSenderId === currentUserIdNum;
+
+              const isAnnouncement = message.message_type === 'announcement';
+              const isSOS = message.message_type === 'sos';
+              const isComplaint = message.message_type === 'complaint';
+              const isPetition = message.message_type === 'petition';
+              const isSpecialMessage = isAnnouncement || isSOS || isComplaint || isPetition;
+
+
+              return (
+                <TouchableOpacity
+                  key={`${message.message_id || message.id || message._id}-${msgIndex}`}
+                  onLongPress={() => {
+                    if (isMyMessage && !isSpecialMessage) {
+                      handleMessageActions(message);
+                    }
+                  }}
+                  delayLongPress={350}
+                  activeOpacity={0.9}
+                  style={[
+                    styles.messageTouchableArea,
+                    styles.messageWrapper,
+                    isSpecialMessage
+                      ? styles.specialMessageWrapper
+                      : isMyMessage
+                        ? styles.adminMessageWrapper  // âœ… Right side for my messages
+                        : styles.memberMessageWrapper, // âœ… Left side for others
+                  ]}
+                >
+                  <View
+                    style={[
+                      styles.messageBubble,
+                      isAnnouncement && styles.announcementMessage,
+                      isSOS && styles.sosMessage,
+                      isComplaint && styles.complaintMessage,
+                      isPetition && styles.petitionMessage,
+                      !isSpecialMessage && (isMyMessage ? styles.adminMessage : styles.memberMessage),
+                    ]}
+                  >
+                    {!isMyMessage && !isSpecialMessage && message.full_name && (
+                      <Text style={styles.senderName}>{message.full_name}</Text>
+                    )}
+
+                    {isAnnouncement && (
+                      <Text style={styles.announcementLabel}>ANNOUNCEMENT</Text>
+                    )}
+                    {isSOS && (
+                      <Text style={styles.sosLabel}>SOS ALERT</Text>
+                    )}
+                    {isComplaint && (
+                      <Text style={styles.complaintLabel}>COMPLAINT</Text>
+                    )}
+                    {isPetition && (
+                      <Text style={styles.petitionLabel}>PETITION</Text>
+                    )}
+
+                    <Text
+                      style={[
+                        styles.messageText,
+                        isMyMessage && !isSpecialMessage && styles.adminMessageText,
+                        isAnnouncement && styles.announcementText,
+                        isSOS && styles.sosText,
+                        isComplaint && styles.complaintText,
+                        isPetition && styles.petitionText,
+                      ]}
+                    >
+                      {message.content}
+                    </Text>
+
+                    <View style={styles.messageFooter}>
+                      <Text
+                        style={[
+                          styles.messageTime,
+                          isMyMessage && !isSpecialMessage && styles.adminMessageTime,
+                        ]}
+                      >
+                        {message.created_at
+                          ? new Date(message.created_at).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })
+                          : ''}
+                      </Text>
+                      {isMyMessage && !isSpecialMessage && message.message_id && (
+                        <Text style={styles.checkMark}>ok</Text>
+                      )}
+                    </View>
+
+                    {/* WhatsApp-style tail - only for non-special messages */}
+                    {!isSpecialMessage && (
+                      <View
+                        style={[
+                          styles.messageTail,
+                          isMyMessage ? styles.adminMessageTail : styles.memberMessageTail,
+                        ]}
+                      />
+                    )}
+
+                    {/* POLL CARD INTEGRATION */}
+                    {message.message_type === 'poll' && (
+                      <PollMessageCard
+                        communityId={Number(communityId)}
+                        pollId={Number(message.content || '0')}
+                        currentUserId={Number(currentUserId)}
+                        isAdmin={true}
+
+                        sentByMe={isMyMessage}
+                        createdAt={message.created_at || ''}
+                      />
+                    )}
+                  </View>
+                </TouchableOpacity>
+
+              );
+            })}
           </View>
-        </TouchableOpacity>
-      );
-    })}
-  </View>
-  ))}
+        ))}
 
       </ScrollView>
 
@@ -1509,22 +1543,42 @@ const AdminCommunityApp: React.FC = () => {
               </TouchableOpacity>
             </View>
 
-            {adminFeatures.map((feature) => (
-              <TouchableOpacity
-                key={feature.id}
-                style={styles.featureItem}
-                onPress={() => handleFeaturePress(feature)}
-              >
-                <View style={[styles.featureIcon, { backgroundColor: feature.color }]}>
-                  <Text style={styles.featureEmoji}>{feature.icon}</Text>
-                </View>
-                <Text style={styles.featureTitle}>{feature.title}</Text>
-                <Text style={styles.featureArrow}>{'>'}</Text>
-              </TouchableOpacity>
-            ))}
+            <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
+              {adminFeatures.map((feature) => (
+                <TouchableOpacity
+                  key={feature.id}
+                  style={styles.featureItem}
+                  onPress={() => handleFeaturePress(feature)}
+                >
+                  <View style={[styles.featureIcon, { backgroundColor: feature.color }]}>
+                    <Text style={styles.featureEmoji}>{feature.icon}</Text>
+                  </View>
+                  <Text style={styles.featureTitle}>{feature.title}</Text>
+                  <Text style={styles.featureArrow}>{'>'}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
           </View>
         </View>
       </Modal>
+
+      {/* Poll Creation Modal */}
+      <Modal
+        animationType="slide"
+        transparent={false}
+        visible={pollModalVisible}
+        onRequestClose={() => setPollModalVisible(false)}
+      >
+        <PollCreateScreen
+          communityId={String(communityId)}
+          onCancel={() => setPollModalVisible(false)}
+          onCreated={(poll) => {
+            setPollModalVisible(false);
+            // The message list will update via Socket.IO since backend emits 'new_message'
+          }}
+        />
+      </Modal>
+
 
       {/* Announcement Modal */}
       <Modal
@@ -1546,7 +1600,7 @@ const AdminCommunityApp: React.FC = () => {
               <Text style={styles.announcementLabel}>
                 This message will be sent to all community members
               </Text>
-              
+
               <TextInput
                 style={styles.announcementInput}
                 placeholder="Type your announcement here..."

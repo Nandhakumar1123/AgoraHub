@@ -3,7 +3,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const NLP_SERVICE_URL = process.env.EXPO_PUBLIC_NLP_SERVICE_URL || process.env.NLP_SERVICE_URL || 'http://localhost:3002';
-const BOT_REQUEST_TIMEOUT_MS = 15000;
+const BOT_REQUEST_TIMEOUT_MS = 60000;
 
 class NLPService {
   private baseURL: string;
@@ -72,6 +72,44 @@ class NLPService {
     return response.data;
   }
 
+  async askBotComplaints(question: string, communityId: number) {
+    const headers = await this.getHeaders();
+    const response = await axios.post(
+      `${this.baseURL}/api/bot/ask/complaints`,
+      { question, community_id: communityId },
+      { headers, timeout: BOT_REQUEST_TIMEOUT_MS }
+    );
+    return response.data;
+  }
+
+  async askBotPetitions(question: string, communityId: number) {
+    const headers = await this.getHeaders();
+    const response = await axios.post(
+      `${this.baseURL}/api/bot/ask/petitions`,
+      { question, community_id: communityId },
+      { headers, timeout: BOT_REQUEST_TIMEOUT_MS }
+    );
+    return response.data;
+  }
+
+  async getBotComplaintsHistory(communityId: number) {
+    const headers = await this.getHeaders();
+    const response = await axios.get(
+      `${this.baseURL}/api/bot/ask/complaints/history?community_id=${communityId}`,
+      { headers, timeout: BOT_REQUEST_TIMEOUT_MS }
+    );
+    return response.data;
+  }
+
+  async getBotPetitionsHistory(communityId: number) {
+    const headers = await this.getHeaders();
+    const response = await axios.get(
+      `${this.baseURL}/api/bot/ask/petitions/history?community_id=${communityId}`,
+      { headers, timeout: BOT_REQUEST_TIMEOUT_MS }
+    );
+    return response.data;
+  }
+
   async uploadDocument(title: string, content: string, communityId: number) {
     const headers = await this.getHeaders();
     const response = await axios.post(
@@ -82,28 +120,28 @@ class NLPService {
     return response.data;
   }
 
-  async getBotHistory(communityId: number, limit: number = 50) {
+  async getBotHistory(communityId: number, limit: number = 50, type: string = 'chat') {
     const headers = await this.getHeaders();
     const response = await axios.get(
-      `${this.baseURL}/api/bot/history/${communityId}?limit=${limit}`,
+      `${this.baseURL}/api/bot/history/${communityId}?limit=${limit}&type=${type}`,
       { headers, timeout: BOT_REQUEST_TIMEOUT_MS }
     );
     return response.data;
   }
 
-  async deleteBotHistoryItem(communityId: number, historyId: number) {
+  async deleteBotHistoryItem(communityId: number, historyId: number, type: string = 'chat') {
     const headers = await this.getHeaders();
     const response = await axios.delete(
-      `${this.baseURL}/api/bot/history/${communityId}/${historyId}`,
+      `${this.baseURL}/api/bot/history/${communityId}/${historyId}?type=${type}`,
       { headers, timeout: BOT_REQUEST_TIMEOUT_MS }
     );
     return response.data;
   }
 
-  async clearBotHistory(communityId: number) {
+  async clearBotHistory(communityId: number, type: string = 'chat') {
     const headers = await this.getHeaders();
     const response = await axios.delete(
-      `${this.baseURL}/api/bot/history/${communityId}`,
+      `${this.baseURL}/api/bot/history/${communityId}?type=${type}`,
       { headers, timeout: BOT_REQUEST_TIMEOUT_MS }
     );
     return response.data;
@@ -137,6 +175,16 @@ class NLPService {
       `${this.baseURL}/api/admin/quarantine/${holdId}/review`,
       { decision, notes },
       { headers }
+    );
+    return response.data;
+  }
+
+  async suggestAction(itemId: number, itemType: 'petition' | 'complaint', communityId: number) {
+    const headers = await this.getHeaders();
+    const response = await axios.post(
+      `${this.baseURL}/api/bot/suggest-action`,
+      { item_id: itemId, item_type: itemType, community_id: communityId },
+      { headers, timeout: BOT_REQUEST_TIMEOUT_MS }
     );
     return response.data;
   }

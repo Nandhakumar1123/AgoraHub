@@ -128,46 +128,46 @@ export default function CommunityScreen() {
 
   // 🔹 Fetch Community Members
   // ✅ Correct & Cleaned fetchCommunityMembers function
-async function fetchCommunityMembers(communityId: number) {
-  try {
-    const token = await AsyncStorage.getItem('authToken');
-    if (!token) {
-      console.error('No auth token found');
-      return;
+  async function fetchCommunityMembers(communityId: number) {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      if (!token) {
+        console.error('No auth token found');
+        return;
+      }
+
+      const headers = {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      };
+
+      const response = await fetch(`${BASE_URL}/community_members/${communityId}`, { headers });
+
+      if (!response.ok) {
+        console.error('Failed to fetch community members:', response.status);
+        return;
+      }
+
+      const data = await response.json();
+      console.log(
+        'Fetched community members:',
+        data.members.length,
+        'User role:',
+        data.user_role
+      );
+
+      // ✅ Properly update both members and user role in one place
+      setCommunityMembers(data.members);
+      setUserRoleInCommunity(data.user_role);
+      console.log('✅ userRoleInCommunity updated to:', data.user_role);
+    } catch (error) {
+      console.error('Error fetching community members:', error);
     }
-
-    const headers = {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    };
-
-    const response = await fetch(`${BASE_URL}/community_members/${communityId}`, { headers });
-
-    if (!response.ok) {
-      console.error('Failed to fetch community members:', response.status);
-      return;
-    }
-
-    const data = await response.json();
-    console.log(
-      'Fetched community members:',
-      data.members.length,
-      'User role:',
-      data.user_role
-    );
-
-    // ✅ Properly update both members and user role in one place
-    setCommunityMembers(data.members);
-    setUserRoleInCommunity(data.user_role);
-    console.log('✅ userRoleInCommunity updated to:', data.user_role);
-  } catch (error) {
-    console.error('Error fetching community members:', error);
   }
-}
 
 
 
-  
+
 
 
 
@@ -303,7 +303,7 @@ async function fetchCommunityMembers(communityId: number) {
     }
   }
 
-  
+
 
   // 🔹 Navigate to Community App
   function openCommunityApp(community: UserCommunity) {
@@ -442,8 +442,8 @@ async function fetchCommunityMembers(communityId: number) {
                     {item.title === 'Anonymous Message'
                       ? 'Private'
                       : item.title === 'Group Chat'
-                      ? (item.state ? 'Enabled' : 'Disabled')
-                      : (item.state ? 'Private' : 'Public')}
+                        ? (item.state ? 'Enabled' : 'Disabled')
+                        : (item.state ? 'Private' : 'Public')}
                   </Text>
                 </View>
                 {item.title === 'Anonymous Message' ? (
@@ -558,15 +558,15 @@ async function fetchCommunityMembers(communityId: number) {
             </Text>
 
             {communityMembers.map((member, index) => (
-                <View key={member.user_id} style={[styles.memberCard, index > 0 && styles.memberCardMargin]}>
-                  <TouchableOpacity
-                    style={styles.memberMainContent}
-                    onPress={() => {
-                      if (userRoleInCommunity === 'HEAD' || member.profile_type === 'transparent') {
-                        openMemberDetails(member);
-                      }
-                    }}
-                  >
+              <View key={member.user_id} style={[styles.memberCard, index > 0 && styles.memberCardMargin]}>
+                <TouchableOpacity
+                  style={styles.memberMainContent}
+                  onPress={() => {
+                    if (userRoleInCommunity === 'HEAD' || member.profile_type === 'transparent') {
+                      openMemberDetails(member);
+                    }
+                  }}
+                >
                   <View style={styles.memberInfo}>
                     <View style={styles.memberAvatar}>
                       <Text style={styles.memberAvatarText}>
@@ -669,122 +669,175 @@ async function fetchCommunityMembers(communityId: number) {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#F3F4F6' },
-  header: { padding: 20, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  headerIcon: { fontSize: 28 },
-  headerTitle: { fontSize: 20, fontWeight: 'bold' },
+  safeArea: { flex: 1, backgroundColor: '#0f172a' },
+  header: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: 'rgba(15, 23, 42, 0.8)',
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.05)',
+  },
+  headerIcon: { fontSize: 24 },
+  headerTitle: { fontSize: 20, fontWeight: '800', color: '#f8fafc' },
   headerRight: { flexDirection: 'row' },
-  headerButton: { padding: 10, backgroundColor: '#E5E7EB', borderRadius: 10, marginLeft: 10 },
-  headerButtonText: { color: '#111827' },
-  createHeaderButton: { backgroundColor: '#4F46E5' },
-  createButtonText: { color: '#FFF' },
-  tabContainer: { flexDirection: 'row' },
-  tab: { flex: 1, padding: 12, alignItems: 'center' },
-  activeTab: { backgroundColor: '#EEF2FF' },
-  tabText: { color: '#6B7280' },
-  activeTabText: { color: '#4F46E5' },
+  headerButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 12,
+    marginLeft: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  headerButtonText: { color: '#cbd5e1', fontWeight: '600' },
+  createHeaderButton: {
+    backgroundColor: '#6366f1',
+    borderColor: '#818cf8',
+  },
+  createButtonText: { color: '#FFF', fontWeight: '700' },
+  tabContainer: {
+    flexDirection: 'row',
+    marginHorizontal: 20,
+    marginTop: 20,
+    backgroundColor: 'rgba(30, 41, 59, 0.7)',
+    borderRadius: 16,
+    padding: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
+  },
+  tab: { flex: 1, paddingVertical: 12, alignItems: 'center', borderRadius: 12 },
+  activeTab: { backgroundColor: '#6366f1' },
+  tabText: { color: '#94a3b8', fontWeight: '600' },
+  activeTabText: { color: '#ffffff', fontWeight: '700' },
   scrollContent: { flex: 1 },
   content: { padding: 20 },
-  communityCard: { backgroundColor: '#FFF', borderRadius: 16, padding: 20, marginBottom: 16 },
-  communityCardMargin: { marginTop: 16 },
-  communityName: { fontSize: 18, fontWeight: 'bold' },
-  badgeRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  codeText: { fontSize: 14, color: '#4F46E5' },
-  headInfo: { marginTop: 6, color: '#6B7280' },
+  communityCard: {
+    backgroundColor: 'rgba(30, 41, 59, 0.7)',
+    borderRadius: 24,
+    padding: 24,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+  },
+  communityCardMargin: { marginTop: 0 },
+  communityName: { fontSize: 20, fontWeight: '800', color: '#f8fafc', marginBottom: 6 },
+  badgeRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 12 },
+  codeText: { fontSize: 14, color: '#818cf8', fontWeight: '700', letterSpacing: 0.5 },
+  headInfo: { marginTop: 6, color: '#94a3b8', fontWeight: '500' },
   formContainer: { padding: 20 },
-  label: { marginBottom: 6 },
-  input: { borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 10, padding: 10, marginBottom: 16 },
+  label: { marginBottom: 8, color: '#e2e8f0', fontWeight: '600', fontSize: 15 },
+  input: {
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 20,
+    backgroundColor: 'rgba(15, 23, 42, 0.6)',
+    color: '#f8fafc',
+    fontSize: 16,
+  },
   sectionTitle: {
     marginTop: 24,
     fontSize: 18,
-    fontWeight: '700',
-    color: '#1e3a8a',
-    marginBottom: 12,
+    fontWeight: '800',
+    color: '#f8fafc',
+    marginBottom: 16,
   },
   featureCard: {
-    backgroundColor: '#fffefb',
-    borderRadius: 12,
+    backgroundColor: 'rgba(30, 41, 59, 0.7)',
+    borderRadius: 24,
     borderWidth: 1,
-    borderColor: '#c7d2fe',
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    borderColor: 'rgba(255,255,255,0.08)',
+    marginBottom: 24,
+    overflow: 'hidden',
   },
   featureItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
-    paddingVertical: 16,
-    paddingHorizontal: 18,
+    borderBottomColor: 'rgba(255,255,255,0.05)',
+    paddingVertical: 18,
+    paddingHorizontal: 20,
   },
   featureTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#1e3a8a',
+    fontWeight: '700',
+    color: '#f8fafc',
   },
   featureDesc: {
-    fontSize: 12,
-    color: '#2563eb',
-    marginTop: 2,
+    fontSize: 13,
+    color: '#94a3b8',
+    marginTop: 4,
+    lineHeight: 18,
   },
   featureStatus: {
     fontSize: 12,
-    color: '#1e40af',
-    marginTop: 2,
+    color: '#818cf8',
+    marginTop: 6,
+    fontWeight: '600',
   },
   privateBadge: {
-    backgroundColor: '#4F46E5',
+    backgroundColor: 'rgba(99, 102, 241, 0.2)',
     paddingVertical: 6,
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(99, 102, 241, 0.3)',
   },
   privateBadgeText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: '#818cf8',
+    fontWeight: '700',
     fontSize: 12,
   },
   createButtonFull: {
-    backgroundColor: '#4F46E5',
-    paddingVertical: 14,
-    borderRadius: 12,
-    marginTop: 24,
+    backgroundColor: '#6366f1',
+    paddingVertical: 16,
+    borderRadius: 16,
+    marginTop: 12,
     alignItems: 'center',
-    shadowColor: '#4F46E5',
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 4,
+    marginBottom: 40,
   },
   createButtonTextFull: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '800',
     letterSpacing: 0.5,
   },
-  primaryButton: { backgroundColor: '#4F46E5', padding: 12, borderRadius: 10, alignItems: 'center' },
-  primaryButtonText: { color: '#FFF', fontWeight: 'bold' },
-  emptyState: { alignItems: 'center', marginTop: 50 },
+  primaryButton: {
+    backgroundColor: '#6366f1',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 16,
+    alignItems: 'center',
+    width: '100%',
+  },
+  primaryButtonText: { color: '#FFF', fontWeight: '800', fontSize: 16 },
+  emptyState: { alignItems: 'center', marginTop: 60 },
 
   // Member List Styles
-  backButton: { padding: 8 },
-  memberCountText: { fontSize: 16, color: '#6B7280', marginBottom: 16, textAlign: 'center' },
+  backButton: { padding: 8, marginLeft: -8 },
+  memberCountText: { fontSize: 15, color: '#94a3b8', marginBottom: 20, textAlign: 'center', fontWeight: '600' },
   memberCard: {
-    backgroundColor: 'rgba(250,250,255,0.96)',
-    borderRadius: 22,
-    padding: 20,
-    marginHorizontal: 5,
-    marginVertical: 4,
+    backgroundColor: 'rgba(30, 41, 59, 0.7)',
+    borderRadius: 20,
+    padding: 16,
+    marginHorizontal: 0,
+    marginVertical: 6,
     borderWidth: 1,
-    borderColor: '#eeebfa',
-    shadowColor: '#fd5b82',
-    shadowOpacity: 0.21,
-    shadowRadius: 8,
-    elevation: 6,
+    borderColor: 'rgba(255,255,255,0.05)',
   },
-  memberCardMargin: { marginTop: 12 },
+  memberCardMargin: { marginTop: 6 },
   memberMainContent: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -792,97 +845,87 @@ const styles = StyleSheet.create({
   },
   memberInfo: { flexDirection: 'row', alignItems: 'center', flex: 1 },
   memberAvatar: {
-    width: 54,
-    height: 54,
-    borderRadius: 27,
-    backgroundColor: 'linear-gradient(135deg, #ffb347 0%, #fd5b82 100%)',
+    width: 50,
+    height: 50,
+    borderRadius: 16,
+    backgroundColor: 'rgba(99, 102, 241, 0.2)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 16,
-    borderWidth: 2,
-    borderColor: '#10b981',
-    shadowColor: '#fd5b82',
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    elevation: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(99, 102, 241, 0.3)',
   },
-  memberAvatarText: { color: '#FFF', fontSize: 20, fontWeight: 'bold' },
-  memberName: { fontSize: 17, fontWeight: '700', color: '#413b7a', marginBottom: 2, letterSpacing: 1 },
-  memberRole: { fontSize: 13, color: '#fd5b82', marginBottom: 0, fontWeight: '700', letterSpacing: 1 },
+  memberAvatarText: { color: '#818cf8', fontSize: 20, fontWeight: '800' },
+  memberName: { fontSize: 16, fontWeight: '700', color: '#f8fafc', marginBottom: 4 },
+  memberRole: { fontSize: 13, color: '#10b981', fontWeight: '700' },
   promoteButton: {
-    backgroundColor: '#4F46E5',
+    backgroundColor: 'rgba(99, 102, 241, 0.1)',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
+    paddingVertical: 10,
     paddingHorizontal: 16,
-    borderRadius: 16,
-    marginTop: 12,
-    shadowColor: '#4F46E5',
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 4,
+    borderRadius: 12,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(99, 102, 241, 0.3)',
   },
   promoteButtonText: {
-    color: '#FFF',
+    color: '#818cf8',
     fontSize: 14,
-    fontWeight: '600',
-    marginLeft: 6,
+    fontWeight: '700',
+    marginLeft: 8,
   },
 
-  memberPrivacy: { fontSize: 12, color: '#059669', fontWeight: '500' },
+  memberPrivacy: { fontSize: 12, color: '#10b981', fontWeight: '600' },
 
   // Member Details Styles
   memberDetailCard: {
-    backgroundColor: 'rgba(254,247,246,0.98)',
-    borderRadius: 26,
+    backgroundColor: 'rgba(30, 41, 59, 0.7)',
+    borderRadius: 24,
     padding: 32,
     alignItems: 'center',
-    shadowColor: '#fd5b82',
-    shadowOpacity: 0.16,
-    shadowRadius: 12,
-    elevation: 6,
     borderWidth: 1,
-    borderColor: '#ffd6cc',
+    borderColor: 'rgba(255,255,255,0.08)',
   },
   memberDetailAvatar: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    backgroundColor: 'linear-gradient(135deg, #ffb347 0%, #fd5b82 100%)',
+    width: 100,
+    height: 100,
+    borderRadius: 32,
+    backgroundColor: 'rgba(99, 102, 241, 0.2)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 20,
+    marginBottom: 24,
     borderWidth: 2,
-    borderColor: '#10b981',
+    borderColor: 'rgba(99, 102, 241, 0.4)',
   },
-  memberDetailAvatarText: { color: '#FFF', fontSize: 38, fontWeight: 'bold' },
-  memberDetailName: { fontSize: 27, fontWeight: 'bold', color: '#fd5b82', marginBottom: 6, letterSpacing: 2 },
-  memberDetailRole: { fontSize: 17, color: '#948aee', marginBottom: 24, fontWeight: '700', letterSpacing: 1 },
+  memberDetailAvatarText: { color: '#818cf8', fontSize: 40, fontWeight: '800' },
+  memberDetailName: { fontSize: 24, fontWeight: '800', color: '#f8fafc', marginBottom: 8 },
+  memberDetailRole: { fontSize: 16, color: '#10b981', marginBottom: 32, fontWeight: '700' },
   detailSection: {
     width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: 'rgba(255,255,255,0.05)',
   },
-  detailLabel: { fontSize: 16, color: '#374151', fontWeight: '500' },
-  detailValue: { fontSize: 16, color: '#111827' },
+  detailLabel: { fontSize: 15, color: '#94a3b8', fontWeight: '600' },
+  detailValue: { fontSize: 15, color: '#e2e8f0', fontWeight: '500' },
 
   // Chat button styles
   chatButton: {
     backgroundColor: '#10b981',
     paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
   chatButtonText: {
     color: '#fff',
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
   },
 });

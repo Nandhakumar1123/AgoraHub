@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
+import { API_BASE_URL } from '../lib/api';
 
 const { width } = Dimensions.get('window');
 
@@ -38,7 +39,7 @@ const PollCreateScreen: React.FC<PollCreateScreenProps> = ({
   const [description, setDescription] = useState('');
   const [options, setOptions] = useState(['', '']);
   const [allowMultiple, setAllowMultiple] = useState(false);
-  
+
   // Advanced fields
   const [duration, setDuration] = useState<PollDuration>('7d');
   const [resultVisibility, setResultVisibility] = useState<ResultVisibility>('after_vote');
@@ -49,12 +50,12 @@ const PollCreateScreen: React.FC<PollCreateScreenProps> = ({
   const [requireComment, setRequireComment] = useState(false);
   const [minVotesToShow, setMinVotesToShow] = useState('0');
   const [allowSuggestions, setAllowSuggestions] = useState(false);
-  
+
   // UI state
   const [loading, setLoading] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'basic' | 'advanced'>('basic');
-  
+
   // Animations
   const slideAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -139,7 +140,12 @@ const PollCreateScreen: React.FC<PollCreateScreenProps> = ({
 
     setLoading(true);
     try {
-      const token = await AsyncStorage.getItem('token');
+      const token =
+        (await AsyncStorage.getItem('authToken')) ||
+        (await AsyncStorage.getItem('token'));
+      if (!token) {
+        throw new Error('Not authenticated');
+      }
       const validOptions = options.filter(opt => opt.trim());
 
       const payload = {
@@ -159,7 +165,7 @@ const PollCreateScreen: React.FC<PollCreateScreenProps> = ({
       };
 
       const response = await fetch(
-        `http://YOUR_API_URL/api/communities/${communityId}/polls`,
+        `${API_BASE_URL}/communities/${communityId}/polls`,
         {
           method: 'POST',
           headers: {
@@ -715,11 +721,10 @@ const PollCreateScreen: React.FC<PollCreateScreenProps> = ({
               style={[
                 styles.progressFill,
                 {
-                  width: `${
-                    ((title.trim() ? 1 : 0) +
+                  width: `${((title.trim() ? 1 : 0) +
                       (options.filter(o => o.trim()).length >= 2 ? 1 : 0)) *
                     50
-                  }%`,
+                    }%`,
                 },
               ]}
             />

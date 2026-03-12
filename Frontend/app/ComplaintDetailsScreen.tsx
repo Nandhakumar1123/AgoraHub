@@ -28,7 +28,7 @@ interface Complaint {
   community_name: string;
   created_at: string;
   updated_at: string;
-  status: 'Pending' | 'Resolved' | 'Dismissed';
+  status: 'Pending' | 'InProgress' | 'Resolved' | 'Approved' | 'Rejected' | 'Dismissed';
   reviewed_by?: number;
   resolution_notes?: string;
   priority_score?: number;
@@ -61,6 +61,7 @@ export default function ComplaintDetailsScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [menuVisible, setMenuVisible] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   // AI chat state
   const [showAssistant, setShowAssistant] = useState(false);
@@ -71,7 +72,27 @@ export default function ComplaintDetailsScreen() {
 
   useEffect(() => {
     fetchComplaintDetails();
+    fetchUserRole();
   }, []);
+
+  const fetchUserRole = async () => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      if (!token) return;
+
+      const response = await fetch(`${BASE_URL}/community/${communityId}/my-role`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUserRole(data.role);
+      }
+    } catch (err) {
+      console.error('Error fetching user role:', err);
+    }
+  };
+
 
   const fetchComplaintDetails = async () => {
     try {
@@ -108,7 +129,7 @@ export default function ComplaintDetailsScreen() {
         community_name: raw.community_name ?? raw.communityName ?? 'Unknown',
         created_at: raw.created_at ?? raw.createdAt ?? '',
         updated_at: raw.updated_at ?? raw.updatedAt ?? '',
-        status: (raw.status ?? 'Pending') as 'Pending' | 'Resolved' | 'Dismissed',
+        status: (raw.status ?? 'Pending') as Complaint['status'],
         reviewed_by: raw.reviewed_by ?? raw.reviewedBy,
         resolution_notes: raw.resolution_notes ?? raw.resolutionNotes,
         priority_score: raw.priority_score ?? raw.priorityScore,
@@ -136,7 +157,7 @@ export default function ComplaintDetailsScreen() {
     }
   };
 
-  const updateComplaintStatus = async (newStatus: 'Resolved' | 'Dismissed', resolutionNotes?: string) => {
+  const updateComplaintStatus = async (newStatus: Complaint['status'], resolutionNotes?: string) => {
     try {
       const token = await AsyncStorage.getItem('authToken');
       if (!token) {
@@ -152,7 +173,7 @@ export default function ComplaintDetailsScreen() {
         },
         body: JSON.stringify({
           status: newStatus,
-          resolution_notes: resolutionNotes || '',
+          remarks: resolutionNotes || '',
         }),
       });
 
@@ -191,6 +212,18 @@ export default function ComplaintDetailsScreen() {
     );
   };
 
+  const handleInProgress = () => {
+    updateComplaintStatus('InProgress');
+  };
+
+  const handleApprove = () => {
+    updateComplaintStatus('Approved');
+  };
+
+  const handleReject = () => {
+    updateComplaintStatus('Rejected');
+  };
+
   const handleAskBot = async () => {
     const prompt = question.trim();
     if (!prompt) return;
@@ -209,19 +242,19 @@ export default function ComplaintDetailsScreen() {
     try {
       const complaintContext = complaint
         ? {
-            type: 'complaint' as const,
-            data: {
-              complaint_id: complaint.complaint_id,
-              title: complaint.title,
-              description: complaint.description,
-              category: complaint.category,
-              severity: complaint.severity,
-              status: complaint.status,
-              author_name: complaint.author_name,
-              community_name: complaint.community_name,
-              is_urgent: complaint.is_urgent,
-            },
-          }
+          type: 'complaint' as const,
+          data: {
+            complaint_id: complaint.complaint_id,
+            title: complaint.title,
+            description: complaint.description,
+            category: complaint.category,
+            severity: complaint.severity,
+            status: complaint.status,
+            author_name: complaint.author_name,
+            community_name: complaint.community_name,
+            is_urgent: complaint.is_urgent,
+          },
+        }
         : undefined;
       const response = await nlpService.askBot(prompt, communityId, undefined, complaintContext);
       const answerText =
@@ -273,17 +306,20 @@ export default function ComplaintDetailsScreen() {
   }
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Resolved': return '#10b981';
-      case 'Dismissed': return '#6b7280';
-      default: return '#f59e0b';
+    switch (status?.toUpperCase()) {
+      case 'APPROVED': return '#16a34a';
+      case 'REJECTED': return '#dc2626';
+      case 'RESOLVED': return '#16a34a';
+      case 'INPROGRESS':
+      case 'IN_PROGRESS': return '#3b82f6';
+      default: return '#ea580c';
     }
   };
 
   const getSeverityColor = (severity: string) => {
-    switch (severity.toLowerCase()) {
-      case 'high': return '#ef4444';
-      case 'medium': return '#f59e0b';
+    switch (severity?.toLowerCase()) {
+      case 'high': return '#dc2626';
+      case 'medium': return '#ea580c';
       default: return '#6b7280';
     }
   };
@@ -305,6 +341,44 @@ export default function ComplaintDetailsScreen() {
         </View>
 
         <View style={styles.content}>
+          {['Pending', 'InProgress', 'Review', 'OPEN', 'IN_PROGRESS'].includes(complaint.status) && userRole === 'HEAD' && (
+            <View style={styles.topActions}>
+              <Text style={styles.adminActionTitle}>Update Complaint Status</Text>
+              <View style={[styles.actionRow, { flexWrap: 'wrap', gap: 8 }]}>
+                <TouchableOpacity
+                  style={[styles.miniActionButton, styles.inProgressButton]}
+                  onPress={handleInProgress}
+                >
+                  <Text style={styles.miniActionButtonText}>In Progress</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.miniActionButton, styles.resolveButton]}
+                  onPress={handleResolve}
+                >
+                  <Text style={styles.miniActionButtonText}>Mark Resolved</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.miniActionButton, styles.approveButton]}
+                  onPress={handleApprove}
+                >
+                  <Text style={styles.miniActionButtonText}>Approve</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.miniActionButton, styles.rejectButton]}
+                  onPress={handleReject}
+                >
+                  <Text style={styles.miniActionButtonText}>Reject</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.miniActionButton, styles.dismissButton]}
+                  onPress={handleDismiss}
+                >
+                  <Text style={styles.miniActionButtonText}>Dismiss</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
           <View style={styles.card}>
             <Text style={styles.complaintTitle}>{complaint.title}</Text>
 
@@ -312,18 +386,18 @@ export default function ComplaintDetailsScreen() {
               <View
                 style={[
                   styles.statusBadge,
-                  { backgroundColor: getStatusColor(complaint.status) },
+                  { backgroundColor: getStatusColor(complaint.status) + '15', borderWidth: 1, borderColor: getStatusColor(complaint.status) + '30' },
                 ]}
               >
-                <Text style={styles.statusText}>{complaint.status}</Text>
+                <Text style={[styles.statusText, { color: getStatusColor(complaint.status) }]}>{complaint.status}</Text>
               </View>
               <View
                 style={[
                   styles.severityBadge,
-                  { backgroundColor: getSeverityColor(complaint.severity) },
+                  { backgroundColor: getSeverityColor(complaint.severity) + '15', borderWidth: 1, borderColor: getSeverityColor(complaint.severity) + '30' },
                 ]}
               >
-                <Text style={styles.severityText}>{complaint.severity} Priority</Text>
+                <Text style={[styles.severityText, { color: getSeverityColor(complaint.severity) }]}>{complaint.severity} Priority</Text>
               </View>
             </View>
 
@@ -437,26 +511,11 @@ export default function ComplaintDetailsScreen() {
             )}
           </View>
 
-          {complaint.status === 'Pending' && (
-            <View style={styles.actions}>
-              <TouchableOpacity
-                style={[styles.actionButton, styles.resolveButton]}
-                onPress={handleResolve}
-              >
-                <Text style={styles.resolveButtonText}>Mark as Resolved</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.actionButton, styles.dismissButton]}
-                onPress={handleDismiss}
-              >
-                <Text style={styles.dismissButtonText}>Dismiss Complaint</Text>
-              </TouchableOpacity>
-            </View>
-          )}
+
         </View>
       </ScrollView>
 
-      {menuVisible && (
+      {(userRole === 'HEAD' || userRole === 'ADMIN') && menuVisible && (
         <TouchableOpacity
           style={styles.menuOverlay}
           activeOpacity={1}
@@ -477,7 +536,7 @@ export default function ComplaintDetailsScreen() {
         </TouchableOpacity>
       )}
       <Modal
-        visible={showAssistant}
+        visible={(userRole === 'HEAD' || userRole === 'ADMIN') && showAssistant}
         transparent
         animationType="slide"
         onRequestClose={() => setShowAssistant(false)}
@@ -560,7 +619,7 @@ export default function ComplaintDetailsScreen() {
                     style={[
                       styles.chatSendButton,
                       (!question.trim() || isLoadingChatbot) &&
-                        styles.chatSendButtonDisabled,
+                      styles.chatSendButtonDisabled,
                     ]}
                     onPress={handleAskBot}
                     disabled={!question.trim() || isLoadingChatbot}
@@ -580,11 +639,11 @@ export default function ComplaintDetailsScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#0f172a',
   },
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#0f172a',
   },
   centered: {
     justifyContent: 'center',
@@ -593,7 +652,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#64748b',
+    color: '#94a3b8',
   },
   errorText: {
     fontSize: 18,
@@ -603,26 +662,30 @@ const styles = StyleSheet.create({
   },
   backText: {
     fontSize: 16,
-    color: '#3b82f6',
+    color: '#818cf8',
     textDecorationLine: 'underline',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#3b82f6',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    paddingTop: 50,
+    backgroundColor: 'rgba(15, 23, 42, 0.8)',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    paddingTop: 55,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.05)',
   },
   backButton: {
     fontSize: 16,
-    color: 'white',
+    color: '#f8fafc',
     fontWeight: '600',
   },
   title: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: 'white',
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#f8fafc',
     marginLeft: 16,
   },
   menuButton: {
@@ -631,24 +694,26 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   menuButtonText: {
-    color: 'white',
-    fontSize: 20,
-    fontWeight: '700',
+    color: '#f8fafc',
+    fontSize: 22,
+    fontWeight: '800',
   },
   menuDropdown: {
     position: 'absolute',
-    top: Platform.select({ ios: 80, android: 80, default: 70 }),
-    right: 16,
-    backgroundColor: 'white',
-    borderRadius: 8,
-    paddingVertical: 6,
-    paddingHorizontal: 4,
-    elevation: 5,
+    top: Platform.select({ ios: 90, android: 90, default: 80 }),
+    right: 20,
+    backgroundColor: '#1e293b',
+    borderRadius: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 6,
+    elevation: 6,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
     zIndex: 40,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
   menuOverlay: {
     position: 'absolute',
@@ -659,98 +724,104 @@ const styles = StyleSheet.create({
     zIndex: 30,
   },
   menuItem: {
-    paddingVertical: 6,
-    paddingHorizontal: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
   },
   menuItemText: {
-    fontSize: 14,
-    color: '#111827',
+    fontSize: 15,
+    color: '#f8fafc',
+    fontWeight: '500',
   },
   content: {
-    padding: 16,
+    padding: 20,
   },
   card: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
-    elevation: 3,
+    backgroundColor: 'rgba(30, 41, 59, 0.7)',
+    borderRadius: 24,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+    elevation: 4,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
   },
   complaintTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#1e293b',
-    marginBottom: 12,
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#f8fafc',
+    marginBottom: 16,
+    lineHeight: 32,
   },
   statusRow: {
     flexDirection: 'row',
-    marginBottom: 16,
+    marginBottom: 20,
   },
   statusBadge: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 20,
+    borderRadius: 8,
     marginRight: 8,
   },
   statusText: {
-    color: 'white',
-    fontWeight: '600',
-    fontSize: 14,
+    fontWeight: '800',
+    fontSize: 12,
   },
   severityBadge: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 20,
+    borderRadius: 8,
   },
   severityText: {
-    color: 'white',
-    fontWeight: '600',
-    fontSize: 14,
+    fontWeight: '800',
+    fontSize: 12,
   },
   metaInfo: {
     flexDirection: 'row',
-    marginBottom: 8,
+    marginBottom: 12,
+    alignItems: 'flex-start',
   },
   metaLabel: {
     fontWeight: '600',
-    color: '#374151',
-    minWidth: 100,
+    color: '#94a3b8',
+    minWidth: 120,
+    fontSize: 15,
   },
   metaValue: {
-    color: '#1e293b',
+    color: '#e2e8f0',
     flex: 1,
+    fontSize: 15,
+    fontWeight: '500',
   },
   metaValueMissing: {
-    color: '#9ca3af',
+    color: '#64748b',
     fontStyle: 'italic',
   },
   section: {
-    marginTop: 20,
-    paddingTop: 16,
+    marginTop: 24,
+    paddingTop: 20,
     borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
+    borderTopColor: 'rgba(255,255,255,0.05)',
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#1e293b',
-    marginBottom: 8,
+    fontWeight: '700',
+    color: '#f8fafc',
+    marginBottom: 12,
   },
   sectionContent: {
     fontSize: 16,
-    color: '#475569',
-    lineHeight: 24,
+    color: '#cbd5e1',
+    lineHeight: 26,
   },
   actions: {
-    marginTop: 20,
+    marginTop: 24,
     gap: 12,
   },
   actionButton: {
     paddingVertical: 14,
-    borderRadius: 8,
+    borderRadius: 12,
     alignItems: 'center',
   },
   resolveButton: {
@@ -759,184 +830,245 @@ const styles = StyleSheet.create({
   resolveButtonText: {
     color: 'white',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   dismissButton: {
-    backgroundColor: '#6b7280',
+    backgroundColor: 'rgba(30, 41, 59, 0.9)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
   dismissButtonText: {
-    color: 'white',
+    color: '#94a3b8',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
   },
+  topActions: {
+    backgroundColor: 'rgba(30, 41, 59, 0.9)',
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 20,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+    borderLeftWidth: 4,
+    borderLeftColor: '#6366f1',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
+  adminActionTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#f8fafc',
+    marginBottom: 12,
+  },
+  actionRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  miniActionButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  miniActionButtonText: {
+    color: 'white',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  inProgressButton: {
+    backgroundColor: '#3b82f6',
+  },
+  approveButton: {
+    backgroundColor: '#10b981',
+  },
+  rejectButton: {
+    backgroundColor: '#ef4444',
+  },
+
   chatOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: 'rgba(0,0,0,0.6)',
     justifyContent: 'flex-end',
   },
   chatContainer: {
-    backgroundColor: '#f9fafb',
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    maxHeight: height * 0.5,
+    backgroundColor: '#1e293b',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: height * 0.6,
     minHeight: height * 0.5,
-    paddingBottom: 8,
+    paddingBottom: 20,
   },
   chatContainerMinimized: {
-    maxHeight: 64,
-    minHeight: 64,
+    maxHeight: 70,
+    minHeight: 70,
   },
   chatHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
-    backgroundColor: '#1e3a5f',
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
+    borderBottomColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: 'transparent',
   },
   chatTitle: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
+    color: '#f8fafc',
+    fontSize: 18,
+    fontWeight: '800',
   },
   chatHeaderActions: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   chatHeaderButton: {
-    marginLeft: 12,
+    marginLeft: 16,
+    padding: 4,
   },
   chatHeaderButtonText: {
-    color: 'white',
-    fontSize: 18,
+    color: '#cbd5e1',
+    fontSize: 20,
     fontWeight: '700',
   },
   chatMessages: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
   },
   chatEmpty: {
-    paddingVertical: 16,
+    paddingVertical: 24,
   },
   chatEmptyText: {
-    fontSize: 14,
-    color: '#6b7280',
+    fontSize: 15,
+    color: '#94a3b8',
+    textAlign: 'center',
+    lineHeight: 24,
   },
   chatBubble: {
-    padding: 10,
-    borderRadius: 12,
-    marginBottom: 8,
+    padding: 14,
+    borderRadius: 16,
+    marginBottom: 12,
     maxWidth: '85%',
   },
   chatBubbleUser: {
     alignSelf: 'flex-end',
-    backgroundColor: '#2563eb',
+    backgroundColor: '#6366f1',
   },
   chatBubbleBot: {
     alignSelf: 'flex-start',
-    backgroundColor: '#e5e7eb',
+    backgroundColor: 'rgba(30, 41, 59, 1)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
   },
   chatBubbleText: {
-    fontSize: 14,
-    color: '#111827',
+    fontSize: 15,
+    color: '#f8fafc',
+    lineHeight: 22,
   },
   chatLoadingRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
+    marginTop: 8,
+    marginBottom: 8,
   },
   chatLoadingText: {
-    marginLeft: 8,
-    fontSize: 13,
-    color: '#6b7280',
+    marginLeft: 12,
+    fontSize: 14,
+    color: '#94a3b8',
   },
   chatInputRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    paddingHorizontal: 12,
-    paddingTop: 4,
+    paddingHorizontal: 16,
+    paddingTop: 12,
   },
   chatInput: {
     flex: 1,
-    backgroundColor: 'white',
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    fontSize: 14,
-    maxHeight: 80,
+    backgroundColor: 'rgba(15, 23, 42, 0.6)',
+    borderRadius: 24,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 15,
+    maxHeight: 100,
     borderWidth: 1,
-    borderColor: '#d1d5db',
-    marginRight: 8,
+    borderColor: 'rgba(255,255,255,0.1)',
+    marginRight: 12,
+    color: '#f8fafc',
   },
   chatSendButton: {
-    backgroundColor: '#1e3a5f',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
+    backgroundColor: '#6366f1',
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
   },
   chatSendButtonDisabled: {
-    backgroundColor: '#9ca3af',
+    backgroundColor: 'rgba(30, 41, 59, 0.8)',
+    opacity: 0.5,
   },
   chatSendButtonText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: '600',
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '700',
   },
   urgencyBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
   },
   urgencyHigh: {
-    backgroundColor: '#fee2e2',
+    backgroundColor: 'rgba(239, 68, 68, 0.2)',
   },
   urgencyNormal: {
-    backgroundColor: '#e5e7eb',
+    backgroundColor: 'rgba(255,255,255,0.05)',
   },
   urgencyText: {
     fontSize: 12,
-    fontWeight: '700',
-    color: '#b91c1c',
+    fontWeight: '800',
+    color: '#f87171',
+    letterSpacing: 0.5,
   },
   tagsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 6,
+    gap: 8,
     flex: 1,
   },
   tagPill: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 999,
-    backgroundColor: '#e0f2fe',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: 'rgba(99, 102, 241, 0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(99, 102, 241, 0.3)',
   },
   tagText: {
-    fontSize: 12,
-    color: '#0369a1',
+    fontSize: 13,
+    color: '#818cf8',
+    fontWeight: '600',
   },
   chatContextRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 4,
-    paddingBottom: 2,
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 4,
   },
   chatContextLabel: {
-    fontSize: 12,
-    color: '#9ca3af',
-    marginRight: 4,
+    fontSize: 13,
+    color: '#64748b',
+    marginRight: 8,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 1,
+    fontWeight: '600',
   },
   chatContextValue: {
-    fontSize: 12,
-    color: '#111827',
-    fontWeight: '700',
+    fontSize: 13,
+    color: '#e2e8f0',
+    fontWeight: '800',
   },
 });

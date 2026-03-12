@@ -322,3 +322,247 @@ CREATE INDEX idx_bot_chat_history_community_created
 
 CREATE INDEX idx_bot_chat_history_user_created
     ON bot_chat_history (user_id, created_at DESC);
+
+CREATE TABLE polls (
+    poll_id         SERIAL PRIMARY KEY,
+    community_id    INTEGER NOT NULL REFERENCES communities(community_id) ON DELETE CASCADE,
+    created_by      INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+
+    -- Core content
+    title           TEXT NOT NULL,
+    description     TEXT,
+
+    -- Voting behaviour
+    allow_multiple_answers  BOOLEAN DEFAULT FALSE,
+    allow_change_vote       BOOLEAN DEFAULT TRUE,
+    allow_suggestions       BOOLEAN DEFAULT FALSE,
+    require_comment         BOOLEAN DEFAULT FALSE,
+
+    -- Visibility & access
+    visibility          VARCHAR(10)  NOT NULL DEFAULT 'public'
+                            CHECK (visibility IN ('public', 'private')),
+    result_visibility   VARCHAR(20)  NOT NULL DEFAULT 'after_vote'
+                            CHECK (result_visibility IN ('immediate', 'after_vote', 'after_close')),
+    voting_requirement  VARCHAR(20)  NOT NULL DEFAULT 'everyone'
+                            CHECK (voting_requirement IN ('everyone', 'heads_only', 'tenure')),
+
+    -- Display options
+    show_voter_count    BOOLEAN DEFAULT TRUE,
+    anonymous_voting    BOOLEAN DEFAULT FALSE,
+    min_votes_to_show   INTEGER DEFAULT 0 CHECK (min_votes_to_show >= 0),
+
+    -- Duration
+    duration_code   VARCHAR(10) DEFAULT '7d'
+                        CHECK (duration_code IN ('1h','6h','1d','3d','7d','30d','unlimited')),
+    closes_at       TIMESTAMPTZ,   -- NULL when duration_code = 'unlimited'
+
+    -- Status
+    is_active       BOOLEAN DEFAULT TRUE,
+    closed_by       INTEGER REFERENCES users(user_id) ON DELETE SET NULL,  -- manual close
+    closed_at       TIMESTAMPTZ,
+
+    created_at      TIMESTAMPTZ DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Indexes
+CREATE INDEX idx_polls_community_id  ON polls(community_id);
+CREATE INDEX idx_polls_created_by    ON polls(created_by);
+CREATE INDEX idx_polls_created_at    ON polls(created_at DESC);
+CREATE INDEX idx_polls_closes_at     ON polls(closes_at)
+    WHERE closes_at IS NOT NULL;
+CREATE INDEX idx_polls_is_active     ON polls(community_id, is_active);
+
+-- =====================================================
+-- POLL OPTIONS TABLE
+-- =====================================================
+CREATE TABLE poll_options (
+    option_id   SERIAL PRIMARY KEY,
+    poll_id     INTEGER NOT NULL REFERENCES polls(poll_id) ON DELETE CASCADE,
+    label       TEXT    NOT NULL,
+    position    INTEGER NOT NULL,          -- display order (1-based)
+
+    -- For allow_suggestions: track who suggested it
+    suggested_by    INTEGER REFERENCES users(user_id) ON DELETE SET NULL,
+    is_suggestion   BOOLEAN DEFAULT FALSE,
+    approved        BOOLEAN DEFAULT TRUE,  -- HEAD/ADMIN must approve suggestions
+
+    created_at  TIMESTAMPTZ DEFAULT NOW(),
+
+    UNIQUE (poll_id, position),
+    CONSTRAINT max_label_length CHECK (char_length(label) <= 100)
+);
+
+-- Indexes
+CREATE INDEX idx_poll_options_poll_id ON poll_options(poll_id);
+CREATE INDEX idx_poll_options_suggestions ON poll_options(poll_id, is_suggestion)
+    WHERE is_suggestion = TRUE;
+
+-- =====================================================
+-- POLL VOTES TABLE
+-- =====================================================
+CREATE TABLE poll_votes (
+    vote_id     SERIAL PRIMARY KEY,
+    poll_id     INTEGER NOT NULL REFERENCES polls(poll_id)    ON DELETE CASCADE,
+    option_id   INTEGER NOT NULL REFERENCES poll_options(option_id) ON DELETE CASCADE,
+    user_id     INTEGER NOT NULL REFERENCES users(user_id)    ON DELETE CASCADE,
+
+    -- Optional comment (required when polls.require_comment = TRUE)
+    comment     TEXT,
+
+    locked      BOOLEAN     DEFAULT FALSE,  -- TRUE after poll closes / vote locked in
+    created_at  TIMESTAMPTZ DEFAULT NOW(),
+    updated_at  TIMESTAMPTZ DEFAULT NOW(),
+
+    -- One row per (poll, option, user) — supports multiple-answer polls naturally
+    UNIQUE (poll_id, option_id, user_id)
+);
+
+-- Indexes
+CREATE INDEX idx_poll_votes_poll_id   ON poll_votes(poll_id);
+CREATE INDEX idx_poll_votes_option_id ON poll_votes(option_id);
+CREATE INDEX idx_poll_votes_user_id   ON poll_votes(user_id);
+CREATE INDEX idx_poll_votes_locked    ON poll_votes(poll_id, user_id, locked);
+
+-- =====================================================
+-- POLL SUGGESTIONS TABLE
+-- (when allow_suggestions = TRUE, members propose new options)
+-- =====================================================
+CREATE TABLE poll_suggestions (
+    suggestion_id   SERIAL PRIMARY KEY,
+    poll_id         INTEGER NOT NULL REFERENCES polls(poll_id) ON DELETE CASCADE,
+    suggested_by    INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    label           TEXT    NOT NULL,
+    status          VARCHAR(20) DEFAULT 'pending'
+                        CHECK (status IN ('pending', 'approved', 'rejected')),
+    reviewed_by     INTEGER REFERENCES users(user_id) ON DELETE SET NULL,
+    reviewed_at     TIMESTAMPTZ,
+    -- Once approved, a poll_option row is created and linked here
+    option_id       INTEGER REFERENCES poll_options(option_id) ON DELETE SET NULL,
+    created_at      TIMESTAMPTZ DEFAULT NOW(),
+
+    CONSTRAINT max_suggestion_length CHECK (char_length(label) <= 100)
+);
+
+CREATE INDEX idx_poll_suggestions_poll_id ON poll_suggestions(poll_id);
+CREATE INDEX idx_poll_suggestions_status  ON poll_suggestions(poll_id, status);
+
+-- =====================================================
+-- POLL COMMENTS TABLE
+-- (stores require_comment responses separately for query flexibility)
+-- =====================================================
+CREATE TABLE poll_comments (
+    comment_id  SERIAL PRIMARY KEY,
+    poll_id     INTEGER NOT NULL REFERENCES polls(poll_id)  ON DELETE CASCADE,
+    user_id     INTEGER NOT NULL REFERENCES users(user_id)  ON DELETE CASCADE,
+    comment     TEXT    NOT NULL,
+    created_at  TIMESTAMPTZ DEFAULT NOW(),
+    updated_at  TIMESTAMPTZ DEFAULT NOW(),
+
+    UNIQUE (poll_id, user_id)   -- one comment per voter per poll
+);
+
+CREATE INDEX idx_poll_comments_poll_id ON poll_comments(poll_id);
+
+-- =====================================================
+-- TRIGGERS
+-- =====================================================
+
+-- Auto-update updated_at on polls
+CREATE OR REPLACE FUNCTION update_polls_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_polls_updated_at
+    BEFORE UPDATE ON polls
+    FOR EACH ROW EXECUTE FUNCTION update_polls_updated_at();
+
+-- Auto-update updated_at on poll_votes
+CREATE OR REPLACE FUNCTION update_poll_votes_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_update_poll_votes_timestamp
+    BEFORE UPDATE ON poll_votes
+    FOR EACH ROW EXECUTE FUNCTION update_poll_votes_updated_at();
+
+-- Auto-close poll when closes_at is reached (used by a scheduled job or checked on read)
+-- This function is called by your backend cron / on-read check, not a DB trigger,
+-- because PostgreSQL doesn't natively support time-based triggers.
+
+-- =====================================================
+-- HELPER VIEWS
+-- =====================================================
+
+-- Live vote counts per option (respects min_votes_to_show via app layer)
+CREATE OR REPLACE VIEW poll_option_counts AS
+SELECT
+    po.poll_id,
+    po.option_id,
+    po.label,
+    po.position,
+    COUNT(pv.vote_id)               AS vote_count,
+    COUNT(pv.vote_id) * 100.0 /
+        NULLIF(
+            COUNT(pv.vote_id) OVER (PARTITION BY po.poll_id),
+        0)                          AS vote_percentage
+FROM poll_options po
+LEFT JOIN poll_votes pv
+    ON pv.option_id = po.option_id
+   AND pv.poll_id   = po.poll_id
+WHERE po.approved = TRUE
+GROUP BY po.poll_id, po.option_id, po.label, po.position;
+
+-- Total unique voters per poll
+CREATE OR REPLACE VIEW poll_voter_totals AS
+SELECT
+    poll_id,
+    COUNT(DISTINCT user_id) AS total_voters
+FROM poll_votes
+GROUP BY poll_id;
+
+-- Full poll summary (join with communities and users)
+CREATE OR REPLACE VIEW poll_summary AS
+SELECT
+    p.poll_id,
+    p.title,
+    p.description,
+    p.duration_code,
+    p.closes_at,
+    p.is_active,
+    p.result_visibility,
+    p.voting_requirement,
+    p.anonymous_voting,
+    p.allow_multiple_answers,
+    p.allow_change_vote,
+    p.allow_suggestions,
+    p.require_comment,
+    p.show_voter_count,
+    p.min_votes_to_show,
+    p.created_at,
+    -- Community info
+    c.community_id,
+    c.name          AS community_name,
+    c.community_type,
+    -- Creator info
+    u.user_id       AS creator_id,
+    u.full_name     AS creator_name,
+    -- Vote stats
+    COALESCE(pvt.total_voters, 0) AS total_voters,
+    -- Auto-close status derived from closes_at
+    CASE
+        WHEN p.closes_at IS NOT NULL AND p.closes_at < NOW() THEN FALSE
+        ELSE p.is_active
+    END AS effectively_active
+FROM polls p
+JOIN communities c ON c.community_id = p.community_id
+JOIN users       u ON u.user_id       = p.created_by
+LEFT JOIN poll_voter_totals pvt ON pvt.poll_id = p.poll_id;

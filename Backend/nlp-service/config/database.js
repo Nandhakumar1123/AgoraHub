@@ -7,7 +7,7 @@ const pool = new Pool({
   port: process.env.DB_PORT || 5432,
   database: process.env.DB_NAME || 'db_mini',
   user: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD || 'root',
+  password: process.env.DB_PASSWORD || 'nandha102',
   max: 20,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 2000,

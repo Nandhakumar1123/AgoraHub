@@ -17,8 +17,7 @@ const PORT = process.env.PORT || 3002;
 // ---------- Database & Redis Configuration ----------
 const DATABASE_URL =
   process.env.DATABASE_URL ||
-  `postgresql://${process.env.DB_USER || "postgres"}:${process.env.DB_PASSWORD || "nandha102"}@${
-    process.env.DB_HOST || "localhost"
+  `postgresql://${process.env.DB_USER || "postgres"}:${process.env.DB_PASSWORD || "nandha102"}@${process.env.DB_HOST || "localhost"
   }:${process.env.DB_PORT || 5432}/${process.env.DB_NAME || "db_mini"}`;
 
 const REDIS_URL =
@@ -28,7 +27,7 @@ const REDIS_URL =
 const OLLAMA_BASE_URL =
   process.env.OLLAMA_URL ||
   process.env.OLLAMA_BASE_URL ||
-  "http://localhost:11434";
+  "http://127.0.0.1:11434";
 
 // ---------- PostgreSQL Connection ----------
 const pgPool = new Pool({ connectionString: DATABASE_URL });

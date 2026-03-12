@@ -4,20 +4,16 @@
  * Handles ALL community types and all NLP tasks
  */
 
-const SYSTEM_CONTEXT = `You are an intelligent AI assistant (like ChatGPT) helping diverse communities including:
-- Residential: apartments, hostels, housing societies, dormitories
-- Professional: companies, teams, departments, coworking spaces
-- Educational: schools, colleges, universities, study groups
-- Social: clubs, friend circles, hobby groups, sports teams
-- Political/Civic: activist groups, community organizations, local councils
-- Religious: churches, temples, mosques, community centers
+const SYSTEM_CONTEXT = `You are a concise community AI assistant helping communities with complaints, petitions, and queries.
 
-Your responses must be:
-- Natural and conversational
-- Professional yet approachable
-- Context-aware and intelligent
-- Universally applicable to all community types
-- Action-oriented and practical`;
+Your responses MUST be:
+- SHORT and to the point (maximum 4-5 sentences)
+- Plain text only - NO markdown asterisks (* or **) ever
+- Use dashes (-) or numbers (1. 2. 3.) for lists only when needed
+- Conversational and professional
+- Focus only on what was asked - no unnecessary explanation
+- Never repeat the question back
+- CRITICAL: Keep every reply under 100 words when possible`;
 
 /**
  * SOLUTIONS PROMPT - Provides actionable, specific fixes
@@ -128,22 +124,17 @@ ${transcript}
 5. Correct spelling/grammar errors
 6. Present facts, not opinions
 
-**Output Format:**
+**Output Format MUST have exactly two sections:**
 
 Summary:
-
-1. **[Topic/Issue]** - [What was discussed, key points]
-2. **[Topic/Issue]** - [What was discussed, key points]
-3. **[Topic/Issue]** - [What was discussed, key points]
-
+- [Key point 1]
+- [Key point 2]
 ${includeRecommendations ? `
-Recommended Actions:
-1. [Practical next step for topic 1]
-2. [Practical next step for topic 2]
-3. [Practical next step for topic 3]
+Solutions:
+- [Practical step 1]
+- [Practical step 2]
 ` : ''}
-
-Answer with ONLY the summary in the format above:`;
+Answer with exactly this format:`;
 }
 
 /**
@@ -387,41 +378,77 @@ Answer with ONLY the announcements:`;
 }
 
 /**
+ * APPROVAL SUGGESTION PROMPT
+ */
+function getApprovalSuggestionPrompt(item, type) {
+  const isPetition = type === 'petition';
+  const itemSummary = isPetition
+    ? `Title: ${item.title}\nSummary: ${item.summary}\nProposed Action: ${item.proposed_action}\nPriority: ${item.priority_level}`
+    : `Title: ${item.title}\nDescription: ${item.description}\nCategory: ${item.category}\nSeverity: ${item.severity}\nUrgent: ${item.is_urgent ? 'Yes' : 'No'}`;
+
+  return `${SYSTEM_CONTEXT}
+
+**Item Type:** ${isPetition ? 'Petition' : 'Complaint'}
+**Content:**
+${itemSummary}
+
+**Your Task:** Review this ${isPetition ? 'petition' : 'complaint'} and provide a recommendation for its status.
+
+**Instructions:**
+1. Analyze if the request is reasonable, clear, and follows community guidelines.
+2. Recommend a status: "Approved" or "Rejected".
+3. Provide a short, 1-2 sentence justification for your recommendation.
+4. If "Approved", suggest any immediate next steps.
+5. If "Rejected", explain what's missing or why it cannot be approved.
+
+**Output Format:**
+
+Recommendation: [Approved/Rejected]
+Justification: [Your reasoning]
+Suggested Remarks: [A polite message for the user]
+
+Answer with ONLY the recommendation in the format above:`;
+}
+
+/**
  * Main function to get appropriate prompt
  */
 function getPrompt(intentType, data, question, options = {}) {
   // Determine intent if not provided
   const intent = intentType || detectIntent(question);
-  
+
   switch (intent) {
     case 'solutions':
       return getSolutionsPrompt(data, question);
-    
+
     case 'recommendations':
       return getRecommendationsPrompt(data, question);
-    
+
     case 'summary':
       return getSummaryPrompt(data, question, options.includeRecommendations || false);
-    
+
     case 'sentiment':
       return getSentimentPrompt(data, question);
-    
+
     case 'toxicity':
     case 'abuse':
       return getToxicityPrompt(data, question);
-    
+
     case 'categorization':
     case 'topics':
       return getCategorizationPrompt(data, question);
-    
+
     case 'duplication':
     case 'duplicates':
       return getDuplicationPrompt(data, question);
-    
+
     case 'announcement':
     case 'announcements':
       return getAnnouncementPrompt(data, question);
-    
+
+    case 'suggest_action':
+      return getApprovalSuggestionPrompt(data, options.itemType);
+
     case 'general':
     default:
       return getGeneralQuestionPrompt(data, question);
@@ -433,47 +460,47 @@ function getPrompt(intentType, data, question, options = {}) {
  */
 function detectIntent(question) {
   const q = question.toLowerCase();
-  
+
   // Solutions (actionable fixes)
-  if (q.match(/\b(solution|solve|fix|how to fix|how do i fix|resolve|address)\b/)) {
+  if (q.match(/\b(solution|solve|fix|how to fix|how do i fix|resolve|address)/)) {
     return 'solutions';
   }
-  
+
   // Recommendations (strategic suggestions)
-  if (q.match(/\b(recommend|suggestion|suggest|advice|what should|what can|next step)\b/)) {
+  if (q.match(/\b(recommend|suggestion|suggest|advice|what should|what can|next step)/)) {
     return 'recommendations';
   }
-  
+
   // Summary
-  if (q.match(/\b(summar|overview|recap|highlight|key point)\b/)) {
+  if (q.match(/\b(summar|overview|recap|highlight|key point)/)) {
     return 'summary';
   }
-  
+
   // Sentiment
-  if (q.match(/\b(sentiment|feeling|mood|emotion|tone|positive|negative)\b/)) {
+  if (q.match(/\b(sentiment|feeling|mood|emotion|tone|positive|negative)/)) {
     return 'sentiment';
   }
-  
+
   // Toxicity/Abuse
-  if (q.match(/\b(toxic|abuse|abusive|offensive|inappropriate|bad word|harsh|rude)\b/)) {
+  if (q.match(/\b(toxic|abuse|abusive|offensive|inappropriate|bad word|harsh|rude)/)) {
     return 'toxicity';
   }
-  
+
   // Categorization
-  if (q.match(/\b(categor|topic|theme|group by|classify|organize)\b/)) {
+  if (q.match(/\b(categor|topic|theme|group by|classify|organize)/)) {
     return 'categorization';
   }
-  
+
   // Duplication
-  if (q.match(/\b(duplicate|repeated|recurring|same issue|multiple time)\b/)) {
+  if (q.match(/\b(duplicate|repeated|recurring|same issue|multiple time)/)) {
     return 'duplication';
   }
-  
+
   // Announcements
-  if (q.match(/\b(announcement|notice|notification|official message)\b/)) {
+  if (q.match(/\b(announcement|notice|notification|official message)/)) {
     return 'announcement';
   }
-  
+
   return 'general';
 }
 
@@ -574,6 +601,7 @@ module.exports = {
   getCategorizationPrompt,
   getDuplicationPrompt,
   getAnnouncementPrompt,
+  getApprovalSuggestionPrompt,
   SYSTEM_CONTEXT,
   PROMPT_DETECT_LANGUAGE,
   PROMPT_TRANSLATE,

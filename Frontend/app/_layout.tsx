@@ -24,8 +24,11 @@ export default function RootLayout() {
         <Stack.Screen name="ViewComplaintsScreen" options={{ title: 'View Complaints' }} />
         <Stack.Screen name="ViewPetitionsScreen" options={{ title: 'View Petitions' }} />
         <Stack.Screen name="AnonymousMessageScreen" options={{ title: 'Anonymous Message' }} />
+        <Stack.Screen name="AnonymousMessagesAdminScreen" options={{ title: 'Admin - Anonymous Messages' }} />
+        <Stack.Screen name="AnonymousThreadScreen" options={{ title: 'Chat' }} />
         <Stack.Screen name="EventsScreen" options={{ title: 'Events' }} />
         <Stack.Screen name="EventsScreenMember" options={{ title: 'Events' }} />
+        <Stack.Screen name="PollsListScreen" options={{ title: 'Polling', headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />

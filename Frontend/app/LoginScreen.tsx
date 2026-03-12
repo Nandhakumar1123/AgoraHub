@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { SafeAreaView } from "react-native-safe-area-context";
 import React, { useCallback, useState } from "react";
 import { useNavigation, useFocusEffect, useRoute } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
@@ -8,16 +9,15 @@ import {
   ActivityIndicator,
   Alert,
   Dimensions,
-  ImageBackground,
   KeyboardAvoidingView,
   Platform,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
+  StatusBar,
 } from "react-native";
 
 const { width, height } = Dimensions.get("window");
@@ -74,7 +74,7 @@ export default function LoginScreen({ navigation: propNavigation }: { navigation
     mfaCode: "",
     rememberMe: false,
   });
- 
+
   const [showPassword, setShowPassword] = useState(false);
   const [showMFA, setShowMFA] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -257,11 +257,10 @@ export default function LoginScreen({ navigation: propNavigation }: { navigation
   const rememberMe = formData?.rememberMe || false;
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ImageBackground
-        source={{ uri: "https://i.ibb.co/6vD7n3K/bg.jpg" }}
+    <SafeAreaView style={[styles.container, { backgroundColor: '#0f172a' }]}>
+      <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
+      <View
         style={styles.background}
-        resizeMode="cover"
       >
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -460,23 +459,23 @@ export default function LoginScreen({ navigation: propNavigation }: { navigation
                 </TouchableOpacity>
               </View>
 
-               {/* Register Link */}
-            <View style={styles.registerContainer}>
-              <Text style={styles.registerPrompt}>Don't have an account? </Text>
-              <TouchableOpacity
-                onPress={handleRegisterNavigation}
-                accessible={true}
-                accessibilityLabel="Navigate to registration screen"
-                accessibilityRole="button"
-                testID="registerButton"
-              >
-                <Text style={styles.registerLink}>Sign Up</Text>
-              </TouchableOpacity>
-            </View>
+              {/* Register Link */}
+              <View style={styles.registerContainer}>
+                <Text style={styles.registerPrompt}>Don&apos;t have an account? </Text>
+                <TouchableOpacity
+                  onPress={handleRegisterNavigation}
+                  accessible={true}
+                  accessibilityLabel="Navigate to registration screen"
+                  accessibilityRole="button"
+                  testID="registerButton"
+                >
+                  <Text style={styles.registerLink}>Sign Up</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
-      </ImageBackground>
+      </View>
     </SafeAreaView>
   );
 }
@@ -498,42 +497,50 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
   },
   connectionStatus: {
-    backgroundColor: "#e8f4fd",
+    backgroundColor: "rgba(59, 130, 246, 0.15)",
     padding: 12,
-    borderRadius: 10,
-    marginBottom: 10,
+    borderRadius: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "rgba(59, 130, 246, 0.3)",
   },
   connectionStatusText: {
-    color: "#1976d2",
+    color: "#60a5fa",
     fontSize: 13,
     textAlign: "center",
+    fontWeight: "500",
   },
   apiUrlText: {
-    color: "#666",
+    color: "#94a3b8",
     fontSize: 11,
     textAlign: "center",
     marginTop: 4,
   },
   connectionError: {
-    backgroundColor: "#ffebee",
+    backgroundColor: "rgba(239, 68, 68, 0.15)",
     padding: 12,
-    borderRadius: 10,
-    marginBottom: 10,
+    borderRadius: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "rgba(239, 68, 68, 0.3)",
   },
   connectionErrorText: {
-    color: "#c62828",
+    color: "#f87171",
     fontSize: 13,
     textAlign: "center",
+    fontWeight: "500",
   },
   loginBox: {
     width: width * 0.9,
     maxWidth: 400,
-    backgroundColor: "rgba(255, 255, 255, 0.95)",
-    borderRadius: 20,
+    backgroundColor: "rgba(30, 41, 59, 0.7)",
+    borderRadius: 24,
     padding: 30,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.08)",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.5,
     shadowRadius: 20,
     elevation: 15,
   },
@@ -543,13 +550,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 32,
-    fontWeight: "bold",
-    color: "#2c3e50",
+    fontWeight: "800",
+    color: "#f8fafc",
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: "#7f8c8d",
+    color: "#94a3b8",
     textAlign: "center",
     lineHeight: 22,
   },
@@ -562,33 +569,35 @@ const styles = StyleSheet.create({
   inputWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    borderWidth: 2,
-    borderColor: "#e1e8ed",
-    borderRadius: 12,
-    backgroundColor: "#fff",
-    paddingHorizontal: 15,
-    height: 55,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.1)",
+    borderRadius: 16,
+    backgroundColor: "rgba(15, 23, 42, 0.6)",
+    paddingHorizontal: 16,
+    height: 56,
   },
   inputError: {
-    borderColor: "#e74c3c",
+    borderColor: "#ef4444",
   },
   inputIcon: {
     marginRight: 12,
+    color: "#64748b",
   },
   input: {
     flex: 1,
     fontSize: 16,
-    color: "#2c3e50",
+    color: "#f8fafc",
     paddingVertical: 0,
   },
   eyeIcon: {
     padding: 5,
   },
   errorText: {
-    color: "#e74c3c",
+    color: "#ef4444",
     fontSize: 12,
-    marginTop: 5,
-    marginLeft: 5,
+    marginTop: 6,
+    marginLeft: 6,
+    fontWeight: "500",
   },
   checkboxContainer: {
     flexDirection: "row",
@@ -599,58 +608,67 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderWidth: 2,
-    borderColor: "#3498db",
-    borderRadius: 4,
+    borderColor: "#6366f1",
+    borderRadius: 6,
     marginRight: 10,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "transparent",
   },
   checkboxChecked: {
-    backgroundColor: "#3498db",
+    backgroundColor: "#6366f1",
   },
   checkboxLabel: {
     fontSize: 14,
-    color: "#555",
+    color: "#cbd5e1",
+    fontWeight: "500",
   },
   loginButton: {
-    backgroundColor: "#27ae60",
-    borderRadius: 12,
-    height: 55,
+    backgroundColor: "#6366f1",
+    borderRadius: 16,
+    height: 56,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 15,
+    marginBottom: 16,
+    shadowColor: "#6366f1",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 6,
   },
   buttonDisabled: {
-    backgroundColor: "#95a5a6",
+    backgroundColor: "#475569",
+    shadowOpacity: 0,
+    elevation: 0,
   },
   loginButtonText: {
-    color: "#fff",
+    color: "#ffffff",
     fontSize: 18,
-    fontWeight: "600",
+    fontWeight: "700",
   },
   forgotPasswordContainer: {
     alignItems: "center",
   },
   forgotPasswordText: {
-    color: "#3498db",
+    color: "#8b5cf6",
     fontSize: 14,
-    fontWeight: "500",
+    fontWeight: "600",
   },
   registerContainer: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    paddingTop: 20,
+    paddingTop: 24,
     borderTopWidth: 1,
-    borderTopColor: "#ecf0f1",
+    borderTopColor: "rgba(255, 255, 255, 0.05)",
   },
   registerPrompt: {
-    color: "#7f8c8d",
+    color: "#94a3b8",
     fontSize: 14,
   },
   registerLink: {
-    color: "#3498db",
-    fontSize: 14,
-    fontWeight: "600",
+    color: "#8b5cf6",
+    fontSize: 15,
+    fontWeight: "700",
   },
 });

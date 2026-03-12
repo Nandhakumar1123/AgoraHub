@@ -13,7 +13,9 @@ import {
   TouchableOpacity,
   View,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
+import { useRef } from 'react';
 
 // Declare window for web platform
 declare const window: any;
@@ -63,7 +65,7 @@ export default function AnonymousMessageScreen({
   onBack,
 }: AnonymousMessageScreenProps) {
   const route = useRoute();
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const params = route.params as any; // Route params can be any object
 
   const communityId = params?.communityId;
@@ -93,7 +95,7 @@ export default function AnonymousMessageScreen({
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [showInfoStrip, setShowInfoStrip] = useState(true);
   const [isSending, setIsSending] = useState(false);
-  
+
   // Real heads data
   const [heads, setHeads] = useState<Head[]>([]);
   const [isLoadingHeads, setIsLoadingHeads] = useState(true);
@@ -102,6 +104,32 @@ export default function AnonymousMessageScreen({
   // Community head name
   const [communityHeadName, setCommunityHeadName] = useState<string>('');
   const [isLoadingHeadName, setIsLoadingHeadName] = useState(true);
+
+  const [chatData, setChatData] = useState<{ rootMessage: any, messages: any[] }>({ rootMessage: null, messages: [] });
+  const [isLoadingChat, setIsLoadingChat] = useState(false);
+  const flatListRef = useRef<any>(null);
+
+  const fetchAnonymousChat = async () => {
+    try {
+      setIsLoadingChat(true);
+      const token = (await AsyncStorage.getItem('authToken')) || (await AsyncStorage.getItem('token'));
+      if (!token) return;
+
+      const response = await fetch(`${API_BASE_URL}/communities/${communityId}/anonymous-chat`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setChatData(data);
+      }
+    } catch (error) {
+      console.error('Error fetching anonymous chat:', error);
+    } finally {
+    }
+  };
 
   const selectedHeads = useMemo(() => {
     if (heads.length > 0) {
@@ -122,10 +150,10 @@ export default function AnonymousMessageScreen({
   const charCount = messageText.length;
   const canSend = messageText.trim().length > 0 && charCount <= MAX_CHARS;
 
-  // Fetch real heads and community head name from backend
   useEffect(() => {
     fetchCommunityHeads();
     fetchCommunityHeadName();
+    fetchAnonymousChat();
   }, [communityId]);
 
   const fetchCommunityHeads = async () => {
@@ -247,12 +275,12 @@ export default function AnonymousMessageScreen({
 
       console.log('✅ Setting community head name to:', data.head_name);
       setCommunityHeadName(data.head_name);
-  } catch (error) {
-    console.error('❌ Error fetching community head name:', error);
-    console.error('❌ Error message:', error instanceof Error ? error.message : 'Unknown error');
-    // Set a fallback name in case of error
-    setCommunityHeadName('Community Head');
-  } finally {
+    } catch (error) {
+      console.error('❌ Error fetching community head name:', error);
+      console.error('❌ Error message:', error instanceof Error ? error.message : 'Unknown error');
+      // Set a fallback name in case of error
+      setCommunityHeadName('Community Head');
+    } finally {
       setIsLoadingHeadName(false);
     }
   };
@@ -295,164 +323,164 @@ export default function AnonymousMessageScreen({
 
   // ⚠️ FILE IS LONG – ONLY CHANGED PARTS ARE COMMENTED WITH ✅ FIX
 
-// ... imports unchanged ...
+  // ... imports unchanged ...
 
-// ============================================================================
-// FIXED ATTACHMENT PICKERS (Expo SDK compatible)
-// ============================================================================
+  // ============================================================================
+  // FIXED ATTACHMENT PICKERS (Expo SDK compatible)
+  // ============================================================================
 
-const handlePickImage = async () => {
-  try {
-    console.log('Requesting photo library permissions');
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permissionResult.granted) {
-      Alert.alert('Permission Required', 'Please grant photo library access');
-      return;
+  const handlePickImage = async () => {
+    try {
+      console.log('Requesting photo library permissions');
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permissionResult.granted) {
+        Alert.alert('Permission Required', 'Please grant photo library access');
+        return;
+      }
+
+      console.log('Opening image picker');
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.8,
+      });
+
+      console.log('Image picker result:', result);
+
+      if (result.canceled) {
+        console.log('User canceled image picker');
+        return;
+      }
+
+      if (result.assets && result.assets.length > 0) {
+        const asset = result.assets[0];
+        console.log('Selected image:', asset);
+
+        setAttachments(prev => [
+          ...prev,
+          {
+            id: Date.now().toString(),
+            name: asset.fileName ?? `image_${Date.now()}.jpg`,
+            type: 'image',
+            uri: asset.uri,
+            mimeType: asset.mimeType,
+            size: asset.fileSize,
+          },
+        ]);
+
+        console.log('Image added to attachments');
+      } else {
+        console.log('No assets in image picker result');
+        Alert.alert('Error', 'No image was selected');
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      Alert.alert('Error', 'Failed to pick image. Please try again.');
     }
+  };
 
-    console.log('Opening image picker');
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.8,
-    });
+  const handlePickVideo = async () => {
+    try {
+      console.log('Requesting video library permissions');
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permissionResult.granted) {
+        Alert.alert('Permission Required', 'Please grant video access');
+        return;
+      }
 
-    console.log('Image picker result:', result);
+      console.log('Opening video picker');
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+      });
 
-    if (result.canceled) {
-      console.log('User canceled image picker');
-      return;
+      console.log('Video picker result:', result);
+
+      if (result.canceled) {
+        console.log('User canceled video picker');
+        return;
+      }
+
+      if (result.assets && result.assets.length > 0) {
+        const asset = result.assets[0];
+        console.log('Selected video:', asset);
+
+        setAttachments(prev => [
+          ...prev,
+          {
+            id: Date.now().toString(),
+            name: asset.fileName ?? `video_${Date.now()}.mp4`,
+            type: 'video',
+            uri: asset.uri,
+            mimeType: asset.mimeType,
+            size: asset.fileSize,
+          },
+        ]);
+
+        console.log('Video added to attachments');
+      } else {
+        console.log('No assets in video picker result');
+        Alert.alert('Error', 'No video was selected');
+      }
+    } catch (error) {
+      console.error('Error picking video:', error);
+      Alert.alert('Error', 'Failed to pick video. Please try again.');
     }
+  };
 
-    if (result.assets && result.assets.length > 0) {
-      const asset = result.assets[0];
-      console.log('Selected image:', asset);
+  // FIXED: Document picker with proper error handling
+  const handlePickDocument = async (type: 'document' | 'audio') => {
+    try {
+      console.log('Opening document picker for type:', type);
 
-      setAttachments(prev => [
-        ...prev,
-        {
-          id: Date.now().toString(),
-          name: asset.fileName ?? `image_${Date.now()}.jpg`,
-          type: 'image',
-          uri: asset.uri,
-          mimeType: asset.mimeType,
-          size: asset.fileSize,
-        },
-      ]);
+      const result = await DocumentPicker.getDocumentAsync({
+        type: type === 'audio' ? 'audio/*' : '*/*',
+        copyToCacheDirectory: true,
+      });
 
-      console.log('Image added to attachments');
-    } else {
-      console.log('No assets in image picker result');
-      Alert.alert('Error', 'No image was selected');
+      console.log('Document picker result:', result);
+
+      // Check if user canceled the picker
+      if (result.canceled) {
+        console.log('User canceled document picker');
+        return;
+      }
+
+      // Check if assets exist and have content
+      if (result.assets && result.assets.length > 0) {
+        const file = result.assets[0];
+        console.log('Selected file:', file);
+
+        setAttachments(prev => [
+          ...prev,
+          {
+            id: Date.now().toString(),
+            name: file.name || `file_${Date.now()}`,
+            type,
+            uri: file.uri,
+            mimeType: file.mimeType,
+            size: file.size,
+          },
+        ]);
+
+        console.log('File added to attachments');
+      } else {
+        console.log('No assets in result');
+        Alert.alert('Error', 'No file was selected');
+      }
+    } catch (error) {
+      console.error('Error picking document:', error);
+      Alert.alert('Error', 'Failed to pick file. Please try again.');
     }
-  } catch (error) {
-    console.error('Error picking image:', error);
-    Alert.alert('Error', 'Failed to pick image. Please try again.');
-  }
-};
+  };
 
-const handlePickVideo = async () => {
-  try {
-    console.log('Requesting video library permissions');
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permissionResult.granted) {
-      Alert.alert('Permission Required', 'Please grant video access');
-      return;
+  // ============================================================================
+  // FIX: ENSURE HEADS ALWAYS DISPLAY AFTER FETCH
+  // ============================================================================
+
+  useEffect(() => {
+    if (heads.length > 0 && selectedHeadIds.length === 0) {
+      // noop – ensures rerender after fetch
     }
-
-    console.log('Opening video picker');
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Videos,
-    });
-
-    console.log('Video picker result:', result);
-
-    if (result.canceled) {
-      console.log('User canceled video picker');
-      return;
-    }
-
-    if (result.assets && result.assets.length > 0) {
-      const asset = result.assets[0];
-      console.log('Selected video:', asset);
-
-      setAttachments(prev => [
-        ...prev,
-        {
-          id: Date.now().toString(),
-          name: asset.fileName ?? `video_${Date.now()}.mp4`,
-          type: 'video',
-          uri: asset.uri,
-          mimeType: asset.mimeType,
-          size: asset.fileSize,
-        },
-      ]);
-
-      console.log('Video added to attachments');
-    } else {
-      console.log('No assets in video picker result');
-      Alert.alert('Error', 'No video was selected');
-    }
-  } catch (error) {
-    console.error('Error picking video:', error);
-    Alert.alert('Error', 'Failed to pick video. Please try again.');
-  }
-};
-
-// FIXED: Document picker with proper error handling
-const handlePickDocument = async (type: 'document' | 'audio') => {
-  try {
-    console.log('Opening document picker for type:', type);
-
-    const result = await DocumentPicker.getDocumentAsync({
-      type: type === 'audio' ? 'audio/*' : '*/*',
-      copyToCacheDirectory: true,
-    });
-
-    console.log('Document picker result:', result);
-
-    // Check if user canceled the picker
-    if (result.canceled) {
-      console.log('User canceled document picker');
-      return;
-    }
-
-    // Check if assets exist and have content
-    if (result.assets && result.assets.length > 0) {
-      const file = result.assets[0];
-      console.log('Selected file:', file);
-
-      setAttachments(prev => [
-        ...prev,
-        {
-          id: Date.now().toString(),
-          name: file.name || `file_${Date.now()}`,
-          type,
-          uri: file.uri,
-          mimeType: file.mimeType,
-          size: file.size,
-        },
-      ]);
-
-      console.log('File added to attachments');
-    } else {
-      console.log('No assets in result');
-      Alert.alert('Error', 'No file was selected');
-    }
-  } catch (error) {
-    console.error('Error picking document:', error);
-    Alert.alert('Error', 'Failed to pick file. Please try again.');
-  }
-};
-
-// ============================================================================
-// FIX: ENSURE HEADS ALWAYS DISPLAY AFTER FETCH
-// ============================================================================
-
-useEffect(() => {
-  if (heads.length > 0 && selectedHeadIds.length === 0) {
-    // noop – ensures rerender after fetch
-  }
-}, [heads]);
+  }, [heads]);
 
   // Don't auto-select - let user explicitly choose from dropdown
   // useEffect(() => {
@@ -462,7 +490,7 @@ useEffect(() => {
   //   }
   // }, [heads.length, communityHeadName, isLoadingHeads, isLoadingHeadName, selectedHeadIds.length]);
 
-// fetchCommunityHeads remains unchanged
+  // fetchCommunityHeads remains unchanged
 
 
   const handleRemoveAttachment = useCallback((id: string) => {
@@ -483,33 +511,38 @@ useEffect(() => {
     setIsSending(true);
 
     try {
-      const sendFunction = onSend || (route.params as any)?.onSend;
-      if (!sendFunction) {
-        throw new Error('Send function not available');
-      }
+      const token = (await AsyncStorage.getItem('authToken')) || (await AsyncStorage.getItem('token'));
+      if (!token) throw new Error('Authentication required');
 
       // Validate message before sending
       if (!messageText || messageText.trim().length === 0) {
         throw new Error('Message cannot be empty');
       }
 
-      if (selectedHeadIds.length === 0) {
-        throw new Error('Please select at least one head');
+      console.log('📤 Sending anonymous message...');
+
+      const response = await fetch(`${API_BASE_URL}/communities/${communityId}/anonymous-chat/message`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          text: messageText,
+          attachments: attachments.map(a => ({
+            name: a.name,
+            type: a.type,
+            uri: a.uri,
+            mimeType: a.mimeType,
+            size: a.size
+          })),
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to send message');
       }
-
-      console.log('📤 Calling send function with payload:', {
-        text: messageText,
-        headIds: selectedHeadIds,
-        attachments,
-        communityId
-      });
-
-      // Call the send function (which makes the API call)
-      await sendFunction({
-        text: messageText,
-        headIds: selectedHeadIds,
-        attachments,
-      });
 
       console.log('✅ Message sent successfully, clearing form...');
 
@@ -519,56 +552,32 @@ useEffect(() => {
       // Only clear form and navigate if API call succeeded
       setMessageText('');
       setAttachments([]);
-      setSelectedHeadIds([]);
       setHeadSelectorError('');
 
-      // Navigate back after successful send
+      // After successful send, refresh our messages list
+      fetchAnonymousChat();
+
+      // Auto-scroll to bottom after a delay
       setTimeout(() => {
-        setShowSuccessToast(false);
-        try {
-          if (onBack && typeof onBack === 'function') {
-            console.log('📤 Calling onBack handler');
-            onBack();
-          } else if (navigation && navigation.canGoBack && navigation.canGoBack()) {
-            console.log('📤 Navigating back using React Navigation');
-            navigation.goBack();
-          } else if (Platform.OS === 'web' && typeof window !== 'undefined') {
-            // For web, if no navigation available, try to go back in history
-            console.log('📤 Attempting browser history back');
-            if (window.history && window.history.length > 1) {
-              window.history.back();
-            } else {
-              // If no history, reload the page to refresh the message list
-              console.log('📤 Reloading page');
-              window.location.reload();
-            }
-          } else {
-            console.warn('⚠️ No navigation method available');
-          }
-        } catch (navError) {
-          console.error('❌ Error during navigation:', navError);
-          // If navigation fails, at least reload on web
-          if (Platform.OS === 'web' && typeof window !== 'undefined') {
-            window.location.reload();
-          }
-        }
-      }, 2000);
+        flatListRef.current?.scrollToEnd({ animated: true });
+      }, 500);
+
     } catch (error) {
       console.error('❌ Failed to send message:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to send anonymous message';
-      
+
       // Show error alert with details
       if (Platform.OS === 'web') {
         alert(`Error: ${errorMessage}`);
       } else {
         Alert.alert('Error', errorMessage);
       }
-      
+
       // Don't clear the form on error - keep the message so user can retry
     } finally {
       setIsSending(false);
     }
-  }, [messageText, selectedHeadIds, attachments, onSend, onBack, communityId, navigation, (route.params as any)?.onSend]);
+  }, [messageText, attachments, communityId]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -624,61 +633,85 @@ useEffect(() => {
           </View>
         )}
 
-        {/* Middle Preview Area */}
-        <ScrollView style={styles.previewArea} contentContainerStyle={styles.previewContent}>
-          {/* Info Card */}
-          <View style={styles.infoCard}>
-            <View style={styles.infoCardHeader}>
-              <View style={styles.anonymousBadge}>
-                <Text style={styles.anonymousBadgeText}>ANONYMOUS CHANNEL</Text>
-              </View>
-            </View>
-            <Text style={styles.infoCardText}>
-              Messages sent here are encrypted and anonymous. Community heads can respond, but
-              cannot see your identity. All communications are audit-logged for safety.
+        {/* Chat Area */}
+        <ScrollView
+          ref={flatListRef}
+          style={styles.previewArea}
+          contentContainerStyle={styles.previewContent}
+          onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+        >
+          {/* Info Card - WhatsApp style sticky header or top card */}
+          <View style={styles.chatInfoCard}>
+            <Text style={styles.chatInfoText}>
+              🔒 This is a private, anonymous chat with community heads.
+              They cannot see your identity.
             </Text>
           </View>
 
-          {/* Sample Bubbles */}
-          <View style={styles.bubbleContainer}>
-            <View style={[styles.bubble, styles.headBubble]}>
-              <Text style={styles.bubbleLabel}>Head</Text>
-              <Text style={styles.bubbleText}>
-                Thank you for reaching out. We'll look into this matter.
+          {chatData.messages.length === 0 && !isLoadingChat && (
+            <View style={styles.emptyStateContainer}>
+              <Text style={styles.emptyStateTitle}>No Messages Yet</Text>
+              <Text style={styles.emptyStateSubtitle}>
+                Send a message to start an anonymous conversation with the community heads.
               </Text>
             </View>
-          </View>
+          )}
 
-          <View style={styles.bubbleContainer}>
-            <View style={[styles.bubble, styles.memberBubble]}>
-              <View style={styles.anonymousTag}>
-                <Text style={styles.anonymousTagText}>You (anonymous)</Text>
+          {chatData.messages.map((item) => {
+            const isMe = !item.is_from_head;
+            return (
+              <View
+                key={item.message_id}
+                style={[
+                  styles.chatBubbleWrapper,
+                  isMe ? styles.myChatWrapper : styles.headChatWrapper
+                ]}
+              >
+                {!isMe && (
+                  <Text style={styles.chatSenderName}>
+                    {item.head_name || 'Community Head'}
+                  </Text>
+                )}
+                <View style={[
+                  styles.chatBubble,
+                  isMe ? styles.myChatBubble : styles.headChatBubble
+                ]}>
+                  <Text style={[
+                    styles.chatText,
+                    isMe ? styles.myChatText : styles.headChatText
+                  ]}>
+                    {item.text}
+                  </Text>
+                  <Text style={[
+                    styles.chatTime,
+                    isMe ? styles.myChatTime : styles.headChatTime
+                  ]}>
+                    {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </Text>
+                </View>
               </View>
-              <Text style={[styles.bubbleText, styles.memberBubbleText]}>
-                I wanted to share a concern about the common area maintenance.
-              </Text>
-            </View>
-          </View>
+            );
+          })}
         </ScrollView>
 
         {/* Bottom Input Area */}
         <View style={styles.inputArea}>
           {/* Head Selector */}
-          
-<HeadSelector
-  heads={heads}
-  selectedHeads={selectedHeads}
-  onToggleHead={handleToggleHead}
-  onRemoveHead={handleRemoveHead}
-  showSelector={showHeadSelector}
-  setShowSelector={setShowHeadSelector}
-  error={headSelectorError}
-  isLoading={isLoadingHeads}
-  hoveredHeadId={hoveredHeadId}
-  setHoveredHeadId={setHoveredHeadId}
-  communityHeadName={communityHeadName}            // ✅ Added
-  isLoadingHeadName={isLoadingHeadName}            // ✅ Added
-/>
+
+          <HeadSelector
+            heads={heads}
+            selectedHeads={selectedHeads}
+            onToggleHead={handleToggleHead}
+            onRemoveHead={handleRemoveHead}
+            showSelector={showHeadSelector}
+            setShowSelector={setShowHeadSelector}
+            error={headSelectorError}
+            isLoading={isLoadingHeads}
+            hoveredHeadId={hoveredHeadId}
+            setHoveredHeadId={setHoveredHeadId}
+            communityHeadName={communityHeadName}            // ✅ Added
+            isLoadingHeadName={isLoadingHeadName}            // ✅ Added
+          />
 
 
           {/* Attachment Bar */}
@@ -785,11 +818,11 @@ function HeadSelector({
   // Create a fallback head option when no heads are available
   const fallbackHeads = heads.length === 0 && communityHeadName && !isLoadingHeadName
     ? [{
-        id: 'fallback-head',
-        name: communityHeadName,
-        roleBadge: 'HEAD',
-        avatarColor: '#1C7C54',
-      }]
+      id: 'fallback-head',
+      name: communityHeadName,
+      roleBadge: 'HEAD',
+      avatarColor: '#1C7C54',
+    }]
     : heads;
 
   return (
@@ -857,43 +890,43 @@ function HeadSelector({
               </Text>
             </View>
           ) :
-           (
-            fallbackHeads.map((head) => {
-              const isSelected = selectedHeadId === head.id;
-              return (
-                <TouchableOpacity
-                  key={head.id}
-                  style={[styles.headOption, isSelected && styles.headOptionSelected]}
-                  onPress={() => onToggleHead(head.id)}
-                  accessible={true}
-                  accessibilityLabel={`Select ${head.name}`}
-                >
-                  <View style={styles.radioOuter}>
-                    {isSelected && <View style={styles.radioInner} />}
-                  </View>
-
-                  <View
-                    style={[
-                      styles.headAvatar,
-                      { backgroundColor: head.avatarColor || '#1C7C54' },
-                    ]}
+            (
+              fallbackHeads.map((head) => {
+                const isSelected = selectedHeadId === head.id;
+                return (
+                  <TouchableOpacity
+                    key={head.id}
+                    style={[styles.headOption, isSelected && styles.headOptionSelected]}
+                    onPress={() => onToggleHead(head.id)}
+                    accessible={true}
+                    accessibilityLabel={`Select ${head.name}`}
                   >
-                    <Text style={styles.headAvatarText}>
-                      {head.name.charAt(0).toUpperCase()}
-                    </Text>
-                  </View>
-                  <View style={styles.headOptionTextContainer}>
-                    <Text style={styles.headOptionName}>{head.name}</Text>
-                    {head.roleBadge && (
-                      <Text style={styles.headOptionBadge}>
-                        {head.roleBadge.toUpperCase()}
+                    <View style={styles.radioOuter}>
+                      {isSelected && <View style={styles.radioInner} />}
+                    </View>
+
+                    <View
+                      style={[
+                        styles.headAvatar,
+                        { backgroundColor: head.avatarColor || '#1C7C54' },
+                      ]}
+                    >
+                      <Text style={styles.headAvatarText}>
+                        {head.name.charAt(0).toUpperCase()}
                       </Text>
-                    )}
-                  </View>
-                </TouchableOpacity>
-              );
-            })
-          )}
+                    </View>
+                    <View style={styles.headOptionTextContainer}>
+                      <Text style={styles.headOptionName}>{head.name}</Text>
+                      {head.roleBadge && (
+                        <Text style={styles.headOptionBadge}>
+                          {head.roleBadge.toUpperCase()}
+                        </Text>
+                      )}
+                    </View>
+                  </TouchableOpacity>
+                );
+              })
+            )}
         </View>
       )}
 
@@ -902,7 +935,7 @@ function HeadSelector({
   );
 }
 
-  
+
 type AttachmentBarProps = {
   attachments: Attachment[];
   onPickAttachment: () => void;
@@ -1068,9 +1101,9 @@ function MediaPickerModal({ visible, onClose, onSelectType }: MediaPickerModalPr
       accessible={true}
       accessibilityLabel="Media picker dialog"
     >
-      <TouchableOpacity 
-        style={styles.mediaModalOverlay} 
-        activeOpacity={1} 
+      <TouchableOpacity
+        style={styles.mediaModalOverlay}
+        activeOpacity={1}
         onPress={onClose}
       >
         <View style={styles.mediaModalContent}>
@@ -1286,6 +1319,96 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: Platform.OS === 'ios' ? 20 : 12,
   },
+  chatInfoCard: {
+    backgroundColor: 'rgba(232, 245, 233, 0.7)',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(200, 230, 201, 0.5)',
+    alignItems: 'center',
+  },
+  chatInfoText: {
+    fontSize: 12,
+    color: '#2E7D32',
+    textAlign: 'center',
+    lineHeight: 18,
+  },
+  emptyStateContainer: {
+    padding: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 40,
+  },
+  emptyStateTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#2E5A3F',
+    marginBottom: 8,
+  },
+  emptyStateSubtitle: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  chatBubbleWrapper: {
+    marginBottom: 16,
+    maxWidth: '85%',
+  },
+  myChatWrapper: {
+    alignSelf: 'flex-end',
+  },
+  headChatWrapper: {
+    alignSelf: 'flex-start',
+  },
+  chatBubble: {
+    padding: 12,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  myChatBubble: {
+    backgroundColor: '#2E5A3F',
+    borderBottomRightRadius: 4,
+  },
+  headChatBubble: {
+    backgroundColor: '#fff',
+    borderBottomLeftRadius: 4,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  chatSenderName: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    color: '#666',
+    marginBottom: 4,
+    marginLeft: 4,
+  },
+  chatText: {
+    fontSize: 15,
+    lineHeight: 20,
+  },
+  myChatText: {
+    color: '#fff',
+  },
+  headChatText: {
+    color: '#333',
+  },
+  chatTime: {
+    fontSize: 10,
+    marginTop: 4,
+    alignSelf: 'flex-end',
+  },
+  myChatTime: {
+    color: 'rgba(255,255,255,0.7)',
+  },
+  headChatTime: {
+    color: '#999',
+  },
   headSelector: {
     marginBottom: 12,
   },
@@ -1398,6 +1521,75 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#F0F9FF',
     backgroundColor: '#fff',
+  },
+  historySection: {
+    marginTop: 10,
+    marginBottom: 20,
+  },
+  historyTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1F2937',
+    marginBottom: 12,
+    paddingHorizontal: 4,
+  },
+  historyItem: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  historyItemHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  historyBadge: {
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  historyBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#6B7280',
+  },
+  historyDate: {
+    fontSize: 12,
+    color: '#9CA3AF',
+  },
+  historyPreview: {
+    fontSize: 14,
+    color: '#374151',
+    lineHeight: 20,
+    marginBottom: 10,
+  },
+  historyFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
+  },
+  replyBadge: {
+    fontSize: 12,
+    color: '#1C7C54',
+    fontWeight: '600',
+  },
+  unreadDot: {
+    fontSize: 12,
+    color: '#DC2626',
+    fontWeight: '700',
   },
   headOptionSelected: {
     backgroundColor: '#EFF6FF',

@@ -8,7 +8,7 @@ function getApiUrl(): string {
         ? process.env.EXPO_PUBLIC_API_URL
         : null;
     if (envUrl && typeof envUrl === 'string') return envUrl.replace(/\/$/, '');
-  } catch (_) {}
+  } catch (_) { }
   // Backend/.env uses PORT=3002 by default; use 3000 only if you run backend without .env
   return 'http://localhost:3002/api';
 }
@@ -17,7 +17,7 @@ export const API_BASE_URL = getApiUrl();
 export const API_ROOT = API_BASE_URL.replace(/\/api\/?$/, '') || 'http://localhost:3002';
 export const SOCKET_BASE_URL = API_ROOT;
 
-const FETCH_TIMEOUT_MS = 15000;
+const FETCH_TIMEOUT_MS = 60000;
 
 export function fetchWithTimeout(
   url: string,

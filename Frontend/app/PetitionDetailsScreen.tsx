@@ -22,7 +22,6 @@ interface Petition {
   petition_id: number;
   title: string;
   summary: string;
-  problem_statement: string;
   proposed_action: string;
   author_id: number;
   author_name: string;
@@ -64,6 +63,7 @@ export default function PetitionDetailsScreen() {
   const [error, setError] = useState<string | null>(null);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   // AI chat state
   const [showAssistant, setShowAssistant] = useState(false);
@@ -74,7 +74,27 @@ export default function PetitionDetailsScreen() {
 
   useEffect(() => {
     fetchPetitionDetails();
+    fetchUserRole();
   }, []);
+
+  const fetchUserRole = async () => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      if (!token) return;
+
+      const response = await fetch(`${BASE_URL}/community/${communityId}/my-role`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUserRole(data.role);
+      }
+    } catch (err) {
+      console.error('Error fetching user role:', err);
+    }
+  };
+
 
   const fetchPetitionDetails = async () => {
     try {
@@ -103,7 +123,6 @@ export default function PetitionDetailsScreen() {
         petition_id: raw.petition_id ?? raw.petitionId ?? 0,
         title: raw.title ?? '',
         summary: raw.summary ?? '',
-        problem_statement: raw.problem_statement ?? raw.problemStatement ?? '',
         proposed_action: raw.proposed_action ?? raw.proposedAction ?? '',
         author_id: raw.author_id ?? raw.authorId ?? 0,
         author_name: raw.author_name ?? raw.authorName ?? 'Unknown',
@@ -166,21 +185,20 @@ export default function PetitionDetailsScreen() {
     try {
       const petitionContext = petition
         ? {
-            type: 'petition' as const,
-            data: {
-              petition_id: petition.petition_id,
-              title: petition.title,
-              summary: petition.summary,
-              problem_statement: petition.problem_statement,
-              proposed_action: petition.proposed_action,
-              goal_type: petition.goal_type,
-              impact_area: petition.impact_area,
-              status: petition.status,
-              author_name: petition.author_name,
-              community_name: petition.community_name,
-              priority_level: petition.priority_level,
-            },
-          }
+          type: 'petition' as const,
+          data: {
+            petition_id: petition.petition_id,
+            title: petition.title,
+            summary: petition.summary,
+            proposed_action: petition.proposed_action,
+            goal_type: petition.goal_type,
+            impact_area: petition.impact_area,
+            status: petition.status,
+            author_name: petition.author_name,
+            community_name: petition.community_name,
+            priority_level: petition.priority_level,
+          },
+        }
         : undefined;
       const response = await nlpService.askBot(prompt, communityId, undefined, petitionContext);
       const answerText =
@@ -234,32 +252,32 @@ export default function PetitionDetailsScreen() {
   const getStatusColor = (status: PetitionStatus) => {
     switch (status) {
       case 'Review': return '#3b82f6';
-      case 'Pending': return '#f59e0b';
-      case 'InProgress': return '#8b5cf6';
-      case 'Approved': return '#10b981';
-      case 'Rejected': return '#ef4444';
+      case 'Pending': return '#ea580c';
+      case 'InProgress': return '#3b82f6';
+      case 'Approved': return '#16a34a';
+      case 'Rejected': return '#dc2626';
     }
   };
 
   const getStatusSoftColors = (status: PetitionStatus) => {
     switch (status) {
       case 'Review':
-        return { bg: '#dbeafe', text: '#1d4ed8', border: '#93c5fd' };
+        return { bg: '#eff6ff', text: '#3b82f6', border: '#bfdbfe' };
       case 'Pending':
-        return { bg: '#fef9c3', text: '#b45309', border: '#facc15' };
+        return { bg: '#fff7ed', text: '#ea580c', border: '#ffedd5' };
       case 'InProgress':
-        return { bg: '#ede9fe', text: '#6d28d9', border: '#c4b5fd' };
+        return { bg: '#eff6ff', text: '#3b82f6', border: '#bfdbfe' };
       case 'Approved':
-        return { bg: '#dcfce7', text: '#15803d', border: '#86efac' };
+        return { bg: '#f0fdf4', text: '#16a34a', border: '#dcfce7' };
       case 'Rejected':
-        return { bg: '#fee2e2', text: '#b91c1c', border: '#fca5a5' };
+        return { bg: '#fef2f2', text: '#dc2626', border: '#fee2e2' };
     }
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'critical': return '#ef4444';
-      case 'important': return '#f59e0b';
+      case 'critical': return '#dc2626';
+      case 'important': return '#ea580c';
       default: return '#6b7280';
     }
   };
@@ -350,15 +368,47 @@ export default function PetitionDetailsScreen() {
             <View
               style={[
                 styles.headerStatusBadge,
-                { backgroundColor: getStatusColor(petition.status) },
+                { backgroundColor: getStatusColor(petition.status) + '15', borderWidth: 1, borderColor: getStatusColor(petition.status) + '30' },
               ]}
             >
-              <Text style={styles.headerStatusText}>{petition.status}</Text>
+              <Text style={[styles.headerStatusText, { color: getStatusColor(petition.status) }]}>{petition.status}</Text>
             </View>
           </View>
         </View>
 
         <View style={styles.content}>
+          {userRole === 'HEAD' && (
+            <View style={styles.topActionsCard}>
+              <Text style={styles.adminActionTitle}>Update Petition Status</Text>
+              <View style={styles.statusOptionsRow}>
+                {STATUS_OPTIONS.map((opt) => {
+                  const soft = getStatusSoftColors(opt);
+                  const selected = petition.status === opt;
+                  return (
+                    <TouchableOpacity
+                      key={opt}
+                      onPress={() => handleSelectStatus(opt)}
+                      disabled={isUpdatingStatus || selected}
+                      style={[
+                        styles.statusOption,
+                        { backgroundColor: soft.bg, borderColor: soft.border },
+                        selected && styles.statusOptionSelected,
+                        (isUpdatingStatus || selected) && styles.statusOptionDisabled,
+                      ]}
+                    >
+                      <Text style={[styles.statusOptionText, { color: soft.text }]}>
+                        {opt}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+              {isUpdatingStatus && (
+                <Text style={styles.statusUpdatingText}>Updating status…</Text>
+              )}
+            </View>
+          )}
+
           <View style={styles.card}>
             <Text style={styles.petitionTitle}>{displayText(petition.title)}</Text>
 
@@ -366,10 +416,10 @@ export default function PetitionDetailsScreen() {
               <View
                 style={[
                   styles.priorityBadge,
-                  { backgroundColor: getPriorityColor(petition.priority_level) },
+                  { backgroundColor: getPriorityColor(petition.priority_level) + '15', borderWidth: 1, borderColor: getPriorityColor(petition.priority_level) + '30' },
                 ]}
               >
-                <Text style={styles.priorityText}>{petition.priority_level}</Text>
+                <Text style={[styles.priorityText, { color: getPriorityColor(petition.priority_level) }]}>{petition.priority_level}</Text>
               </View>
             </View>
 
@@ -414,7 +464,7 @@ export default function PetitionDetailsScreen() {
               <Text style={styles.metaLabel}>Affected Groups:</Text>
               <Text style={styles.metaValue}>
                 {Array.isArray(petition.affected_groups) &&
-                petition.affected_groups.length > 0
+                  petition.affected_groups.length > 0
                   ? petition.affected_groups.join(', ')
                   : 'N/A'}
               </Text>
@@ -425,12 +475,7 @@ export default function PetitionDetailsScreen() {
               <Text style={styles.sectionContent}>{displayText(petition.summary)}</Text>
             </View>
 
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Problem Statement</Text>
-              <Text style={styles.sectionContent}>
-                {displayText(petition.problem_statement)}
-              </Text>
-            </View>
+
 
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Proposed Action</Text>
@@ -453,40 +498,12 @@ export default function PetitionDetailsScreen() {
               </View>
             )}
 
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Update Status</Text>
-              <View style={styles.statusOptionsRow}>
-                {STATUS_OPTIONS.map((opt) => {
-                  const soft = getStatusSoftColors(opt);
-                  const selected = petition.status === opt;
-                  return (
-                    <TouchableOpacity
-                      key={opt}
-                      onPress={() => handleSelectStatus(opt)}
-                      disabled={isUpdatingStatus || selected}
-                      style={[
-                        styles.statusOption,
-                        { backgroundColor: soft.bg, borderColor: soft.border },
-                        selected && styles.statusOptionSelected,
-                        (isUpdatingStatus || selected) && styles.statusOptionDisabled,
-                      ]}
-                    >
-                      <Text style={[styles.statusOptionText, { color: soft.text }]}>
-                        {opt}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-              {isUpdatingStatus && (
-                <Text style={styles.statusUpdatingText}>Updating status…</Text>
-              )}
-            </View>
+
           </View>
         </View>
       </ScrollView>
 
-      {menuVisible && (
+      {(userRole === 'HEAD' || userRole === 'ADMIN') && menuVisible && (
         <TouchableOpacity
           style={styles.menuOverlay}
           activeOpacity={1}
@@ -507,7 +524,7 @@ export default function PetitionDetailsScreen() {
         </TouchableOpacity>
       )}
       <Modal
-        visible={showAssistant}
+        visible={(userRole === 'HEAD' || userRole === 'ADMIN') && showAssistant}
         transparent
         animationType="slide"
         onRequestClose={() => setShowAssistant(false)}
@@ -590,7 +607,7 @@ export default function PetitionDetailsScreen() {
                     style={[
                       styles.chatSendButton,
                       (!question.trim() || isLoadingChatbot) &&
-                        styles.chatSendButtonDisabled,
+                      styles.chatSendButtonDisabled,
                     ]}
                     onPress={handleAskBot}
                     disabled={!question.trim() || isLoadingChatbot}
@@ -610,11 +627,11 @@ export default function PetitionDetailsScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#0f172a',
   },
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#0f172a',
   },
   centered: {
     justifyContent: 'center',
@@ -623,7 +640,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#64748b',
+    color: '#94a3b8',
   },
   errorText: {
     fontSize: 18,
@@ -633,17 +650,21 @@ const styles = StyleSheet.create({
   },
   backText: {
     fontSize: 16,
-    color: '#3b82f6',
+    color: '#818cf8',
     textDecorationLine: 'underline',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#3b82f6',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    paddingTop: 50,
+    backgroundColor: 'rgba(15, 23, 42, 0.8)',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    paddingTop: 55,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.05)',
   },
   headerLeft: {
     flexDirection: 'row',
@@ -654,52 +675,53 @@ const styles = StyleSheet.create({
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 12,
   },
   backButton: {
     fontSize: 16,
-    color: 'white',
+    color: '#f8fafc',
     fontWeight: '600',
   },
   title: {
     fontSize: 18,
-    fontWeight: '600',
-    color: 'white',
+    fontWeight: '700',
+    color: '#f8fafc',
     flexShrink: 1,
   },
   headerStatusBadge: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 999,
+    borderRadius: 8,
   },
   headerStatusText: {
-    color: 'white',
-    fontWeight: '700',
-    fontSize: 13,
+    fontWeight: '800',
+    fontSize: 12,
   },
   menuButton: {
     paddingHorizontal: 8,
     paddingVertical: 4,
   },
   menuButtonText: {
-    color: 'white',
-    fontSize: 20,
-    fontWeight: '700',
+    color: '#f8fafc',
+    fontSize: 22,
+    fontWeight: '800',
   },
   menuDropdown: {
     position: 'absolute',
-    top: Platform.select({ ios: 80, android: 80, default: 70 }),
-    right: 16,
-    backgroundColor: 'white',
-    borderRadius: 8,
-    paddingVertical: 6,
-    paddingHorizontal: 4,
-    elevation: 5,
+    top: Platform.select({ ios: 90, android: 90, default: 80 }),
+    right: 20,
+    backgroundColor: '#1e293b',
+    borderRadius: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 6,
+    elevation: 6,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
     zIndex: 40,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
   menuOverlay: {
     position: 'absolute',
@@ -710,240 +732,278 @@ const styles = StyleSheet.create({
     zIndex: 30,
   },
   menuItem: {
-    paddingVertical: 6,
-    paddingHorizontal: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
   },
   menuItemText: {
-    fontSize: 14,
-    color: '#111827',
+    fontSize: 15,
+    color: '#f8fafc',
+    fontWeight: '500',
   },
   content: {
-    padding: 16,
+    padding: 20,
   },
   card: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
-    elevation: 3,
+    backgroundColor: 'rgba(30, 41, 59, 0.7)',
+    borderRadius: 24,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+    elevation: 4,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
   },
   petitionTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#1e293b',
-    marginBottom: 12,
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#f8fafc',
+    marginBottom: 16,
+    lineHeight: 32,
   },
   statusRow: {
     flexDirection: 'row',
-    marginBottom: 16,
+    marginBottom: 20,
   },
   priorityBadge: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 20,
+    borderRadius: 8,
   },
   priorityText: {
-    color: 'white',
-    fontWeight: '600',
-    fontSize: 14,
-    textTransform: 'capitalize',
+    fontWeight: '800',
+    fontSize: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   metaInfo: {
     flexDirection: 'row',
-    marginBottom: 8,
+    marginBottom: 12,
+    alignItems: 'flex-start',
   },
   metaLabel: {
     fontWeight: '600',
-    color: '#374151',
-    minWidth: 100,
+    color: '#94a3b8',
+    minWidth: 120,
+    fontSize: 15,
   },
   metaValue: {
-    color: '#1e293b',
+    color: '#e2e8f0',
     flex: 1,
+    fontSize: 15,
+    fontWeight: '500',
   },
   section: {
-    marginTop: 20,
-    paddingTop: 16,
+    marginTop: 24,
+    paddingTop: 20,
     borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
+    borderTopColor: 'rgba(255,255,255,0.05)',
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#1e293b',
-    marginBottom: 8,
+    fontWeight: '700',
+    color: '#f8fafc',
+    marginBottom: 12,
   },
   sectionContent: {
     fontSize: 16,
-    color: '#475569',
-    lineHeight: 24,
+    color: '#cbd5e1',
+    lineHeight: 26,
   },
   statusOptionsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
-    marginTop: 8,
+    gap: 12,
+    marginTop: 12,
   },
   statusOption: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 999,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 12,
     borderWidth: 1,
   },
   statusOptionText: {
-    fontWeight: '800',
-    fontSize: 13,
+    fontWeight: '700',
+    fontSize: 14,
   },
   statusOptionSelected: {
     borderWidth: 2,
   },
   statusOptionDisabled: {
-    opacity: 0.7,
+    opacity: 0.5,
+  },
+  topActionsCard: {
+    backgroundColor: 'rgba(30, 41, 59, 0.9)',
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 20,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+    borderLeftWidth: 4,
+    borderLeftColor: '#6366f1',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
+  adminActionTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#f8fafc',
+    marginBottom: 8,
   },
   statusUpdatingText: {
-    marginTop: 10,
-    color: '#64748b',
+    marginTop: 12,
+    color: '#94a3b8',
     fontWeight: '600',
   },
+
   chatOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: 'rgba(0,0,0,0.6)',
     justifyContent: 'flex-end',
   },
   chatContainer: {
-    backgroundColor: '#f9fafb',
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    maxHeight: height * 0.5,
+    backgroundColor: '#1e293b',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: height * 0.6,
     minHeight: height * 0.5,
-    paddingBottom: 8,
+    paddingBottom: 20,
   },
   chatContainerMinimized: {
-    maxHeight: 64,
-    minHeight: 64,
+    maxHeight: 70,
+    minHeight: 70,
   },
   chatHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
-    backgroundColor: '#1e3a5f',
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
+    borderBottomColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: 'transparent',
   },
   chatTitle: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
+    color: '#f8fafc',
+    fontSize: 18,
+    fontWeight: '800',
   },
   chatHeaderActions: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   chatHeaderButton: {
-    marginLeft: 12,
+    marginLeft: 16,
+    padding: 4,
   },
   chatHeaderButtonText: {
-    color: 'white',
-    fontSize: 18,
+    color: '#cbd5e1',
+    fontSize: 20,
     fontWeight: '700',
   },
   chatMessages: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
   },
   chatEmpty: {
-    paddingVertical: 16,
+    paddingVertical: 24,
   },
   chatEmptyText: {
-    fontSize: 14,
-    color: '#6b7280',
+    fontSize: 15,
+    color: '#94a3b8',
+    textAlign: 'center',
+    lineHeight: 24,
   },
   chatBubble: {
-    padding: 10,
-    borderRadius: 12,
-    marginBottom: 8,
+    padding: 14,
+    borderRadius: 16,
+    marginBottom: 12,
     maxWidth: '85%',
   },
   chatBubbleUser: {
     alignSelf: 'flex-end',
-    backgroundColor: '#2563eb',
+    backgroundColor: '#6366f1',
   },
   chatBubbleBot: {
     alignSelf: 'flex-start',
-    backgroundColor: '#e5e7eb',
+    backgroundColor: 'rgba(30, 41, 59, 1)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
   },
   chatBubbleText: {
-    fontSize: 14,
-    color: '#111827',
+    fontSize: 15,
+    color: '#f8fafc',
+    lineHeight: 22,
   },
   chatLoadingRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
+    marginTop: 8,
+    marginBottom: 8,
   },
   chatLoadingText: {
-    marginLeft: 8,
-    fontSize: 13,
-    color: '#6b7280',
+    marginLeft: 12,
+    fontSize: 14,
+    color: '#94a3b8',
   },
   chatInputRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    paddingHorizontal: 12,
-    paddingTop: 4,
+    paddingHorizontal: 16,
+    paddingTop: 12,
   },
   chatInput: {
     flex: 1,
-    backgroundColor: 'white',
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    fontSize: 14,
-    maxHeight: 80,
+    backgroundColor: 'rgba(15, 23, 42, 0.6)',
+    borderRadius: 24,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 15,
+    maxHeight: 100,
     borderWidth: 1,
-    borderColor: '#d1d5db',
-    marginRight: 8,
+    borderColor: 'rgba(255,255,255,0.1)',
+    marginRight: 12,
+    color: '#f8fafc',
   },
   chatSendButton: {
-    backgroundColor: '#1e3a5f',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
+    backgroundColor: '#6366f1',
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
   },
   chatSendButtonDisabled: {
-    backgroundColor: '#9ca3af',
+    backgroundColor: 'rgba(30, 41, 59, 0.8)',
+    opacity: 0.5,
   },
   chatSendButtonText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: '600',
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '700',
   },
   chatContextRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 4,
-    paddingBottom: 2,
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 4,
   },
   chatContextLabel: {
-    fontSize: 12,
-    color: '#9ca3af',
-    marginRight: 4,
+    fontSize: 13,
+    color: '#64748b',
+    marginRight: 8,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 1,
+    fontWeight: '600',
   },
   chatContextValue: {
-    fontSize: 12,
-    color: '#111827',
-    fontWeight: '700',
+    fontSize: 13,
+    color: '#e2e8f0',
+    fontWeight: '800',
   },
 });

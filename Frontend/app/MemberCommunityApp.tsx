@@ -20,6 +20,9 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import io, { Socket } from 'socket.io-client';
 import { API_BASE_URL, SOCKET_BASE_URL } from '../lib/api';
+import PollMessageCard from './PollMessageCard';
+import PollCreateScreen from './PollCreateScreen';
+
 
 // Type definitions
 interface Community {
@@ -41,7 +44,8 @@ interface Message {
   _id?: string; // Temporary client-side ID for optimistic updates
   message_id?: number;
   community_id?: number;
-  sender_id?: number;
+  sender_id?: number | null;
+
   full_name?: string;
   message_type?: 'text' | 'image' | 'audio' | 'announcement' | 'sos' | 'poll' | 'complaint' | 'petition';
   content?: string;
@@ -68,7 +72,7 @@ const useCommunityMessages = (communityId: number, currentUserId: number | null)
       const cleanup = setupSocket();
       return cleanup;
     }
-    return () => {};
+    return () => { };
   }, [communityId, currentUserId]);
 
   const fetchMessages = async () => {
@@ -105,9 +109,9 @@ const useCommunityMessages = (communityId: number, currentUserId: number | null)
       reconnectionDelay: 1000,
       reconnectionAttempts: 5,
     });
-    
+
     socketRef.current = socket;
-    
+
     socket.on('connect', () => {
       socket.emit('join_community', communityId);
     });
@@ -127,10 +131,10 @@ const useCommunityMessages = (communityId: number, currentUserId: number | null)
         sender_id: message.sender_id ? Number(message.sender_id) : null
       };
 
-      
+
       setMessages(prev => {
         // Check if message already exists by message_id
-        const exists = prev.some(msg => 
+        const exists = prev.some(msg =>
           msg.message_id && msg.message_id === normalizedMessage.message_id
         );
 
@@ -163,12 +167,12 @@ const useCommunityMessages = (communityId: number, currentUserId: number | null)
 
     socket.on('new_announcement', (announcement: Message) => {
       setMessages(prev => {
-        const exists = prev.some(msg => 
+        const exists = prev.some(msg =>
           (msg.message_id && msg.message_id === announcement.message_id) ||
           (msg.id && msg.id === announcement.id)
         );
         if (exists) return prev;
-        
+
         const updated = [...prev, { ...announcement, message_type: 'announcement' } as Message];
         return updated.sort((a, b) => {
           const dateA = new Date(a.created_at || 0).getTime();
@@ -180,12 +184,12 @@ const useCommunityMessages = (communityId: number, currentUserId: number | null)
 
     socket.on('sos_alert', (sos: Message) => {
       setMessages(prev => {
-        const exists = prev.some(msg => 
+        const exists = prev.some(msg =>
           (msg.message_id && msg.message_id === sos.message_id) ||
           (msg.id && msg.id === sos.id)
         );
         if (exists) return prev;
-        
+
         const updated = [...prev, { ...sos, message_type: 'sos' } as Message];
         return updated.sort((a, b) => {
           const dateA = new Date(a.created_at || 0).getTime();
@@ -197,12 +201,12 @@ const useCommunityMessages = (communityId: number, currentUserId: number | null)
 
     socket.on('new_complaint', (complaint: Message) => {
       setMessages(prev => {
-        const exists = prev.some(msg => 
+        const exists = prev.some(msg =>
           (msg.message_id && msg.message_id === complaint.message_id) ||
           (msg.id && msg.id === complaint.id)
         );
         if (exists) return prev;
-        
+
         const updated = [...prev, { ...complaint, message_type: 'complaint' } as Message];
         return updated.sort((a, b) => {
           const dateA = new Date(a.created_at || 0).getTime();
@@ -214,12 +218,12 @@ const useCommunityMessages = (communityId: number, currentUserId: number | null)
 
     socket.on('new_petition', (petition: Message) => {
       setMessages(prev => {
-        const exists = prev.some(msg => 
+        const exists = prev.some(msg =>
           (msg.message_id && msg.message_id === petition.message_id) ||
           (msg.id && msg.id === petition.id)
         );
         if (exists) return prev;
-        
+
         const updated = [...prev, { ...petition, message_type: 'petition' } as Message];
         return updated.sort((a, b) => {
           const dateA = new Date(a.created_at || 0).getTime();
@@ -337,6 +341,7 @@ const memberFeatures = [
   { id: 3, title: 'Anonymous Chat', icon: '💬', color: '#45B7D1' },
   { id: 4, title: 'Community Events', icon: '📅', color: '#96CEB4' },
   { id: 5, title: 'Resources', icon: '📚', color: '#FECA57' },
+  { id: 6, title: 'Polling', icon: '🗳️', color: '#667eea' },
 ];
 
 // Media options
@@ -352,7 +357,7 @@ const mediaOptions = [
 const MemberCommunityApp: React.FC = () => {
   const route = useRoute<MemberCommunityRouteProp>();
   const communityId = Number(route.params?.community?.id || route.params?.community?.community_id || 36);
-  
+
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const [currentUserName, setCurrentUserName] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -360,6 +365,7 @@ const MemberCommunityApp: React.FC = () => {
   const [messageText, setMessageText] = useState('');
   const [isValidatingAccess, setIsValidatingAccess] = useState(true);
   const [hasAccess, setHasAccess] = useState(false);
+  const [pollModalVisible, setPollModalVisible] = useState(false);
 
   const navigation = useNavigation<MemberCommunityNavigationProp>();
   const community = route.params?.community;
@@ -403,8 +409,9 @@ const MemberCommunityApp: React.FC = () => {
                     if (userMembership && userMembership.role === 'HEAD') {
                       router.replace({
                         pathname: '/AdminCommunityApp',
-                        params: { community }
+                        params: { community: JSON.stringify(community) }
                       });
+
                     } else {
                       AsyncStorage.clear();
                       router.replace('/LoginScreen');
@@ -560,6 +567,12 @@ const MemberCommunityApp: React.FC = () => {
           }
         }
       });
+    } else if (feature.title === 'Polling') {
+      navigation.navigate('PollsListScreen' as any, {
+        communityId: community?.id || community?.community_id || 36,
+        community: community,
+        isAdmin: false
+      });
     }
 
     closeModal();
@@ -574,9 +587,9 @@ const MemberCommunityApp: React.FC = () => {
     if (messageText.trim() && currentUserId && currentUserName) {
       const messageContent = messageText.trim();
       setMessageText('');
-      
+
       const tempId = `temp-${Date.now()}-${Math.random()}`; // More unique temp ID
-      
+
       // ✅ Create optimistic message with NUMBER sender_id
       const tempMessage: Message = {
         _id: tempId,
@@ -587,15 +600,15 @@ const MemberCommunityApp: React.FC = () => {
         created_at: new Date().toISOString(),
         profile_type: 'member',
       };
-      
-      
+
+
       // Add optimistic message
       setMessages(prev => [...prev, tempMessage]);
-      
+
       setTimeout(() => {
         scrollViewRef.current?.scrollToEnd({ animated: true });
       }, 100);
-      
+
       // Send to server
       try {
         await sendMessage(messageContent, 'text', [], tempId);
@@ -627,11 +640,11 @@ const MemberCommunityApp: React.FC = () => {
       await AsyncStorage.removeItem('token');
       await AsyncStorage.removeItem('user');
       await AsyncStorage.removeItem('userId');
-      
+
       // Clear any other app-specific storage
       await AsyncStorage.clear(); // Nuclear option - clears everything
-      
-      
+
+
       // Navigate to login screen
       router.replace('/LoginScreen');
     } catch (error) {
@@ -718,12 +731,12 @@ const MemberCommunityApp: React.FC = () => {
               // ✅ CRITICAL FIX: Ensure both IDs are numbers and handle null cases
               const messageSenderId = message.sender_id ? Number(message.sender_id) : null;
               const currentUserIdNum = currentUserId ? Number(currentUserId) : null;
-              
+
               // ✅ Only mark as "my message" if both IDs exist and match
-              const isOwn = messageSenderId !== null && 
-                           currentUserIdNum !== null && 
-                           messageSenderId === currentUserIdNum;
-              
+              const isOwn = messageSenderId !== null &&
+                currentUserIdNum !== null &&
+                messageSenderId === currentUserIdNum;
+
               const isAnnouncement = message.message_type === 'announcement';
               const isSOS = message.message_type === 'sos';
               const isComplaint = message.message_type === 'complaint';
@@ -739,8 +752,8 @@ const MemberCommunityApp: React.FC = () => {
                     isSpecialMessage
                       ? styles.specialMessageWrapper
                       : isOwn
-                      ? styles.ownMessageWrapper    // ✅ Right side for my messages
-                      : styles.otherMessageWrapper, // ✅ Left side for others
+                        ? styles.ownMessageWrapper    // ✅ Right side for my messages
+                        : styles.otherMessageWrapper, // ✅ Left side for others
                   ]}
                 >
                   <View
@@ -796,9 +809,9 @@ const MemberCommunityApp: React.FC = () => {
                       >
                         {message.created_at
                           ? new Date(message.created_at).toLocaleTimeString([], {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })
                           : ''}
                       </Text>
                       {/* ✅ Show checkmark ONLY for my messages with message_id */}
@@ -816,8 +829,22 @@ const MemberCommunityApp: React.FC = () => {
                         ]}
                       />
                     )}
+
+                    {/* POLL CARD INTEGRATION */}
+                    {message.message_type === 'poll' && (
+                      <PollMessageCard
+                        communityId={String(communityId)}
+                        pollId={Number(message.content || '0')}
+                        currentUserId={Number(currentUserId)}
+                        isAdmin={false}
+
+                        sentByMe={isOwn}
+                        createdAt={message.created_at || ''}
+                      />
+                    )}
                   </View>
                 </View>
+
               );
             })}
           </View>
@@ -871,19 +898,21 @@ const MemberCommunityApp: React.FC = () => {
               </TouchableOpacity>
             </View>
 
-            {memberFeatures.map((feature) => (
-              <TouchableOpacity
-                key={feature.id}
-                style={styles.featureItem}
-                onPress={() => handleFeaturePress(feature)}
-              >
-                <View style={[styles.featureIcon, { backgroundColor: feature.color }]}>
-                  <Text style={styles.featureEmoji}>{feature.icon}</Text>
-                </View>
-                <Text style={styles.featureTitle}>{feature.title}</Text>
-                <Text style={styles.featureArrow}>›</Text>
-              </TouchableOpacity>
-            ))}
+            <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
+              {memberFeatures.map((feature) => (
+                <TouchableOpacity
+                  key={feature.id}
+                  style={styles.featureItem}
+                  onPress={() => handleFeaturePress(feature)}
+                >
+                  <View style={[styles.featureIcon, { backgroundColor: feature.color }]}>
+                    <Text style={styles.featureEmoji}>{feature.icon}</Text>
+                  </View>
+                  <Text style={styles.featureTitle}>{feature.title}</Text>
+                  <Text style={styles.featureArrow}>›</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -920,6 +949,22 @@ const MemberCommunityApp: React.FC = () => {
             </View>
           </View>
         </View>
+      </Modal>
+
+      {/* Poll Creation Modal */}
+      <Modal
+        animationType="slide"
+        transparent={false}
+        visible={pollModalVisible}
+        onRequestClose={() => setPollModalVisible(false)}
+      >
+        <PollCreateScreen
+          communityId={String(communityId)}
+          onCancel={() => setPollModalVisible(false)}
+          onCreated={(poll: any) => {
+            setPollModalVisible(false);
+          }}
+        />
       </Modal>
     </SafeAreaView>
   );

@@ -6,7 +6,6 @@ import {
   ActivityIndicator,
   Alert,
   Dimensions,
-  ImageBackground,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -16,6 +15,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  StatusBar,
 } from "react-native";
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -320,12 +320,9 @@ export default function RegistrationScreen({ navigation: propNavigation }: { nav
 
   return (
     <SafeAreaProvider>
-      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
-        <ImageBackground
-          source={{ uri: "https://i.ibb.co/6vD7n3K/bg.jpg" }}
-          style={styles.background}
-          resizeMode="cover"
-        >
+      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom, backgroundColor: '#0f172a' }]}>
+        <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
+        <View style={styles.background}>
           <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
             style={styles.keyboardAvoid}
@@ -407,7 +404,7 @@ export default function RegistrationScreen({ navigation: propNavigation }: { nav
                     )}
                   </View>
 
-                  {/* Mobile Number Input */} 
+                  {/* Mobile Number Input */}
                   <View style={styles.inputContainer}>
                     <View
                       style={[
@@ -553,7 +550,7 @@ export default function RegistrationScreen({ navigation: propNavigation }: { nav
                         style={[
                           styles.profileTypeButton,
                           privacyPreferences.profileType === "transparent" &&
-                            styles.profileTypeActive,
+                          styles.profileTypeActive,
                         ]}
                         onPress={() => handlePrivacyChange("profileType", "transparent")}
                         accessible={true}
@@ -573,7 +570,7 @@ export default function RegistrationScreen({ navigation: propNavigation }: { nav
                           style={[
                             styles.profileTypeText,
                             privacyPreferences.profileType === "transparent" &&
-                              styles.profileTypeTextActive,
+                            styles.profileTypeTextActive,
                           ]}
                         >
                           Transparent
@@ -584,7 +581,7 @@ export default function RegistrationScreen({ navigation: propNavigation }: { nav
                         style={[
                           styles.profileTypeButton,
                           privacyPreferences.profileType === "opaque" &&
-                            styles.profileTypeActive,
+                          styles.profileTypeActive,
                         ]}
                         onPress={() => handlePrivacyChange("profileType", "opaque")}
                         accessible={true}
@@ -602,7 +599,7 @@ export default function RegistrationScreen({ navigation: propNavigation }: { nav
                           style={[
                             styles.profileTypeText,
                             privacyPreferences.profileType === "opaque" &&
-                              styles.profileTypeTextActive,
+                            styles.profileTypeTextActive,
                           ]}
                         >
                           Opaque
@@ -635,7 +632,7 @@ export default function RegistrationScreen({ navigation: propNavigation }: { nav
                     </TouchableOpacity>
                   </View>
 
-                  {/* Voice Support Toggle */} 
+                  {/* Voice Support Toggle */}
                   <TouchableOpacity
                     style={styles.toggleContainer}
                     onPress={toggleVoiceSupport}
@@ -759,7 +756,7 @@ export default function RegistrationScreen({ navigation: propNavigation }: { nav
                       style={[
                         styles.languageOption,
                         formData.preferredLanguage === language.value &&
-                          styles.languageSelected,
+                        styles.languageSelected,
                       ]}
                       onPress={() => {
                         handleInputChange("preferredLanguage", language.value);
@@ -770,7 +767,7 @@ export default function RegistrationScreen({ navigation: propNavigation }: { nav
                         style={[
                           styles.languageText,
                           formData.preferredLanguage === language.value &&
-                            styles.languageTextSelected,
+                          styles.languageTextSelected,
                         ]}
                       >
                         {language.label}
@@ -784,7 +781,7 @@ export default function RegistrationScreen({ navigation: propNavigation }: { nav
               </View>
             </View>
           </Modal>
-        </ImageBackground>
+        </View>
       </View>
     </SafeAreaProvider>
   );
@@ -809,28 +806,30 @@ const styles = StyleSheet.create({
   registerBox: {
     width: width * 0.9,
     maxWidth: 420,
-    backgroundColor: "rgba(255, 255, 255, 0.95)",
-    borderRadius: 20,
+    backgroundColor: "rgba(30, 41, 59, 0.7)", // glassmorphism
+    borderRadius: 24,
     padding: 24,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.08)",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.12,
+    shadowOpacity: 0.5,
     shadowRadius: 20,
-    elevation: 12,
+    elevation: 15,
   },
   header: {
     alignItems: "center",
-    marginBottom: 18,
+    marginBottom: 20,
   },
   title: {
     fontSize: 28,
-    fontWeight: "700",
-    color: "#2c3e50",
+    fontWeight: "800",
+    color: "#f8fafc",
     marginBottom: 6,
   },
   subtitle: {
     fontSize: 14,
-    color: "#7f8c8d",
+    color: "#94a3b8",
     textAlign: "center",
     lineHeight: 20,
   },
@@ -843,47 +842,49 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: 14,
-    color: "#2c3e50",
+    color: "#e2e8f0",
     marginBottom: 8,
     fontWeight: "500",
   },
   inputWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    borderWidth: 2,
-    borderColor: "#e1e8ed",
-    borderRadius: 12,
-    backgroundColor: "#fff",
-    paddingHorizontal: 15,
-    height: 55,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.1)",
+    borderRadius: 16,
+    backgroundColor: "rgba(15, 23, 42, 0.6)",
+    paddingHorizontal: 16,
+    height: 56,
   },
   inputError: {
-    borderColor: "#e74c3c",
+    borderColor: "#ef4444",
   },
   inputIcon: {
     marginRight: 12,
+    color: "#64748b",
   },
   input: {
     flex: 1,
     fontSize: 16,
-    color: "#2c3e50",
+    color: "#f8fafc",
     paddingVertical: 0,
   },
   eyeIcon: {
     padding: 5,
   },
   errorText: {
-    color: "#e74c3c",
+    color: "#ef4444",
     fontSize: 12,
     marginTop: 6,
-    marginLeft: 4,
+    marginLeft: 6,
+    fontWeight: "500",
   },
   passwordStrength: {
     marginTop: 8,
   },
   strengthBar: {
     height: 4,
-    backgroundColor: "#ecf0f1",
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
     borderRadius: 2,
     overflow: "hidden",
   },
@@ -895,19 +896,20 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 6,
     textAlign: "right",
+    fontWeight: "500",
   },
   sectionContainer: {
     marginBottom: 25,
     padding: 20,
-    backgroundColor: "#f8f9fa",
-    borderRadius: 12,
+    backgroundColor: "rgba(30, 41, 59, 0.4)",
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: "#e9ecef",
+    borderColor: "rgba(255, 255, 255, 0.05)",
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#2c3e50",
+    color: "#f8fafc",
     marginBottom: 15,
   },
   preferenceContainer: {
@@ -915,7 +917,7 @@ const styles = StyleSheet.create({
   },
   preferenceLabel: {
     fontSize: 14,
-    color: "#495057",
+    color: "#94a3b8",
     marginBottom: 10,
     fontWeight: "500",
   },
@@ -934,7 +936,7 @@ const styles = StyleSheet.create({
     height: 20,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: "#3498db",
+    borderColor: "#6366f1",
     marginRight: 8,
     justifyContent: "center",
     alignItems: "center",
@@ -950,24 +952,9 @@ const styles = StyleSheet.create({
   },
   radioText: {
     fontSize: 14,
-    color: "#495057",
+    color: "#94a3b8",
   },
-  pickerButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 2,
-    borderColor: "#e1e8ed",
-    borderRadius: 12,
-    backgroundColor: "#fff",
-    paddingHorizontal: 15,
-    height: 55,
-  },
-  pickerText: {
-    flex: 1,
-    fontSize: 16,
-    color: "#2c3e50",
-  },
-  // Profile type styles
+  // Profile type
   profileTypeContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -978,26 +965,42 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: "#e1e8ed",
+    borderColor: "rgba(255, 255, 255, 0.1)",
     paddingVertical: 12,
     paddingHorizontal: 10,
-    borderRadius: 10,
-    backgroundColor: "#fff",
+    borderRadius: 14,
+    backgroundColor: "rgba(15, 23, 42, 0.4)",
     marginRight: 10,
   },
   profileTypeActive: {
-    backgroundColor: "#27ae60",
-    borderColor: "#27ae60",
+    backgroundColor: "rgba(99, 102, 241, 0.2)",
+    borderColor: "#6366f1",
   },
   profileTypeText: {
     fontSize: 15,
-    color: "#2c3e50",
+    color: "#94a3b8",
   },
   profileTypeTextActive: {
-    color: "#fff",
+    color: "#6366f1",
     fontWeight: "600",
   },
-  // Toggle styles
+  // Picker
+  pickerButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.1)",
+    borderRadius: 16,
+    backgroundColor: "rgba(15, 23, 42, 0.6)",
+    paddingHorizontal: 16,
+    height: 56,
+  },
+  pickerText: {
+    flex: 1,
+    fontSize: 16,
+    color: "#f8fafc",
+  },
+  // Toggle
   toggleContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -1013,26 +1016,30 @@ const styles = StyleSheet.create({
   },
   toggleIcon: {
     marginRight: 12,
+    color: "#64748b",
   },
   toggleLabel: {
     fontSize: 16,
-    color: "#2c3e50",
+    color: "#e2e8f0",
   },
   toggle: {
     width: 50,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: "#bdc3c7",
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
     justifyContent: "center",
-    paddingHorizontal: 3,
+    paddingHorizontal: 2,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.1)",
   },
   toggleActive: {
-    backgroundColor: "#27ae60",
+    backgroundColor: "#6366f1",
+    borderColor: "#6366f1",
   },
   toggleThumb: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     backgroundColor: "#fff",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -1042,8 +1049,9 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
   },
   toggleThumbActive: {
-    transform: [{ translateX: 20 }],
+    transform: [{ translateX: 22 }],
   },
+  // Terms
   termsContainer: {
     marginBottom: 18,
   },
@@ -1055,18 +1063,19 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderWidth: 2,
-    borderColor: "#3498db",
-    borderRadius: 4,
+    borderColor: "#6366f1",
+    borderRadius: 6,
     marginRight: 10,
     marginTop: 2,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "transparent",
   },
   checkboxChecked: {
-    backgroundColor: "#3498db",
+    backgroundColor: "#6366f1",
   },
   checkboxError: {
-    borderColor: "#e74c3c",
+    borderColor: "#ef4444",
   },
   termsText: {
     flex: 1,
@@ -1076,31 +1085,38 @@ const styles = StyleSheet.create({
   },
   termsLabel: {
     fontSize: 14,
-    color: "#555",
+    color: "#94a3b8",
     lineHeight: 20,
   },
   termsLink: {
     fontSize: 14,
-    color: "#3498db",
-    fontWeight: "500",
+    color: "#8b5cf6",
+    fontWeight: "600",
     lineHeight: 20,
   },
   registerButton: {
-    backgroundColor: "#27ae60",
-    borderRadius: 12,
-    height: 55,
+    backgroundColor: "#6366f1",
+    borderRadius: 16,
+    height: 56,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 6,
     marginTop: 6,
+    shadowColor: "#6366f1",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 6,
   },
   buttonDisabled: {
-    backgroundColor: "#95a5a6",
+    backgroundColor: "#475569",
+    shadowOpacity: 0,
+    elevation: 0,
   },
   registerButtonText: {
-    color: "#fff",
+    color: "#ffffff",
     fontSize: 18,
-    fontWeight: "600",
+    fontWeight: "700",
   },
   loginContainer: {
     flexDirection: "row",
@@ -1108,41 +1124,42 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingTop: 18,
     borderTopWidth: 1,
-    borderTopColor: "#ecf0f1",
+    borderTopColor: "rgba(255, 255, 255, 0.05)",
     marginTop: 8,
   },
   loginPrompt: {
-    color: "#7f8c8d",
+    color: "#94a3b8",
     fontSize: 14,
   },
   loginLink: {
-    color: "#3498db",
-    fontSize: 14,
-    fontWeight: "600",
+    color: "#8b5cf6",
+    fontSize: 15,
+    fontWeight: "700",
   },
+  // Modal
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
     justifyContent: "flex-end",
   },
   modalContent: {
-    backgroundColor: "#fff",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    backgroundColor: "#1e293b",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     maxHeight: height * 0.7,
   },
   modalHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: 20,
+    padding: 24,
     borderBottomWidth: 1,
-    borderBottomColor: "#e9ecef",
+    borderBottomColor: "rgba(255, 255, 255, 0.05)",
   },
   modalTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#2c3e50",
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#f8fafc",
   },
   modalClose: {
     padding: 5,
@@ -1154,20 +1171,20 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingHorizontal: 24,
+    paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#f1f3f4",
+    borderBottomColor: "rgba(255, 255, 255, 0.02)",
   },
   languageSelected: {
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "rgba(99, 102, 241, 0.1)",
   },
   languageText: {
     fontSize: 16,
-    color: "#2c3e50",
+    color: "#e2e8f0",
   },
   languageTextSelected: {
-    color: "#27ae60",
-    fontWeight: "500",
+    color: "#8b5cf6",
+    fontWeight: "600",
   },
 });

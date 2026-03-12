@@ -16,6 +16,7 @@ const { redis } = require('./nlp-service/config/redis');
 const { preloadModels } = require('./nlp-service/services/nlp.service');
 const { moderateContent: nlpModerateContent } = require('./nlp-service/services/moderation.service');
 const { analyzeContentWithLLM } = require('./nlp-service/services/content-analysis.service');
+const { queryOllama } = require('./nlp-service/services/rag.service');
 console.log('moderateContent is:', nlpModerateContent);
 
 // Import NLP routes
@@ -42,7 +43,7 @@ const pool = new Pool({
   user: process.env.DB_USER || "postgres",
   host: process.env.DB_HOST || "localhost",
   database: process.env.DB_NAME || "db_mini",
-  password: process.env.DB_PASSWORD || "root",
+  password: process.env.DB_PASSWORD || "nandha102",
   port: parseInt(process.env.DB_PORT) || 5432,
 });
 
@@ -94,7 +95,7 @@ app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 // Request logging middleware
 app.use((req, res, next) => {
   const start = Date.now();
-  
+
   res.on('finish', () => {
     const duration = Date.now() - start;
     logger.info('HTTP Request', {
@@ -105,7 +106,7 @@ app.use((req, res, next) => {
       ip: req.ip,
     });
   });
-  
+
   next();
 });
 
@@ -238,7 +239,7 @@ app.post("/api/register", async (req, res) => {
       acceptTerms,
       profileType
     );
-    
+
     const token = generateToken(newUser);
     res.status(201).json({
       message: "User registered successfully",
@@ -439,7 +440,7 @@ app.post("/api/create_community", authenticateToken, async (req, res) => {
        RETURNING community_id, code, name, description, community_type,
                  complaints_enabled, petitions_enabled, voting_enabled, group_chat_enabled, anonymous_enabled, created_at`,
       [code, name, description || "", community_type, created_by,
-       complaints_enabled, petitions_enabled, voting_enabled, group_chat_enabled, anonymous_enabled]
+        complaints_enabled, petitions_enabled, voting_enabled, group_chat_enabled, anonymous_enabled]
     );
 
     const community = communityResult.rows[0];
@@ -870,7 +871,7 @@ app.put("/api/update_community_features/:id", authenticateToken, async (req, res
     if (communityCheck.rows[0].created_by !== req.user.user_id) {
       return res.status(403).json({ error: "Unauthorized to update community features" });
     }
-    
+
     await pool.query(
       `UPDATE communities
        SET complaints_enabled = $1,
@@ -895,122 +896,179 @@ app.put("/api/update_community_features/:id", authenticateToken, async (req, res
 
 app.post('/api/communities/:communityId/messages', authenticateToken, async (req, res) => {
   try {
-      const communityIdParam = req.params.communityId;
-      const communityId = parseInt(communityIdParam, 10);
-      if (isNaN(communityId)) {
-          return res.status(400).json({ error: 'Invalid community ID' });
-      }
+    const communityIdParam = req.params.communityId;
+    const communityId = parseInt(communityIdParam, 10);
+    if (isNaN(communityId)) {
+      return res.status(400).json({ error: 'Invalid community ID' });
+    }
 
-      const { content, message_type = 'text', attachments = [], parent_message_id, _id } = req.body;
+    const { content, message_type = 'text', attachments = [], parent_message_id, _id } = req.body;
 
-      const sender_id = req.user.user_id;
+    const sender_id = req.user.user_id;
 
-      if (!sender_id) {
-          return res.status(401).json({ error: 'Authentication failed - no user ID in token' });
-      }
+    if (!sender_id) {
+      return res.status(401).json({ error: 'Authentication failed - no user ID in token' });
+    }
 
-      if (content == null || (typeof content === 'string' && content.trim() === '')) {
-          return res.status(400).json({ error: 'Message content is required' });
-      }
+    if (content == null || (typeof content === 'string' && content.trim() === '')) {
+      return res.status(400).json({ error: 'Message content is required' });
+    }
 
-      const contentStr = typeof content === 'string' ? content : String(content);
+    const contentStr = typeof content === 'string' ? content : String(content);
 
-      // Validate membership
-      const membershipCheck = await pool.query(
-          `SELECT role FROM memberships
+    // Validate membership
+    const membershipCheck = await pool.query(
+      `SELECT role FROM memberships
            WHERE user_id = $1 AND community_id = $2 AND status = 'ACTIVE'`,
-          [sender_id, communityId]
-      );
+      [sender_id, communityId]
+    );
 
-      if (membershipCheck.rows.length === 0) {
-          return res.status(403).json({ error: 'You are not a member of this community' });
-      }
+    if (membershipCheck.rows.length === 0) {
+      return res.status(403).json({ error: 'You are not a member of this community' });
+    }
 
-      // ✅ NLP MODERATION INTEGRATION (fail-open: allow message if NLP errors)
-      if (contentStr && contentStr.trim().length > 0) {
-        try {
-          const moderationResult = await nlpModerateContent(
-            contentStr,
-            communityId,
-            sender_id,
-            message_type
-          );
+    // ✅ NLP MODERATION INTEGRATION (fail-open: allow message if NLP errors)
+    if (contentStr && contentStr.trim().length > 0) {
+      try {
+        const moderationResult = await nlpModerateContent(
+          contentStr,
+          communityId,
+          sender_id,
+          message_type
+        );
 
-          // If message is quarantined, notify user and don't send message
-          if (moderationResult && !moderationResult.approved) {
-            return res.status(403).json({
-              error: 'Message flagged for review',
-              reason: moderationResult.reason,
-              holdId: moderationResult.holdId,
-              action: moderationResult.action,
-            });
-          }
-        } catch (nlpError) {
-          // If NLP service fails, log error but allow message (fail-open)
-          logger.error('NLP moderation failed, allowing message', { error: nlpError.message });
+        // If message is quarantined, notify user and don't send message
+        if (moderationResult && !moderationResult.approved) {
+          return res.status(403).json({
+            error: 'Message flagged for review',
+            reason: moderationResult.reason,
+            holdId: moderationResult.holdId,
+            action: moderationResult.action,
+          });
         }
+      } catch (nlpError) {
+        // If NLP service fails, log error but allow message (fail-open)
+        logger.error('NLP moderation failed, allowing message', { error: nlpError.message });
       }
+    }
 
-      // Get sender information
-      const senderQuery = await pool.query(
-          `SELECT u.user_id, u.full_name, u.profile_type, m.role
+    // Get sender information
+    const senderQuery = await pool.query(
+      `SELECT u.user_id, u.full_name, u.profile_type, m.role
            FROM users u
            LEFT JOIN memberships m ON u.user_id = m.user_id AND m.community_id = $1
            WHERE u.user_id = $2`,
-          [communityId, sender_id]
-      );
+      [communityId, sender_id]
+    );
 
-      if (senderQuery.rows.length === 0) {
-          console.error(`❌ User ${sender_id} not found in database`);
-          return res.status(403).json({ error: 'User not found or not a member of this community' });
-      }
+    if (senderQuery.rows.length === 0) {
+      console.error(`❌ User ${sender_id} not found in database`);
+      return res.status(403).json({ error: 'User not found or not a member of this community' });
+    }
 
-      const senderInfo = senderQuery.rows[0];
+    const senderInfo = senderQuery.rows[0];
 
-      // Insert message
-      const result = await pool.query(`
+    // Insert message
+    const result = await pool.query(`
           INSERT INTO chat_messages (community_id, sender_id, message_type, content, attachments, parent_message_id)
           VALUES ($1, $2, $3, $4, $5, $6)
           RETURNING *
       `, [communityId, sender_id, message_type, contentStr, JSON.stringify(attachments || []), parent_message_id || null]);
 
-      const message = result.rows[0];
-      
-      const fullMessage = {
-          message_id: parseInt(message.message_id),
-          community_id: parseInt(message.community_id),
-          sender_id: parseInt(message.sender_id),
-          full_name: senderInfo.full_name,
-          profile_type: senderInfo.profile_type,
-          role: senderInfo.role,
-          message_type: message.message_type,
-          content: message.content,
-          attachments: message.attachments,
-          parent_message_id: message.parent_message_id,
-          created_at: message.created_at,
-          _id: _id || undefined,
-          moderated: true, // Indicate message passed moderation
-      };
+    const message = result.rows[0];
 
-      // Broadcast to community (room name must match what clients join)
-      io.to(`community_${communityId}`).emit('new_message', fullMessage);
-      
-      res.json(fullMessage);
+    const fullMessage = {
+      message_id: parseInt(message.message_id),
+      community_id: parseInt(message.community_id),
+      sender_id: parseInt(message.sender_id),
+      full_name: senderInfo.full_name,
+      profile_type: senderInfo.profile_type,
+      role: senderInfo.role,
+      message_type: message.message_type,
+      content: message.content,
+      attachments: message.attachments,
+      parent_message_id: message.parent_message_id,
+      created_at: message.created_at,
+      _id: _id || undefined,
+      moderated: true, // Indicate message passed moderation
+    };
+
+    // Broadcast to community (room name must match what clients join)
+    io.to(`community_${communityId}`).emit('new_message', fullMessage);
+
+    res.json(fullMessage);
   } catch (error) {
-      console.error('❌ Error sending message:', error);
-      res.status(500).json({ error: error.message });
+    console.error('❌ Error sending message:', error);
+    res.status(500).json({ error: 'Failed to send message' });
   }
 });
 
+// Get chat summary and recommendations for a community
+app.get('/api/community/:communityId/chat-summary', authenticateToken, async (req, res) => {
+  try {
+    const { communityId } = req.params;
+    const userId = req.user.user_id;
+
+    // Verify membership
+    const membershipCheck = await pool.query(
+      `SELECT role FROM memberships WHERE user_id = $1 AND community_id = $2 AND status = 'ACTIVE'`,
+      [userId, communityId]
+    );
+
+    if (membershipCheck.rows.length === 0) {
+      return res.status(403).json({ error: 'You are not an active member of this community' });
+    }
+
+    // Fetch today's messages (UTC)
+    const messagesResult = await pool.query(
+      `SELECT content, created_at FROM chat_messages 
+       WHERE community_id = $1 AND created_at >= CURRENT_DATE
+       ORDER BY created_at ASC`,
+      [communityId]
+    );
+
+    if (messagesResult.rows.length === 0) {
+      return res.json({
+        summary: 'No chat activity today.',
+        recommendations: 'Encourage members to share updates or concerns to get a daily summary!',
+        count: 0
+      });
+    }
+
+    const chatText = messagesResult.rows.map(m => m.content).join('\n');
+
+    // 1. Generate Summary
+    const summaryPrompt = `Summarize the following community chat messages in a concise paragraph (max 4 sentences):\n\n${chatText}`;
+    const summaryRes = await queryOllama(summaryPrompt);
+    const summary = summaryRes.response;
+
+    // 2. Generate Recommendations/Solutions
+    const recommendationsPrompt = `Based on the following community chat summary, provide 2-3 actionable recommendations or solutions for the community heads. Keep it brief and constructive:\n\nSummary: ${summary}`;
+    const recommendationsRes = await queryOllama(recommendationsPrompt);
+    const recommendations = recommendationsRes.response;
+
+    res.json({
+      summary,
+      recommendations,
+      count: messagesResult.rows.length
+    });
+
+  } catch (error) {
+    logger.error('Error generating chat summary:', { error: error.message });
+    res.status(500).json({ error: 'Failed to generate chat summary. Please ensure Ollama is running.' });
+  }
+});
+
+
 app.get('/api/communities/:communityId/messages', authenticateToken, async (req, res) => {
   try {
-      const communityId = parseInt(req.params.communityId, 10);
-      if (isNaN(communityId)) {
-          return res.status(400).json({ error: 'Invalid community ID' });
-      }
-      const { limit = 50, before } = req.query;
+    const communityId = parseInt(req.params.communityId, 10);
+    if (isNaN(communityId)) {
+      return res.status(400).json({ error: 'Invalid community ID' });
+    }
+    const { limit = 50, before } = req.query;
 
-      let query = `
+    let query = `
           SELECT 
               cm.message_id,
               cm.community_id,
@@ -1029,30 +1087,30 @@ app.get('/api/communities/:communityId/messages', authenticateToken, async (req,
           LEFT JOIN memberships m ON u.user_id = m.user_id AND m.community_id = cm.community_id
           WHERE cm.community_id = $1
       `;
-      const params = [communityId];
+    const params = [communityId];
 
-      if (before) {
-          query += ` AND cm.created_at < $2`;
-          params.push(before);
-      }
-      
-      query += ` ORDER BY cm.created_at DESC LIMIT $${params.length + 1}`;
-      params.push(parseInt(limit));
+    if (before) {
+      query += ` AND cm.created_at < $2`;
+      params.push(before);
+    }
 
-      const result = await pool.query(query, params);
-      
-      const messages = result.rows.map(msg => ({
-          ...msg,
-          message_id: parseInt(msg.message_id),
-          community_id: parseInt(msg.community_id),
-          sender_id: msg.sender_id ? parseInt(msg.sender_id) : null,
-          reply_count: parseInt(msg.reply_count || 0)
-      }));
-      
-      res.json(messages.reverse());
+    query += ` ORDER BY cm.created_at DESC LIMIT $${params.length + 1}`;
+    params.push(parseInt(limit));
+
+    const result = await pool.query(query, params);
+
+    const messages = result.rows.map(msg => ({
+      ...msg,
+      message_id: parseInt(msg.message_id),
+      community_id: parseInt(msg.community_id),
+      sender_id: msg.sender_id ? parseInt(msg.sender_id) : null,
+      reply_count: parseInt(msg.reply_count || 0)
+    }));
+
+    res.json(messages.reverse());
   } catch (error) {
-      console.error('❌ Error fetching messages:', error);
-      res.status(500).json({ error: error.message });
+    console.error('❌ Error fetching messages:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -1190,7 +1248,7 @@ app.delete('/api/communities/:communityId/messages/:messageId', authenticateToke
 // Anonymous messages
 app.post("/api/anonymous_messages", authenticateToken, async (req, res) => {
   try {
-    const { text, headIds, attachments, communityId } = req.body;
+    const { text, headIds, attachments, communityId, parent_id } = req.body;
     const senderId = req.user.user_id;
 
     if (!text || !communityId) {
@@ -1198,10 +1256,10 @@ app.post("/api/anonymous_messages", authenticateToken, async (req, res) => {
     }
 
     const result = await pool.query(
-      `INSERT INTO anonymous_messages (community_id, sender_id, text, head_ids)
-       VALUES ($1, $2, $3, $4)
+      `INSERT INTO anonymous_messages (community_id, sender_id, text, head_ids, parent_id)
+       VALUES ($1, $2, $3, $4, $5)
        RETURNING message_id, created_at`,
-      [communityId, senderId, text, headIds || []]
+      [communityId, senderId, text, headIds || [], parent_id || null]
     );
 
     const messageId = result.rows[0].message_id;
@@ -1210,8 +1268,7 @@ app.post("/api/anonymous_messages", authenticateToken, async (req, res) => {
       const values = attachments
         .map(
           (a) =>
-            `(${messageId}, '${a.name}', '${a.type}', '${a.uri}', '${a.mimeType || "unknown"}', ${
-              a.size || 0
+            `(${messageId}, '${a.name}', '${a.type}', '${a.uri}', '${a.mimeType || "unknown"}', ${a.size || 0
             })`
         )
         .join(",");
@@ -1230,6 +1287,293 @@ app.post("/api/anonymous_messages", authenticateToken, async (req, res) => {
   } catch (error) {
     console.error("❌ Error sending anonymous message:", error);
     res.status(500).json({ error: "Failed to send anonymous message" });
+  }
+});
+
+// Admin: Get all root anonymous messages for a community
+app.get("/api/communities/:communityId/anonymous-messages", authenticateToken, async (req, res) => {
+  try {
+    const { communityId } = req.params;
+    const userId = req.user.user_id;
+
+    // Verify admin/head role
+    const roleCheck = await pool.query(
+      `SELECT role FROM memberships WHERE user_id = $1 AND community_id = $2 AND status = 'ACTIVE'`,
+      [userId, communityId]
+    );
+
+    if (roleCheck.rows.length === 0 || !['HEAD', 'ADMIN'].includes(roleCheck.rows[0].role)) {
+      return res.status(403).json({ error: "Unauthorized: Admin access required" });
+    }
+
+    const result = await pool.query(
+      `SELECT am.*, 
+              (SELECT COUNT(*) FROM anonymous_messages WHERE parent_id = am.message_id) as reply_count
+       FROM anonymous_messages am
+       WHERE am.community_id = $1 AND am.parent_id IS NULL
+       ORDER BY am.created_at DESC`,
+      [communityId]
+    );
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error("❌ Error fetching anonymous messages:", error);
+    res.status(500).json({ error: "Failed to fetch anonymous messages" });
+  }
+});
+
+// Member: Get my anonymous messages (root messages only)
+app.get("/api/communities/:communityId/my-anonymous-messages", authenticateToken, async (req, res) => {
+  try {
+    const { communityId } = req.params;
+    const userId = req.user.user_id;
+
+    const result = await pool.query(
+      `SELECT am.*, 
+              (SELECT COUNT(*) FROM anonymous_messages WHERE parent_id = am.message_id) as reply_count
+       FROM anonymous_messages am
+       WHERE am.community_id = $1 AND am.sender_id = $2 AND am.parent_id IS NULL
+       ORDER BY am.created_at DESC`,
+      [communityId, userId]
+    );
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error("❌ Error fetching my anonymous messages:", error);
+    res.status(500).json({ error: "Failed to fetch your anonymous messages" });
+  }
+});
+
+// Member: Get or start a single continuous anonymous chat
+app.get("/api/communities/:communityId/anonymous-chat", authenticateToken, async (req, res) => {
+  try {
+    const { communityId } = req.params;
+    const userId = req.user.user_id;
+
+    // 1. Find the root message for this user in this community
+    let rootResult = await pool.query(
+      `SELECT * FROM anonymous_messages 
+       WHERE community_id = $1 AND sender_id = $2 AND parent_id IS NULL
+       LIMIT 1`,
+      [communityId, userId]
+    );
+
+    let messages = [];
+    let rootMessage = null;
+
+    if (rootResult.rows.length > 0) {
+      rootMessage = rootResult.rows[0];
+      // 2. Fetch all messages in this thread
+      const threadResult = await pool.query(
+        `SELECT am.*, u.full_name as head_name
+         FROM anonymous_messages am
+         LEFT JOIN users u ON am.sender_id = u.user_id AND am.is_from_head = TRUE
+         WHERE am.message_id = $1 OR am.parent_id = $1
+         ORDER BY am.created_at ASC`,
+        [rootMessage.message_id]
+      );
+      messages = threadResult.rows;
+    }
+
+    res.json({
+      rootMessage,
+      messages
+    });
+  } catch (error) {
+    console.error("❌ Error fetching anonymous chat:", error);
+    res.status(500).json({ error: "Failed to fetch anonymous chat" });
+  }
+});
+
+// Member: Send a message in the continuous anonymous chat
+app.post("/api/communities/:communityId/anonymous-chat/message", authenticateToken, async (req, res) => {
+  try {
+    const { communityId } = req.params;
+    const { text, attachments } = req.body;
+    const userId = req.user.user_id;
+
+    if (!text) {
+      return res.status(400).json({ error: "Message text is required" });
+    }
+
+    // 1. Find or create the root message
+    let rootResult = await pool.query(
+      `SELECT message_id FROM anonymous_messages 
+       WHERE community_id = $1 AND sender_id = $2 AND parent_id IS NULL
+       LIMIT 1`,
+      [communityId, userId]
+    );
+
+    let rootMessageId;
+    let isFirstMessage = false;
+
+    if (rootResult.rows.length === 0) {
+      // Create root message
+      const newRootResult = await pool.query(
+        `INSERT INTO anonymous_messages (community_id, sender_id, text, status)
+         VALUES ($1, $2, $3, 'unread')
+         RETURNING message_id`,
+        [communityId, userId, text]
+      );
+      rootMessageId = newRootResult.rows[0].message_id;
+      isFirstMessage = true;
+    } else {
+      rootMessageId = rootResult.rows[0].message_id;
+    }
+
+    let newMessage;
+    if (isFirstMessage) {
+      // The root message IS the new message
+      const result = await pool.query(
+        `SELECT * FROM anonymous_messages WHERE message_id = $1`,
+        [rootMessageId]
+      );
+      newMessage = result.rows[0];
+    } else {
+      // Create as a reply to the root
+      const result = await pool.query(
+        `INSERT INTO anonymous_messages (community_id, sender_id, text, parent_id, is_from_head)
+         VALUES ($1, $2, $3, $4, FALSE)
+         RETURNING *`,
+        [communityId, userId, text, rootMessageId]
+      );
+      newMessage = result.rows[0];
+
+      // Update root status to unread when member sends a new message
+      await pool.query(
+        `UPDATE anonymous_messages SET status = 'unread' WHERE message_id = $1`,
+        [rootMessageId]
+      );
+    }
+
+    // Handle attachments if any
+    if (attachments && Array.isArray(attachments) && attachments.length > 0) {
+      for (const att of attachments) {
+        await pool.query(
+          `INSERT INTO anonymous_message_attachments 
+           (message_id, file_name, file_type, file_url, mime_type, file_size)
+           VALUES ($1, $2, $3, $4, $5, $6)`,
+          [newMessage.message_id, att.name, att.type, att.uri, att.mimeType, att.size]
+        );
+      }
+    }
+
+    res.status(201).json(newMessage);
+  } catch (error) {
+    console.error("❌ Error sending anonymous message:", error);
+    res.status(500).json({ error: "Failed to send anonymous message" });
+  }
+});
+
+// Get message thread
+app.get("/api/anonymous-messages/:messageId/thread", authenticateToken, async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const userId = req.user.user_id;
+
+    // Check if user is either the sender OR an admin of the community
+    const messageCheck = await pool.query(
+      `SELECT community_id, sender_id FROM anonymous_messages WHERE message_id = $1`,
+      [messageId]
+    );
+
+    if (messageCheck.rows.length === 0) {
+      return res.status(404).json({ error: "Message not found" });
+    }
+
+    const { community_id, sender_id } = messageCheck.rows[0];
+
+    const roleCheck = await pool.query(
+      `SELECT role FROM memberships WHERE user_id = $1 AND community_id = $2 AND status = 'ACTIVE'`,
+      [userId, community_id]
+    );
+
+    const isAdmin = roleCheck.rows.length > 0 && ['HEAD', 'ADMIN'].includes(roleCheck.rows[0].role);
+    const isSender = sender_id === userId;
+
+    if (!isAdmin && !isSender) {
+      return res.status(403).json({ error: "Unauthorized access to this thread" });
+    }
+
+    const result = await pool.query(
+      `SELECT am.*, u.full_name as head_name
+       FROM anonymous_messages am
+       LEFT JOIN users u ON am.sender_id = u.user_id AND am.is_from_head = TRUE
+       WHERE am.message_id = $1 OR am.parent_id = $1
+       ORDER BY am.created_at ASC`,
+      [messageId]
+    );
+
+    // If admin is viewing, mark root message as read (if it's not from head)
+    if (isAdmin) {
+      await pool.query(
+        `UPDATE anonymous_messages SET status = 'read' WHERE message_id = $1 AND is_from_head = FALSE`,
+        [messageId]
+      );
+    }
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error("❌ Error fetching message thread:", error);
+    res.status(500).json({ error: "Failed to fetch message thread" });
+  }
+});
+
+// Reply to anonymous message
+app.post("/api/anonymous-messages/:messageId/reply", authenticateToken, async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const { text, attachments } = req.body;
+    const userId = req.user.user_id;
+
+    if (!text) {
+      return res.status(400).json({ error: "Reply text is required" });
+    }
+
+    const messageCheck = await pool.query(
+      `SELECT community_id, sender_id FROM anonymous_messages WHERE message_id = $1`,
+      [messageId]
+    );
+
+    if (messageCheck.rows.length === 0) {
+      return res.status(404).json({ error: "Message not found" });
+    }
+
+    const { community_id, sender_id } = messageCheck.rows[0];
+
+    const roleCheck = await pool.query(
+      `SELECT role FROM memberships WHERE user_id = $1 AND community_id = $2 AND status = 'ACTIVE'`,
+      [userId, community_id]
+    );
+
+    const isAdmin = roleCheck.rows.length > 0 && ['HEAD', 'ADMIN'].includes(roleCheck.rows[0].role);
+    const isSender = sender_id === userId;
+
+    if (!isAdmin && !isSender) {
+      return res.status(403).json({ error: "Unauthorized to reply to this thread" });
+    }
+
+    const result = await pool.query(
+      `INSERT INTO anonymous_messages (community_id, sender_id, text, parent_id, is_from_head)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING *`,
+      [community_id, userId, text, messageId, isAdmin]
+    );
+
+    const newReply = result.rows[0];
+
+    // Mark the entire thread as replied if admin is replying
+    if (isAdmin) {
+      await pool.query(
+        `UPDATE anonymous_messages SET status = 'replied' WHERE message_id = $1`,
+        [messageId]
+      );
+    }
+
+    res.status(201).json(newReply);
+  } catch (error) {
+    console.error("❌ Error replying to anonymous message:", error);
+    res.status(500).json({ error: "Failed to send reply" });
   }
 });
 
@@ -1254,7 +1598,7 @@ app.post("/api/public/anonymous_messages", async (req, res) => {
     let senderId = null;
     const authHeader = req.headers["authorization"];
     const token = authHeader && authHeader.split(" ")[1];
-    
+
     if (token) {
       try {
         const decoded = jwt.verify(token, JWT_SECRET);
@@ -1265,10 +1609,10 @@ app.post("/api/public/anonymous_messages", async (req, res) => {
     }
 
     let numericHeadIds = [];
-    
+
     if (Array.isArray(headIds) && headIds.length > 0) {
       const hasFallbackHead = headIds.includes('fallback-head');
-      
+
       if (hasFallbackHead) {
         try {
           const headsResult = await pool.query(
@@ -1279,7 +1623,7 @@ app.post("/api/public/anonymous_messages", async (req, res) => {
              AND m.status = 'ACTIVE'`,
             [numericCommunityId]
           );
-          
+
           if (headsResult.rows.length > 0) {
             numericHeadIds = headsResult.rows.map(row => row.user_id);
           } else {
@@ -1289,7 +1633,7 @@ app.post("/api/public/anonymous_messages", async (req, res) => {
                WHERE c.community_id = $1`,
               [numericCommunityId]
             );
-            
+
             if (creatorResult.rows.length > 0 && creatorResult.rows[0].user_id) {
               numericHeadIds = [creatorResult.rows[0].user_id];
             }
@@ -1298,12 +1642,12 @@ app.post("/api/public/anonymous_messages", async (req, res) => {
           console.error('❌ Error fetching head IDs:', headFetchError);
         }
       }
-      
+
       const validNumericIds = headIds
         .filter(id => id !== 'fallback-head' && typeof id === 'string')
         .map(id => parseInt(id, 10))
         .filter(id => !isNaN(id));
-      
+
       numericHeadIds = [...new Set([...numericHeadIds, ...validNumericIds])];
     }
 
@@ -1369,7 +1713,6 @@ app.post("/api/petitions", authenticateToken, async (req, res) => {
     const {
       title,
       summary,
-      problem_statement,
       proposed_action,
       goal_type,
       other_goal_type,
@@ -1384,9 +1727,9 @@ app.post("/api/petitions", authenticateToken, async (req, res) => {
 
     const author_id = req.user.user_id;
 
-    if (!title || !problem_statement || !proposed_action || !goal_type || !impact_area || !community_id) {
+    if (!title || !proposed_action || !goal_type || !impact_area || !community_id) {
       return res.status(400).json({
-        error: 'Missing required fields: title, problem_statement, proposed_action, goal_type, impact_area, community_id',
+        error: 'Missing required fields: title, proposed_action, goal_type, impact_area, community_id',
       });
     }
 
@@ -1398,34 +1741,21 @@ app.post("/api/petitions", authenticateToken, async (req, res) => {
       return res.status(403).json({ error: 'You must be an active member of this community' });
     }
 
-    const textToAnalyze = [title, summary, problem_statement, proposed_action].filter(Boolean).join('\n\n');
-    let nlpAnalysis = null;
-    try {
-      nlpAnalysis = await analyzeContentWithLLM(textToAnalyze, 'petition');
-      nlpAnalysis = {
-        sentiment: nlpAnalysis.sentiment,
-        toxicity: nlpAnalysis.toxicity,
-        llmSummary: nlpAnalysis.llmSummary,
-        llmVerdict: nlpAnalysis.llmVerdict,
-        processingTime: nlpAnalysis.processingTime,
-      };
-    } catch (nlpErr) {
-      logger.warn('NLP/LLM analysis failed for petition, storing without analysis', { error: nlpErr.message });
-    }
+    const textToAnalyze = [title, summary, proposed_action].filter(Boolean).join('\n\n');
 
     const result = await pool.query(
       `INSERT INTO petitions (
-        title, summary, problem_statement, proposed_action,
+        title, summary, proposed_action,
         goal_type, other_goal_type, impact_area, other_impact_area,
         affected_groups, priority_level, reference_context, visibility,
-        author_id, community_id, status, nlp_analysis
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+        author_id, community_id, status
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
       RETURNING *`,
       [
-        title, summary || null, problem_statement, proposed_action,
+        title, summary || null, proposed_action,
         goal_type, other_goal_type || null, impact_area, other_impact_area || null,
         affected_groups || [], priority_level, reference_context || null, visibility,
-        author_id, community_id, 'Review', nlpAnalysis ? JSON.stringify(nlpAnalysis) : null,
+        author_id, community_id, 'Pending',
       ]
     );
 
@@ -1494,17 +1824,98 @@ app.delete("/api/petitions/:petitionId", authenticateToken, async (req, res) => 
 app.get("/api/petitions/:communityId", authenticateToken, async (req, res) => {
   try {
     const { communityId } = req.params;
-    const result = await pool.query(
-      `SELECT p.*, u.full_name as author_name
-       FROM petitions p
-       JOIN users u ON p.author_id = u.user_id
-       WHERE p.community_id = $1
-       ORDER BY p.created_at DESC`,
-      [communityId]
-    );
+    const { filter } = req.query;
+
+    let query = `
+      SELECT p.*, u.full_name as author_name
+      FROM petitions p
+      JOIN users u ON p.author_id = u.user_id
+      WHERE p.community_id = $1
+    `;
+    const params = [communityId];
+
+    if (filter === 'today') {
+      query += ` AND p.created_at >= CURRENT_DATE`;
+    } else if (filter === 'yesterday') {
+      query += ` AND p.created_at >= CURRENT_DATE - INTERVAL '1 day' AND p.created_at < CURRENT_DATE`;
+    } else if (filter === 'month') {
+      query += ` AND p.created_at >= DATE_TRUNC('month', CURRENT_DATE)`;
+    } else if (filter === 'particular_day' && req.query.date) {
+      query += ` AND p.created_at::date = $2`;
+      params.push(req.query.date);
+    } else if (filter === 'particular_month' && req.query.month) {
+      query += ` AND TO_CHAR(p.created_at, 'YYYY-MM') = $2`;
+      params.push(req.query.month);
+    }
+
+    query += ` ORDER BY p.created_at DESC`;
+    const result = await pool.query(query, params);
     res.json(result.rows);
   } catch (error) {
     console.error('Error fetching petitions:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// AI process petition
+app.post("/api/petitions/:petitionId/ai-process", authenticateToken, async (req, res) => {
+  try {
+    const petitionId = parseInt(req.params.petitionId, 10);
+    if (isNaN(petitionId)) return res.status(400).json({ error: "Invalid petition ID" });
+
+    const petitionRes = await pool.query(
+      `SELECT p.*, u.full_name as author_name 
+       FROM petitions p 
+       JOIN users u ON p.author_id = u.user_id 
+       WHERE p.petition_id = $1`,
+      [petitionId]
+    );
+
+    if (petitionRes.rows.length === 0) return res.status(404).json({ error: "Petition not found" });
+    const petition = petitionRes.rows[0];
+
+    // Check permissions
+    const userId = req.user.user_id;
+    const membershipRes = await pool.query(
+      `SELECT role FROM memberships WHERE user_id = $1 AND community_id = $2 AND status = 'ACTIVE'`,
+      [userId, petition.community_id]
+    );
+
+    if (membershipRes.rows.length === 0 || !['HEAD', 'ADMIN'].includes(membershipRes.rows[0].role)) {
+      return res.status(403).json({ error: "Only admins can trigger AI processing" });
+    }
+
+    const textToAnalyze = `${petition.title}\n\n${petition.summary}\n\n${petition.proposed_action}`;
+    const analysis = await analyzeContentWithLLM(textToAnalyze, 'petition');
+
+    let newStatus = 'Review';
+    let remarks = `AI-generated verdict: ${analysis.llmVerdict}. ${analysis.llmSummary || ''}`;
+
+    if (analysis.llmVerdict === 'POSITIVE') {
+      newStatus = 'Approved';
+    } else if (analysis.llmVerdict === 'NEGATIVE') {
+      newStatus = 'Rejected';
+    } else {
+      newStatus = 'Pending';
+    }
+
+    const updateRes = await pool.query(
+      `UPDATE petitions 
+       SET status = $1, remarks = $2, reviewed_by = $3, nlp_analysis = $4, updated_at = CURRENT_TIMESTAMP
+       WHERE petition_id = $5 
+       RETURNING *`,
+      [newStatus, remarks, userId, JSON.stringify(analysis), petitionId]
+    );
+
+    res.json({
+      success: true,
+      status: newStatus,
+      analysis: analysis,
+      petition: updateRes.rows[0]
+    });
+
+  } catch (error) {
+    console.error('Error AI processing petition:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -1522,6 +1933,7 @@ app.put("/api/petitions/:petitionId/status", authenticateToken, async (req, res)
         error: `Invalid status. Must be one of: ${Array.from(allowedStatuses).join(", ")}`,
       });
     }
+    Joseph
 
     const petitionRes = await pool.query(
       `SELECT petition_id, community_id FROM petitions WHERE petition_id = $1`,
@@ -1566,6 +1978,81 @@ app.put("/api/petitions/:petitionId/status", authenticateToken, async (req, res)
     res.status(500).json({ error: error.message });
   }
 });
+
+// Batch update petition status
+app.post("/api/petitions/batch-status", authenticateToken, async (req, res) => {
+  try {
+    const { communityId, status, filter, date, month, currentStatus, remarks = "Batch update" } = req.body;
+    const userId = req.user?.user_id;
+
+    if (!communityId || !status) {
+      return res.status(400).json({ error: "communityId and status are required" });
+    }
+
+    const allowedStatuses = new Set(["Pending", "Approved", "Rejected"]);
+    if (!allowedStatuses.has(status)) {
+      return res.status(400).json({ error: "Invalid status" });
+    }
+
+
+    // Role check
+    const membershipRes = await pool.query(
+      `SELECT role FROM memberships WHERE user_id = $1 AND community_id = $2 AND status = 'ACTIVE' LIMIT 1`,
+      [userId, communityId]
+    );
+    if (membershipRes.rows.length === 0 || !["HEAD", "ADMIN"].includes(membershipRes.rows[0].role)) {
+      return res.status(403).json({ error: "Unauthorized: Admin access required" });
+    }
+
+    let whereClause = "WHERE community_id = $4";
+    const params = [status, remarks, userId, communityId];
+
+    if (filter === 'today') {
+      whereClause += ` AND created_at >= CURRENT_DATE`;
+    } else if (filter === 'yesterday') {
+      whereClause += ` AND created_at >= CURRENT_DATE - INTERVAL '1 day' AND created_at < CURRENT_DATE`;
+    } else if (filter === 'week') {
+      whereClause += ` AND created_at >= DATE_TRUNC('week', CURRENT_DATE)`;
+    } else if (filter === 'month') {
+      whereClause += ` AND created_at >= DATE_TRUNC('month', CURRENT_DATE)`;
+    } else if (filter === 'particular_day' && date) {
+      whereClause += ` AND created_at::date = $5`;
+      params.push(date);
+    } else if (filter === 'particular_month' && month) {
+      whereClause += ` AND TO_CHAR(created_at, 'YYYY-MM') = $5`;
+      params.push(month);
+    } else if (filter === 'range' && req.body.startDate && req.body.endDate) {
+      whereClause += ` AND created_at::date >= $5 AND created_at::date <= $6`;
+      params.push(req.body.startDate, req.body.endDate);
+    }
+
+    if (currentStatus) {
+      if (currentStatus === 'pending') {
+        whereClause += ` AND status IN ('Review', 'Pending')`;
+      } else if (currentStatus === 'approved') {
+        whereClause += ` AND status = 'Approved'`;
+      } else if (currentStatus === 'rejected') {
+        whereClause += ` AND status = 'Rejected'`;
+      }
+    }
+
+
+
+    const updateQuery = `
+      UPDATE petitions
+      SET status = $1, remarks = $2, reviewed_by = $3, updated_at = CURRENT_TIMESTAMP
+      ${whereClause}
+      RETURNING petition_id
+    `;
+
+    const result = await pool.query(updateQuery, params);
+    res.json({ success: true, count: result.rowCount, updatedIds: result.rows.map(r => r.petition_id) });
+  } catch (error) {
+    console.error("Error batch updating petitions:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 app.post("/api/complaints", authenticateToken, async (req, res) => {
   try {
@@ -1700,20 +2187,726 @@ app.delete("/api/complaints/:complaintId", authenticateToken, async (req, res) =
 app.get("/api/complaints/:communityId", authenticateToken, async (req, res) => {
   try {
     const { communityId } = req.params;
-    const result = await pool.query(
-      `SELECT c.*, u.full_name as creator_name
-       FROM complaints c
-       JOIN users u ON c.created_by = u.user_id
-       WHERE c.community_id = $1
-       ORDER BY c.created_at DESC`,
-      [communityId]
-    );
+    const { filter } = req.query;
+
+    let query = `
+      SELECT c.*, u.full_name as creator_name
+      FROM complaints c
+      JOIN users u ON c.created_by = u.user_id
+      WHERE c.community_id = $1
+    `;
+    const params = [communityId];
+
+    if (filter === 'today') {
+      query += ` AND c.created_at >= CURRENT_DATE`;
+    } else if (filter === 'yesterday') {
+      query += ` AND c.created_at >= CURRENT_DATE - INTERVAL '1 day' AND c.created_at < CURRENT_DATE`;
+    } else if (filter === 'month') {
+      query += ` AND c.created_at >= DATE_TRUNC('month', CURRENT_DATE)`;
+    } else if (filter === 'particular_day' && req.query.date) {
+      query += ` AND c.created_at::date = $2`;
+      params.push(req.query.date);
+    } else if (filter === 'particular_month' && req.query.month) {
+      query += ` AND TO_CHAR(c.created_at, 'YYYY-MM') = $2`;
+      params.push(req.query.month);
+    }
+
+    query += ` ORDER BY c.created_at DESC`;
+    const result = await pool.query(query, params);
     res.json(result.rows);
   } catch (error) {
     console.error('Error fetching complaints:', error);
     res.status(500).json({ error: error.message });
   }
 });
+
+// AI process complaint
+app.post("/api/complaints/:complaintId/ai-process", authenticateToken, async (req, res) => {
+  try {
+    const complaintId = parseInt(req.params.complaintId, 10);
+    if (isNaN(complaintId)) return res.status(400).json({ error: "Invalid complaint ID" });
+
+    const complaintRes = await pool.query(
+      `SELECT c.*, u.full_name as creator_name 
+       FROM complaints c 
+       JOIN users u ON c.created_by = u.user_id
+       WHERE c.complaint_id = $1`,
+      [complaintId]
+    );
+
+    if (complaintRes.rows.length === 0) return res.status(404).json({ error: "Complaint not found" });
+    const complaint = complaintRes.rows[0];
+
+    // Check permissions
+    const userId = req.user.user_id;
+    const membershipRes = await pool.query(
+      `SELECT role FROM memberships WHERE user_id = $1 AND community_id = $2 AND status = 'ACTIVE'`,
+      [userId, complaint.community_id]
+    );
+
+    if (membershipRes.rows.length === 0 || !['HEAD', 'ADMIN'].includes(membershipRes.rows[0].role)) {
+      return res.status(403).json({ error: "Only admins can trigger AI processing" });
+    }
+
+    const textToAnalyze = `${complaint.title}\n\n${complaint.description}`;
+    const analysis = await analyzeContentWithLLM(textToAnalyze, 'complaint');
+
+    let newStatus = 'OPEN';
+    let remarks = `AI-generated verdict: ${analysis.llmVerdict}. ${analysis.llmSummary || ''}`;
+
+    if (analysis.llmVerdict === 'POSITIVE') {
+      newStatus = 'Approved';
+    } else if (analysis.llmVerdict === 'NEGATIVE') {
+      newStatus = 'Rejected';
+    } else {
+      newStatus = 'Pending';
+    }
+
+    const updateRes = await pool.query(
+      `UPDATE complaints 
+       SET status = $1, remarks = $2, reviewed_by = $3, nlp_analysis = $4, updated_at = CURRENT_TIMESTAMP
+       WHERE complaint_id = $5 
+       RETURNING *`,
+      [newStatus, remarks, userId, JSON.stringify(analysis), complaintId]
+    );
+
+    res.json({
+      success: true,
+      status: newStatus,
+      analysis: analysis,
+      complaint: updateRes.rows[0]
+    });
+
+  } catch (error) {
+    console.error('Error AI processing complaint:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update complaint status (HEAD only)
+app.put("/api/complaints/:complaintId/status", authenticateToken, async (req, res) => {
+  try {
+    const complaintId = parseInt(req.params.complaintId, 10);
+    if (isNaN(complaintId)) return res.status(400).json({ error: "Invalid complaint ID" });
+
+    const { status, remarks = "" } = req.body || {};
+    const allowedStatuses = new Set(["Pending", "Approved", "Rejected", "Resolved", "Dismissed", "InProgress"]);
+
+    if (!status || typeof status !== "string" || !allowedStatuses.has(status)) {
+      return res.status(400).json({
+        error: `Invalid status. Must be one of: ${Array.from(allowedStatuses).join(", ")}`,
+      });
+    }
+
+    const complaintRes = await pool.query(
+      `SELECT complaint_id, community_id FROM complaints WHERE complaint_id = $1`,
+      [complaintId]
+    );
+    if (complaintRes.rows.length === 0) return res.status(404).json({ error: "Complaint not found" });
+
+    const communityId = complaintRes.rows[0].community_id;
+    const userId = req.user?.user_id;
+
+    const membershipRes = await pool.query(
+      `SELECT role
+       FROM memberships
+       WHERE user_id = $1 AND community_id = $2 AND status = 'ACTIVE'
+       LIMIT 1`,
+      [userId, communityId]
+    );
+
+    if (membershipRes.rows.length === 0) {
+      return res.status(403).json({ error: "You must be an active member of this community" });
+    }
+
+    const role = membershipRes.rows[0].role;
+    if (!["HEAD", "ADMIN"].includes(role)) {
+      return res.status(403).json({ error: "Only admins can update complaint status" });
+    }
+
+    const updateRes = await pool.query(
+      `UPDATE complaints
+       SET status = $1,
+           remarks = $2,
+           reviewed_by = $3,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE complaint_id = $4
+       RETURNING *`,
+      [status, String(remarks || ""), userId, complaintId]
+    );
+
+    res.json(updateRes.rows[0]);
+  } catch (error) {
+    console.error("Error updating complaint status:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Batch update complaint status
+app.post("/api/complaints/batch-status", authenticateToken, async (req, res) => {
+  try {
+    const { communityId, status, filter, date, month, currentStatus, remarks = "Batch update" } = req.body;
+    const userId = req.user?.user_id;
+
+    if (!communityId || !status) {
+      return res.status(400).json({ error: "communityId and status are required" });
+    }
+
+    const allowedStatuses = new Set(["Pending", "Approved", "Rejected"]);
+    if (!allowedStatuses.has(status)) {
+      return res.status(400).json({ error: "Invalid status" });
+    }
+
+
+    // Role check
+    const membershipRes = await pool.query(
+      `SELECT role FROM memberships WHERE user_id = $1 AND community_id = $2 AND status = 'ACTIVE' LIMIT 1`,
+      [userId, communityId]
+    );
+    if (membershipRes.rows.length === 0 || !["HEAD", "ADMIN"].includes(membershipRes.rows[0].role)) {
+      return res.status(403).json({ error: "Unauthorized: Admin access required" });
+    }
+
+    let whereClause = "WHERE community_id = $4";
+    const params = [status, remarks, userId, communityId];
+
+    if (filter === 'today') {
+      whereClause += ` AND created_at >= CURRENT_DATE`;
+    } else if (filter === 'yesterday') {
+      whereClause += ` AND created_at >= CURRENT_DATE - INTERVAL '1 day' AND created_at < CURRENT_DATE`;
+    } else if (filter === 'week') {
+      whereClause += ` AND created_at >= DATE_TRUNC('week', CURRENT_DATE)`;
+    } else if (filter === 'month') {
+      whereClause += ` AND created_at >= DATE_TRUNC('month', CURRENT_DATE)`;
+    } else if (filter === 'particular_day' && date) {
+      whereClause += ` AND created_at::date = $5`;
+      params.push(date);
+    } else if (filter === 'particular_month' && month) {
+      whereClause += ` AND TO_CHAR(created_at, 'YYYY-MM') = $5`;
+      params.push(month);
+    } else if (filter === 'range' && req.body.startDate && req.body.endDate) {
+      whereClause += ` AND created_at::date >= $5 AND created_at::date <= $6`;
+      params.push(req.body.startDate, req.body.endDate);
+    }
+
+    if (currentStatus) {
+      const upperStatus = currentStatus.toUpperCase();
+      if (upperStatus === 'PENDING') {
+        whereClause += ` AND status IN ('OPEN', 'PENDING', 'REVIEW', 'IN_PROGRESS', 'INPROGRESS')`;
+      } else {
+        whereClause += ` AND status = '${upperStatus}'`;
+      }
+    }
+
+
+
+    const updateQuery = `
+      UPDATE complaints
+      SET status = $1, remarks = $2, reviewed_by = $3, updated_at = CURRENT_TIMESTAMP
+      ${whereClause}
+      RETURNING complaint_id
+    `;
+
+    const result = await pool.query(updateQuery, params);
+    res.json({ success: true, count: result.rowCount, updatedIds: result.rows.map(r => r.complaint_id) });
+  } catch (error) {
+    console.error("Error batch updating complaints:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+// Get user's role in a community
+app.get("/api/community/:communityId/my-role", authenticateToken, async (req, res) => {
+  try {
+    const communityId = parseInt(req.params.communityId, 10);
+    if (isNaN(communityId)) return res.status(400).json({ error: "Invalid community ID" });
+
+    const userId = req.user?.user_id;
+
+    const membershipRes = await pool.query(
+      `SELECT role
+       FROM memberships
+       WHERE user_id = $1 AND community_id = $2 AND status = 'ACTIVE'
+       LIMIT 1`,
+      [userId, communityId]
+    );
+
+    if (membershipRes.rows.length === 0) {
+      return res.json({ role: null });
+    }
+
+    res.json({ role: membershipRes.rows[0].role });
+  } catch (error) {
+    console.error("Error fetching user role:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ========================================================================
+// POLLS & VOTING ENDPOINTS
+// ========================================================================
+
+// Create a new poll in a community (HEAD only)
+app.post("/api/communities/:communityId/polls", authenticateToken, async (req, res) => {
+  try {
+    const communityId = parseInt(req.params.communityId, 10);
+    if (Number.isNaN(communityId)) {
+      return res.status(400).json({ error: "Invalid community ID" });
+    }
+
+    const userId = req.user.user_id;
+    const perm = await requireHeadRole(userId, communityId);
+    if (!perm.ok) {
+      return res.status(403).json({ error: perm.error });
+    }
+
+    const {
+      title,
+      description,
+      options,
+      allowMultipleAnswers,
+      duration,
+      resultVisibility,
+      votingRequirement,
+      allowChangeVote,
+      showVoterCount,
+      anonymousVoting,
+      requireComment,
+      minVotesToShow,
+      allowSuggestions,
+    } = req.body || {};
+
+    if (!title || typeof title !== "string" || !title.trim()) {
+      return res.status(400).json({ error: "Poll title is required" });
+    }
+
+    if (!Array.isArray(options)) {
+      return res.status(400).json({ error: "Options array is required" });
+    }
+
+    const trimmedOptions = options
+      .map((opt) => (typeof opt === "string" ? opt.trim() : ""))
+      .filter((opt) => opt.length > 0);
+
+    if (trimmedOptions.length < 2) {
+      return res.status(400).json({ error: "At least 2 non-empty options are required" });
+    }
+
+    if (trimmedOptions.length > 10) {
+      return res.status(400).json({ error: "Maximum 10 options allowed" });
+    }
+
+    // Map duration code from UI to DB field
+    const allowedDurations = new Set(["1h", "6h", "1d", "3d", "7d", "30d", "unlimited"]);
+    const durationCode = allowedDurations.has(duration) ? duration : "7d";
+
+    // Map result visibility
+    const allowedResultVisibility = new Set(["immediate", "after_vote", "after_close"]);
+    const resultVisibilityDb = allowedResultVisibility.has(resultVisibility)
+      ? resultVisibility
+      : "after_vote";
+
+    // Map voting requirement from UI ('none' | 'verified' | 'tenure')
+    let votingRequirementDb = "everyone";
+    if (votingRequirement === "verified") {
+      votingRequirementDb = "heads_only";
+    } else if (votingRequirement === "tenure") {
+      votingRequirementDb = "tenure";
+    }
+
+    const minVotes = Number.isFinite(Number(minVotesToShow))
+      ? Math.max(0, parseInt(minVotesToShow, 10))
+      : 0;
+
+    // Compute closes_at based on duration
+    let closesAt = null;
+    if (durationCode !== "unlimited") {
+      const now = new Date();
+      const closes = new Date(now);
+      switch (durationCode) {
+        case "1h":
+          closes.setHours(closes.getHours() + 1);
+          break;
+        case "6h":
+          closes.setHours(closes.getHours() + 6);
+          break;
+        case "1d":
+          closes.setDate(closes.getDate() + 1);
+          break;
+        case "3d":
+          closes.setDate(closes.getDate() + 3);
+          break;
+        case "7d":
+          closes.setDate(closes.getDate() + 7);
+          break;
+        case "30d":
+          closes.setDate(closes.getDate() + 30);
+          break;
+        default:
+          break;
+      }
+      closesAt = closes.toISOString();
+    }
+
+    // Insert poll
+    const pollResult = await pool.query(
+      `INSERT INTO polls (
+        community_id,
+        created_by,
+        title,
+        description,
+        allow_multiple_answers,
+        allow_change_vote,
+        allow_suggestions,
+        require_comment,
+        visibility,
+        result_visibility,
+        voting_requirement,
+        show_voter_count,
+        anonymous_voting,
+        min_votes_to_show,
+        duration_code,
+        closes_at,
+        is_active
+      )
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'public',$9,$10,$11,$12,$13,$14,$15,TRUE)
+      RETURNING poll_id, community_id, created_by, title, description, duration_code, closes_at, created_at`,
+      [
+        communityId,
+        userId,
+        title.trim(),
+        description && typeof description === "string" ? description.trim() : null,
+        !!allowMultipleAnswers,
+        allowChangeVote !== false,
+        !!allowSuggestions,
+        !!requireComment,
+        resultVisibilityDb,
+        votingRequirementDb,
+        showVoterCount !== false,
+        !!anonymousVoting,
+        minVotes,
+        durationCode,
+        closesAt,
+      ]
+    );
+
+    const poll = pollResult.rows[0];
+
+    // Insert options
+    const values = [];
+    const params = [];
+    trimmedOptions.forEach((label, index) => {
+      const position = index + 1;
+      params.push(poll.poll_id, label, position);
+      const baseIndex = index * 3;
+      values.push(`($${baseIndex + 1}, $${baseIndex + 2}, $${baseIndex + 3})`);
+    });
+
+    await pool.query(
+      `INSERT INTO poll_options (poll_id, label, position) VALUES ${values.join(",")}`,
+      params
+    );
+
+    // Fetch options for response
+    const optionsResult = await pool.query(
+      `SELECT option_id, label, position
+       FROM poll_options
+       WHERE poll_id = $1
+       ORDER BY position ASC`,
+      [poll.poll_id]
+    );
+
+    res.status(201).json({
+      poll,
+      options: optionsResult.rows,
+    });
+  } catch (error) {
+    console.error("Error creating poll:", error);
+    res.status(500).json({ error: "Failed to create poll" });
+  }
+});
+
+// Get all polls in a community (Member/Admin)
+app.get("/api/communities/:communityId/polls", authenticateToken, async (req, res) => {
+  try {
+    const communityId = parseInt(req.params.communityId, 10);
+    if (isNaN(communityId)) return res.status(400).json({ error: "Invalid community ID" });
+
+    const userId = req.user.user_id;
+
+    // Verify membership
+    const membership = await pool.query(
+      `SELECT role FROM memberships WHERE user_id = $1 AND community_id = $2 AND status = 'ACTIVE'`,
+      [userId, communityId]
+    );
+
+    if (membership.rows.length === 0) {
+      return res.status(403).json({ error: "Not a community member" });
+    }
+
+    const result = await pool.query(
+      `SELECT p.*, u.full_name as creator_name,
+              (SELECT COUNT(DISTINCT user_id) FROM poll_votes WHERE poll_id = p.poll_id) as total_voters,
+              CASE WHEN p.closes_at < CURRENT_TIMESTAMP THEN FALSE ELSE p.is_active END as effectively_active
+       FROM polls p
+       LEFT JOIN users u ON p.created_by = u.user_id
+       WHERE p.community_id = $1
+       ORDER BY p.created_at DESC`,
+      [communityId]
+    );
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error fetching polls:", error);
+    res.status(500).json({ error: "Failed to fetch polls" });
+  }
+});
+
+// Get specific poll details (Member/Admin)
+app.get("/api/communities/:communityId/polls/:pollId", authenticateToken, async (req, res) => {
+  try {
+    const { communityId, pollId } = req.params;
+    const userId = req.user.user_id;
+
+    // Verify membership
+    const membership = await pool.query(
+      `SELECT role FROM memberships WHERE user_id = $1 AND community_id = $2 AND status = 'ACTIVE'`,
+      [userId, communityId]
+    );
+    if (membership.rows.length === 0) {
+      return res.status(403).json({ error: "Not a community member" });
+    }
+
+    const pollResult = await pool.query(
+      `SELECT p.*, u.full_name as creator_name,
+              (SELECT COUNT(DISTINCT user_id) FROM poll_votes WHERE poll_id = p.poll_id) as total_voters,
+              CASE WHEN p.closes_at < CURRENT_TIMESTAMP THEN FALSE ELSE p.is_active END as effectively_active
+       FROM polls p
+       LEFT JOIN users u ON p.created_by = u.user_id
+       WHERE p.poll_id = $1 AND p.community_id = $2`,
+      [pollId, communityId]
+    );
+
+    if (pollResult.rows.length === 0) {
+      return res.status(404).json({ error: "Poll not found" });
+    }
+
+    const poll = pollResult.rows[0];
+
+    // Fetch options with vote counts
+    const optionsResult = await pool.query(
+      `SELECT po.*, 
+              (SELECT COUNT(*) FROM poll_votes WHERE poll_id = po.poll_id AND option_id = po.option_id) as vote_count
+       FROM poll_options po
+       WHERE po.poll_id = $1
+       ORDER BY po.position ASC`,
+      [pollId]
+    );
+
+    const totalVotes = optionsResult.rows.reduce((sum, opt) => sum + parseInt(opt.vote_count || 0), 0);
+    const options = optionsResult.rows.map(opt => ({
+      ...opt,
+      vote_percentage: totalVotes > 0 ? (parseInt(opt.vote_count) / totalVotes) * 100 : 0
+    }));
+
+    // Fetch user's votes for this poll
+    const myVotesResult = await pool.query(
+      `SELECT option_id FROM poll_votes WHERE poll_id = $1 AND user_id = $2`,
+      [pollId, userId]
+    );
+
+    res.json({
+      ...poll,
+      options,
+      my_voted_option_ids: myVotesResult.rows.map(r => r.option_id)
+    });
+  } catch (error) {
+    console.error("Error fetching poll details:", error);
+    res.status(500).json({ error: "Failed to fetch poll details" });
+  }
+});
+
+// Get current user's vote for a poll
+app.get("/api/communities/:communityId/polls/:pollId/my-vote", authenticateToken, async (req, res) => {
+  try {
+    const { pollId } = req.params;
+    const userId = req.user.user_id;
+
+    const result = await pool.query(
+      `SELECT option_id, comment FROM poll_votes WHERE poll_id = $1 AND user_id = $2`,
+      [pollId, userId]
+    );
+
+    res.json({
+      hasVoted: result.rows.length > 0,
+      votes: result.rows
+    });
+  } catch (error) {
+    console.error("Error fetching user vote:", error);
+    res.status(500).json({ error: "Failed to fetch your vote" });
+  }
+});
+
+// Vote in a poll
+app.post("/api/communities/:communityId/polls/:pollId/vote", authenticateToken, async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const { communityId, pollId } = req.params;
+    const { optionIds, option_ids, comment } = req.body;
+    const actualOptionIds = option_ids || optionIds;
+    const userId = req.user.user_id;
+
+    if (!Array.isArray(actualOptionIds) || actualOptionIds.length === 0) {
+      return res.status(400).json({ error: "At least one option must be selected" });
+    }
+
+    await client.query("BEGIN");
+
+    // 1. Fetch poll settings and status
+    const pollResult = await client.query(
+      `SELECT * FROM polls WHERE poll_id = $1 AND community_id = $2`,
+      [pollId, communityId]
+    );
+
+    if (pollResult.rows.length === 0) {
+      throw new Error("Poll not found");
+    }
+
+    const poll = pollResult.rows[0];
+
+    // Check if poll is active
+    if (!poll.is_active || (poll.closes_at && new Date(poll.closes_at) < new Date())) {
+      return res.status(400).json({ error: "This poll is no longer active" });
+    }
+
+    // Check multiple answers setting
+    if (!poll.allow_multiple_answers && actualOptionIds.length > 1) {
+      return res.status(400).json({ error: "Multiple answers are not allowed for this poll" });
+    }
+
+    // Check if user has already voted
+    const existingVote = await client.query(
+      `SELECT vote_id FROM poll_votes WHERE poll_id = $1 AND user_id = $2 LIMIT 1`,
+      [pollId, userId]
+    );
+
+    if (existingVote.rows.length > 0) {
+      if (!poll.allow_change_vote) {
+        return res.status(400).json({ error: "Vote changes are not allowed for this poll" });
+      }
+      // Delete old votes if change is allowed
+      await client.query(
+        `DELETE FROM poll_votes WHERE poll_id = $1 AND user_id = $2`,
+        [pollId, userId]
+      );
+    }
+
+    // Check comment requirement
+    if (poll.require_comment && (!comment || !comment.trim())) {
+      return res.status(400).json({ error: "A comment is required for this poll" });
+    }
+
+    // 2. Insert new votes
+    const insertValues = [];
+    const insertParams = [];
+    actualOptionIds.forEach((oid, idx) => {
+      const base = idx * 4;
+      insertParams.push(pollId, userId, oid, comment || null);
+      insertValues.push(`($${base + 1}, $${base + 2}, $${base + 3}, $${base + 4})`);
+    });
+
+    await client.query(
+      `INSERT INTO poll_votes (poll_id, user_id, option_id, comment) VALUES ${insertValues.join(",")}`,
+      insertParams
+    );
+
+    // 3. Automatic Poll Closing Check
+    // Get total number of active members in the community (excluding HEAD/ADMIN)
+    const membersCountResult = await client.query(
+      `SELECT COUNT(*) as member_count FROM memberships 
+       WHERE community_id = $1 AND role = 'MEMBER' AND status = 'ACTIVE'`,
+      [communityId]
+    );
+    const totalMembers = parseInt(membersCountResult.rows[0].member_count, 10);
+
+    // Get number of unique members who have voted on this poll
+    const voterCountRes = await client.query(
+      `SELECT COUNT(DISTINCT pv.user_id) as voter_count FROM poll_votes pv
+       JOIN memberships m ON pv.user_id = m.user_id 
+       WHERE pv.poll_id = $1 
+       AND m.community_id = $2 
+       AND m.role = 'MEMBER' 
+       AND m.status = 'ACTIVE'`,
+      [pollId, communityId]
+    );
+    const totalVoters = parseInt(voterCountRes.rows[0].voter_count, 10);
+
+    let autoClosed = false;
+    // Only auto-close if there are members and all have voted
+    if (totalMembers > 0 && totalVoters >= totalMembers) {
+      await client.query(
+        `UPDATE polls SET is_active = FALSE, closes_at = CURRENT_TIMESTAMP, closed_at = CURRENT_TIMESTAMP 
+         WHERE poll_id = $1`,
+        [pollId]
+      );
+      autoClosed = true;
+    }
+
+    await client.query("COMMIT");
+
+    // Trigger re-fetch for all clients or broadcast update
+    // We broadcast to the community room
+    io.to(`community_${communityId}`).emit('poll_updated', {
+      pollId,
+      status: autoClosed ? 'closed' : 'updated'
+    });
+
+    res.json({
+      success: true,
+      message: autoClosed ? "Vote cast and poll automatically closed" : "Vote cast successfully"
+    });
+  } catch (error) {
+    await client.query("ROLLBACK");
+    console.error("Error casting vote:", error);
+    res.status(error.message === "Poll not found" ? 404 : 500).json({ error: error.message || "Failed to cast vote" });
+  } finally {
+    client.release();
+  }
+});
+
+// Close a poll manually (HEAD only)
+app.patch("/api/communities/:communityId/polls/:pollId/close", authenticateToken, async (req, res) => {
+  try {
+    const { communityId, pollId } = req.params;
+    const userId = req.user.user_id;
+
+    const perm = await requireHeadRole(userId, communityId);
+    if (!perm.ok) {
+      return res.status(403).json({ error: perm.error });
+    }
+
+    const result = await pool.query(
+      `UPDATE polls SET is_active = FALSE, closes_at = CURRENT_TIMESTAMP 
+       WHERE poll_id = $1 AND community_id = $2
+       RETURNING poll_id`,
+      [pollId, communityId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Poll not found" });
+    }
+
+    io.to(`community_${communityId}`).emit('poll_updated', { pollId, status: 'closed' });
+
+    res.json({ success: true, message: "Poll closed successfully" });
+  } catch (error) {
+    console.error("Error closing poll:", error);
+    res.status(500).json({ error: "Failed to close poll" });
+  }
+});
+
+
 
 // ========================================================================
 // EVENTS CRUD
@@ -1755,6 +2948,8 @@ app.post("/api/communities/:communityId/events", authenticateToken, async (req, 
       applicable_to,
       attachment_url,
       attachment_type,
+      isPinned,
+      isImportant,
     } = req.body || {};
 
     if (!title || !content) {
@@ -1764,8 +2959,8 @@ app.post("/api/communities/:communityId/events", authenticateToken, async (req, 
     const result = await pool.query(
       `INSERT INTO events (
         community_id, title, content, effective_from, valid_until, applicable_to,
-        attachment_url, attachment_type, posted_by
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+        attachment_url, attachment_type, created_by, posted_by, is_pinned, is_important
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
       RETURNING *`,
       [
         communityId,
@@ -1776,7 +2971,10 @@ app.post("/api/communities/:communityId/events", authenticateToken, async (req, 
         applicable_to || null,
         attachment_url || null,
         attachment_type || null,
-        userId,
+        userId, // created_by
+        userId, // posted_by
+        isPinned || false,
+        isImportant || false
       ]
     );
 
@@ -1917,17 +3115,17 @@ app.post("/api/communities/:communityId/sos", authenticateToken, async (req, res
 io.use((socket, next) => {
   try {
     const token = socket.handshake.auth.token;
-    
+
     if (!token) {
       return next(new Error('Authentication required'));
     }
-    
+
     const decoded = jwt.verify(token, JWT_SECRET);
-    
+
     socket.userId = decoded.user_id || decoded.userId;
     socket.communityId = decoded.communityId;
     socket.role = decoded.role;
-    
+
     next();
   } catch (error) {
     logger.warn('Socket.io authentication failed', { error: error.message });
@@ -1945,42 +3143,42 @@ io.on('connection', (socket) => {
 
   // Join community room
   socket.on('join_community', (communityId) => {
-      socket.join(`community_${communityId}`);
-      connectedUsers.set(socket.id, communityId);
-      
-      if (socket.communityId) {
-        socket.join(`community:${socket.communityId}`);
-      }
-      
-      const roomSize = io.sockets.adapter.rooms.get(`community_${communityId}`)?.size || 0;
-      logger.info(`Socket joined community`, {
-        socketId: socket.id,
-        communityId,
-        roomSize,
-      });
+    socket.join(`community_${communityId}`);
+    connectedUsers.set(socket.id, communityId);
+
+    if (socket.communityId) {
+      socket.join(`community:${socket.communityId}`);
+    }
+
+    const roomSize = io.sockets.adapter.rooms.get(`community_${communityId}`)?.size || 0;
+    logger.info(`Socket joined community`, {
+      socketId: socket.id,
+      communityId,
+      roomSize,
+    });
   });
 
   // Leave community room
   socket.on('leave_community', (communityId) => {
-      socket.leave(`community_${communityId}`);
-      logger.info(`Socket left community`, {
-        socketId: socket.id,
-        communityId,
-      });
+    socket.leave(`community_${communityId}`);
+    logger.info(`Socket left community`, {
+      socketId: socket.id,
+      communityId,
+    });
   });
 
   // ✅ NLP Real-time message moderation
   socket.on('moderate:message', async (data) => {
     try {
       const { text, messageType = 'chat' } = data;
-      
+
       if (!text || typeof text !== 'string') {
         socket.emit('moderation:error', {
           error: 'Invalid message text',
         });
         return;
       }
-      
+
       // Moderate content using NLP service
       const result = await nlpModerateContent(
         text,
@@ -1988,7 +3186,7 @@ io.on('connection', (socket) => {
         socket.userId,
         messageType
       );
-      
+
       // Send result back to sender
       socket.emit('moderation:result', {
         approved: result.approved,
@@ -1996,7 +3194,7 @@ io.on('connection', (socket) => {
         reason: result.reason,
         holdId: result.holdId,
       });
-      
+
       // If quarantined, notify moderators in the community
       if (result.action === 'quarantined') {
         io.to(`community:${socket.communityId}`)
@@ -2006,19 +3204,19 @@ io.on('connection', (socket) => {
             messageType,
             timestamp: new Date().toISOString(),
           });
-        
+
         logger.info('Real-time moderation flag sent', {
           holdId: result.holdId,
           communityId: socket.communityId,
         });
       }
-      
+
     } catch (error) {
       logger.error('Socket.io moderation error', {
         error: error.message,
         socketId: socket.id,
       });
-      
+
       socket.emit('moderation:error', {
         error: 'Moderation failed',
       });
@@ -2032,9 +3230,9 @@ io.on('connection', (socket) => {
         socket.emit('error', { message: 'Unauthorized' });
         return;
       }
-      
+
       const { holdId, decision } = data;
-      
+
       io.to(`community:${socket.communityId}`)
         .emit('moderation:reviewed', {
           holdId,
@@ -2042,13 +3240,13 @@ io.on('connection', (socket) => {
           reviewedBy: socket.userId,
           timestamp: new Date().toISOString(),
         });
-      
+
       logger.info('Admin review broadcasted', {
         holdId,
         decision,
         adminId: socket.userId,
       });
-      
+
     } catch (error) {
       logger.error('Admin review broadcast error', { error: error.message });
     }
@@ -2056,17 +3254,17 @@ io.on('connection', (socket) => {
 
   // Disconnect handler
   socket.on('disconnect', (reason) => {
-      const communityId = connectedUsers.get(socket.id);
-      logger.info('Socket.io client disconnected', {
-        socketId: socket.id,
-        userId: socket.userId,
-        reason,
-      });
-      if (communityId) {
-          const roomSize = io.sockets.adapter.rooms.get(`community_${communityId}`)?.size || 0;
-          logger.info(`Remaining in community`, { communityId, roomSize });
-      }
-      connectedUsers.delete(socket.id);
+    const communityId = connectedUsers.get(socket.id);
+    logger.info('Socket.io client disconnected', {
+      socketId: socket.id,
+      userId: socket.userId,
+      reason,
+    });
+    if (communityId) {
+      const roomSize = io.sockets.adapter.rooms.get(`community_${communityId}`)?.size || 0;
+      logger.info(`Remaining in community`, { communityId, roomSize });
+    }
+    connectedUsers.delete(socket.id);
   });
 
   // Error handler
@@ -2095,7 +3293,7 @@ app.use((err, req, res, next) => {
     stack: err.stack,
     path: req.path,
   });
-  
+
   res.status(500).json({
     error: 'Internal server error',
     code: 'INTERNAL_ERROR',
@@ -2111,7 +3309,7 @@ async function startServer() {
     // Test database connection
     await pool.query('SELECT NOW()');
     logger.info('✅ PostgreSQL connected');
-    
+
     // Test Redis connection (if NLP service enabled)
     try {
       await redis.ping();
@@ -2119,13 +3317,13 @@ async function startServer() {
     } catch (redisError) {
       logger.warn('⚠️  Redis not available (NLP caching disabled)');
     }
-    
+
     // Preload NLP models (optional)
     if (process.env.PRELOAD_MODELS === 'true') {
       logger.info('Preloading NLP models...');
       await preloadModels();
     }
-    
+
     // Start server
     server.listen(PORT, '0.0.0.0', () => {
       logger.info(`🚀 Civix Platform running on port ${PORT}`);
@@ -2134,7 +3332,7 @@ async function startServer() {
       logger.info(`Socket.io enabled for real-time features`);
       logger.info(`NLP ChatBot service: ${process.env.NLP_ENABLED === 'true' ? 'ENABLED' : 'OPTIONAL'}`);
     });
-    
+
   } catch (error) {
     logger.error('Failed to start server', { error: error.message });
     process.exit(1);
@@ -2147,7 +3345,7 @@ async function startServer() {
 
 async function gracefulShutdown(signal) {
   logger.info(`${signal} received, shutting down gracefully...`);
-  
+
   server.close(async () => {
     try {
       await pool.end();
@@ -2163,7 +3361,7 @@ async function gracefulShutdown(signal) {
       process.exit(1);
     }
   });
-  
+
   setTimeout(() => {
     logger.error('Forced shutdown after timeout');
     process.exit(1);

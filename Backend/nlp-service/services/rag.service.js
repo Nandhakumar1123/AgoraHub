@@ -9,9 +9,9 @@ const OLLAMA_HOST =
   process.env.OLLAMA_HOST ||
   process.env.OLLAMA_BASE_URL ||
   process.env.OLLAMA_URL ||
-  'http://localhost:11434';
-  
-const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'llama3.1:8b';
+  'http://127.0.0.1:11434';
+
+const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'llama3.2:1b';
 const EMBEDDING_MODEL = process.env.EMBEDDING_MODEL || 'Xenova/all-MiniLM-L6-v2';
 const OLLAMA_TIMEOUT_MS = parseInt(process.env.OLLAMA_TIMEOUT_MS || '12000', 10);
 const AI_PROVIDER = (process.env.AI_PROVIDER || 'ollama').toLowerCase();
@@ -649,6 +649,18 @@ function getDateFilterConfig(question) {
   return { mode: 'last24h', daysAgo: 0 };
 }
 
+function shouldIncludeRecommendationsInSummary(question) {
+  const q = String(question || '').toLowerCase().replace(/\s+/g, ' ').trim();
+
+  // Explicitly summary-only requests
+  if (/\b(summary\s*only|only\s+(a\s+)?summary|just\s+(a\s+)?summary)\b/i.test(q)) return false;
+
+  // Explicitly exclude actions/recommendations/solutions
+  if (/\b(no|without)\s+(recommend(ation)?s?|action(s)?|solution(s)?|next\s+step(s)?)\b/i.test(q)) return false;
+
+  return true;
+}
+
 function getCalendarPeriodRange(periodKind, offset = 0) {
   const now = new Date();
   const start = new Date(now);
@@ -995,44 +1007,48 @@ function cleanSummaryText(text) {
   return t.trim();
 }
 
-function detectAbusiveScore(content) {
-  const text = String(content || '').toLowerCase();
-  if (!text) return 0;
-  const abusiveTerms = [
-    'idiot', 'stupid', 'fool', 'shut up', 'hate you', 'useless', 'bloody',
-    'moron', 'dumb', 'loser', 'bastard', 'damn you',
-  ];
-  const harshTerms = ['angry', 'worst', 'nonsense', 'annoying', 'trash'];
-  let score = 0;
-  for (const t of abusiveTerms) {
-    if (text.includes(t)) score += 0.55;
+async function detectAbusiveScore(content) {
+  const text = String(content || '').trim();
+  if (!text || text.length < 5) return 0;
+
+  const prompt = `Analyze the toxicity/abusiveness of this community chat message. 
+Score it from 0.0 to 1.0 (where 0.0 is perfectly safe and 1.0 is highly abusive/toxic).
+Output ONLY the numeric score, nothing else.
+
+Message: "${text}"
+
+Score:`;
+
+  try {
+    const result = await queryLLM(prompt, null, 0.1);
+    const score = parseFloat(String(result?.response || '').trim());
+    return isNaN(score) ? 0 : Math.min(1, Math.max(0, score));
+  } catch (error) {
+    logger.warn('LLM abuse detection failed', { error: error.message });
+    return 0;
   }
-  for (const t of harshTerms) {
-    if (text.includes(t)) score += 0.2;
-  }
-  if (/[!?]{2,}/.test(text)) score += 0.1;
-  if (/^[A-Z\s!?.,]+$/.test(String(content || '').trim()) && String(content || '').trim().length > 8) {
-    score += 0.15;
-  }
-  return Math.min(1, score);
 }
 
-function detectSentimentScore(content) {
-  const text = String(content || '').toLowerCase();
-  if (!text) return 0;
-  const positive = [
-    'good', 'great', 'nice', 'excellent', 'thanks', 'thank you', 'appreciate',
-    'happy', 'safe', 'resolved', 'applaud', 'well done', 'support',
-  ];
-  const negative = [
-    'bad', 'worst', 'slow', 'disappointing', 'issue', 'problem', 'not working',
-    'abuse', 'abusing', 'hell', 'angry', 'unsafe', 'failed', 'delay',
-  ];
-  let score = 0;
-  for (const t of positive) if (text.includes(t)) score += 0.28;
-  for (const t of negative) if (text.includes(t)) score -= 0.28;
-  if (text.includes('!')) score += score >= 0 ? 0.08 : -0.08;
-  return Math.max(-1, Math.min(1, score));
+async function detectSentimentScore(content) {
+  const text = String(content || '').trim();
+  if (!text || text.length < 5) return 0;
+
+  const prompt = `Analyze the sentiment of this community chat message.
+Score it from -1.0 to 1.0 (where -1.0 is extremely negative, 0.0 is neutral, and 1.0 is extremely positive).
+Output ONLY the numeric score, nothing else.
+
+Message: "${text}"
+
+Score:`;
+
+  try {
+    const result = await queryLLM(prompt, null, 0.1);
+    const score = parseFloat(String(result?.response || '').trim());
+    return isNaN(score) ? 0 : Math.min(1, Math.max(-1, score));
+  } catch (error) {
+    logger.warn('LLM sentiment detection failed', { error: error.message });
+    return 0;
+  }
 }
 
 function normalizeIssueText(text) {
@@ -1091,8 +1107,8 @@ function sanitizeLLMSummaryOutput(text, includeRecommendation = false) {
   return t;
 }
 
-function buildAnnouncementAnswer(messages, question) {
-  const announcementLike = messages.filter((m) => {
+async function buildAnnouncementAnswer(messages, question) {
+  const announcements = messages.filter((m) => {
     const text = String(m.content || '').toLowerCase();
     const type = String(m.message_type || '').toLowerCase();
     return (
@@ -1104,16 +1120,29 @@ function buildAnnouncementAnswer(messages, question) {
     );
   });
 
-  if (!announcementLike.length) {
-    const dateFilter = getDateFilterConfig(question);
-    if (dateFilter.mode === 'day' && dateFilter.daysAgo === 0) {
-      return 'No announcement was posted today in this community.';
-    }
-    return 'No announcement was found for that requested time range.';
+  if (!announcements.length) {
+    return 'No significant announcements were found in the requested chat range.';
+  }
+
+  const transcript = formatMessagesAsTranscript(announcements.slice(-10));
+  const prompt = `Based on the following messages, identify the most recent and important announcements.
+Summarize them clearly for the community members.
+
+Transcript:
+${transcript}
+
+Announcements:`;
+
+  try {
+    const result = await queryLLM(prompt, null, 0.3);
+    const answer = String(result?.response || '').trim();
+    if (answer && !isLimitMessage(answer)) return answer;
+  } catch (error) {
+    logger.warn('LLM announcement summary failed', { error: error.message });
   }
 
   const count = getRequestedCount(question, 3, 8);
-  const latest = [...announcementLike]
+  const latest = [...announcements]
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
     .map((m) => normalizeIssueText(m.content))
     .filter(Boolean);
@@ -1125,9 +1154,12 @@ function buildAnnouncementAnswer(messages, question) {
   return sentence;
 }
 
-function buildAbuseAnswer(messages) {
-  const flagged = messages
-    .map((m) => ({ ...m, abusiveScore: detectAbusiveScore(m.content) }))
+async function buildAbuseAnswer(messages) {
+  const scoredMessages = await Promise.all(
+    messages.map(async (m) => ({ ...m, abusiveScore: await detectAbusiveScore(m.content) }))
+  );
+
+  const flagged = scoredMessages
     .filter((m) => m.abusiveScore >= 0.55)
     .sort((a, b) => b.abusiveScore - a.abusiveScore);
 
@@ -1139,10 +1171,10 @@ function buildAbuseAnswer(messages) {
   return `Yes, some potentially abusive messages were detected:\n${lines.join('\n')}`;
 }
 
-function buildToxicityRatingAnswer(messages) {
+async function buildToxicityRatingAnswer(messages) {
   if (!messages.length) return 'No messages found for the requested time range.';
 
-  const scored = messages.map((m) => detectAbusiveScore(m.content));
+  const scored = await Promise.all(messages.map((m) => detectAbusiveScore(m.content)));
   const avg = scored.reduce((a, b) => a + b, 0) / scored.length;
   const percent = Math.round(avg * 100);
   const level = avg < 0.2 ? 'Low' : avg < 0.45 ? 'Moderate' : 'High';
@@ -1151,24 +1183,29 @@ function buildToxicityRatingAnswer(messages) {
   return `Toxicity rating for the requested period: ${level} (${percent}/100).\nPotentially abusive messages: ${abusiveCount} of ${messages.length}.`;
 }
 
-function buildSentimentAnswer(question, messages) {
+async function buildSentimentAnswer(question, messages) {
   const count = getRequestedCount(question, 3, 8);
-  const scored = messages
-    .map((m) => ({
-      ...m,
-      sentiment: detectSentimentScore(m.content),
-      absSentiment: Math.abs(detectSentimentScore(m.content)),
-      normalized: normalizeIssueText(m.content),
-    }))
-    .filter((m) => m.normalized && !isLowSignalMessage(m.normalized));
+  const scored = await Promise.all(
+    messages.map(async (m) => {
+      const sentiment = await detectSentimentScore(m.content);
+      return {
+        ...m,
+        sentiment: sentiment,
+        absSentiment: Math.abs(sentiment),
+        normalized: normalizeIssueText(m.content),
+      };
+    })
+  );
 
-  if (!scored.length) {
+  const filtered = scored.filter((m) => m.normalized && !isLowSignalMessage(m.normalized));
+
+  if (!filtered.length) {
     return 'No meaningful sentiment messages were found in the requested chat range.';
   }
 
   const q = String(question || '').toLowerCase();
   if (q.includes('top') || q.includes('most')) {
-    const top = scored
+    const top = filtered
       .sort((a, b) => b.absSentiment - a.absSentiment || new Date(b.created_at) - new Date(a.created_at))
       .filter((m, idx, arr) => arr.findIndex((x) => x.normalized === m.normalized) === idx)
       .slice(0, count);
@@ -1182,11 +1219,11 @@ function buildSentimentAnswer(question, messages) {
       .join('\n')}`;
   }
 
-  const positive = scored
+  const positive = filtered
     .filter((m) => m.sentiment > 0.25)
     .filter((m, idx, arr) => arr.findIndex((x) => x.normalized === m.normalized) === idx)
     .slice(0, count);
-  const negative = scored
+  const negative = filtered
     .filter((m) => m.sentiment < -0.25)
     .filter((m, idx, arr) => arr.findIndex((x) => x.normalized === m.normalized) === idx)
     .slice(0, count);
@@ -1230,7 +1267,7 @@ function buildDeterministicAnswer(question, messages) {
   return `Based on community chat:\n${lines.join('\n')}`;
 }
 
-async function fetchCommunityChatMessages(communityId, question, limit = 120) {
+async function fetchCommunityChatMessages(communityId, question, limit = 50) {
   const hasChatMessages = await tableExists('chat_messages');
   if (!hasChatMessages) return [];
 
@@ -1291,6 +1328,114 @@ async function fetchCommunityChatMessages(communityId, question, limit = 120) {
   return result.rows
     .reverse()
     .filter((m) => !isLowSignalMessage(m.content));
+}
+
+async function fetchCommunityComplaints(communityId, question, limit = 50) {
+  const hasComplaints = await tableExists('complaints');
+  if (!hasComplaints) return [];
+
+  const dateFilter = getDateFilterConfig(question);
+  let sql = `
+    SELECT c.title, c.description, c.category, c.severity, c.status, c.created_at, COALESCE(u.full_name, 'Unknown User') AS creator_name
+    FROM complaints c
+    LEFT JOIN users u ON u.user_id = c.created_by
+    WHERE c.community_id = $1
+  `;
+  const params = [communityId];
+
+  if (dateFilter.mode === 'day') {
+    sql += ` AND DATE(c.created_at) = CURRENT_DATE - $2::int`;
+    params.push(dateFilter.daysAgo);
+    sql += ` ORDER BY c.created_at DESC LIMIT $3`;
+    params.push(limit);
+  } else if (dateFilter.mode === 'calendar_date') {
+    sql += ` AND DATE(c.created_at) = $2::date`;
+    params.push(dateFilter.isoDate);
+    sql += ` ORDER BY c.created_at DESC LIMIT $3`;
+    params.push(limit);
+  } else if (dateFilter.mode === 'weekday') {
+    sql += ` AND EXTRACT(DOW FROM c.created_at) = $2`;
+    params.push(dateFilter.weekday);
+    sql += ` ORDER BY c.created_at DESC LIMIT $3`;
+    params.push(limit);
+  } else if (dateFilter.mode === 'rolling_period') {
+    sql += ` AND c.created_at >= NOW() - ($2::int * ('1 ' || $3)::interval)`;
+    params.push(dateFilter.amount);
+    params.push(dateFilter.unit);
+    sql += ` ORDER BY c.created_at DESC LIMIT $4`;
+    params.push(limit);
+  } else if (dateFilter.mode === 'calendar_period') {
+    const range = getCalendarPeriodRange(dateFilter.periodKind, dateFilter.periodOffset);
+    sql += ` AND c.created_at >= $2 AND c.created_at < $3`;
+    params.push(range.start.toISOString());
+    params.push(range.end.toISOString());
+    sql += ` ORDER BY c.created_at DESC LIMIT $4`;
+    params.push(limit);
+  } else {
+    sql += ` AND c.created_at >= NOW() - INTERVAL '30 days'`;
+    sql += ` ORDER BY c.created_at DESC LIMIT $2`;
+    params.push(limit);
+  }
+
+  const result = await query(sql, params);
+  return result.rows.map(r => ({
+    ...r,
+    content: `[${r.category.toUpperCase()}] ${r.title}: ${r.description} (Status: ${r.status}, Severity: ${r.severity})`
+  }));
+}
+
+async function fetchCommunityPetitions(communityId, question, limit = 50) {
+  const hasPetitions = await tableExists('petitions');
+  if (!hasPetitions) return [];
+
+  const dateFilter = getDateFilterConfig(question);
+  let sql = `
+    SELECT p.title, p.summary, p.status, p.priority_level, p.created_at, COALESCE(u.full_name, 'Unknown User') AS author_name
+    FROM petitions p
+    LEFT JOIN users u ON u.user_id = p.author_id
+    WHERE p.community_id = $1
+  `;
+  const params = [communityId];
+
+  if (dateFilter.mode === 'day') {
+    sql += ` AND DATE(p.created_at) = CURRENT_DATE - $2::int`;
+    params.push(dateFilter.daysAgo);
+    sql += ` ORDER BY p.created_at DESC LIMIT $3`;
+    params.push(limit);
+  } else if (dateFilter.mode === 'calendar_date') {
+    sql += ` AND DATE(p.created_at) = $2::date`;
+    params.push(dateFilter.isoDate);
+    sql += ` ORDER BY p.created_at DESC LIMIT $3`;
+    params.push(limit);
+  } else if (dateFilter.mode === 'weekday') {
+    sql += ` AND EXTRACT(DOW FROM p.created_at) = $2`;
+    params.push(dateFilter.weekday);
+    sql += ` ORDER BY p.created_at DESC LIMIT $3`;
+    params.push(limit);
+  } else if (dateFilter.mode === 'rolling_period') {
+    sql += ` AND p.created_at >= NOW() - ($2::int * ('1 ' || $3)::interval)`;
+    params.push(dateFilter.amount);
+    params.push(dateFilter.unit);
+    sql += ` ORDER BY p.created_at DESC LIMIT $4`;
+    params.push(limit);
+  } else if (dateFilter.mode === 'calendar_period') {
+    const range = getCalendarPeriodRange(dateFilter.periodKind, dateFilter.periodOffset);
+    sql += ` AND p.created_at >= $2 AND p.created_at < $3`;
+    params.push(range.start.toISOString());
+    params.push(range.end.toISOString());
+    sql += ` ORDER BY p.created_at DESC LIMIT $4`;
+    params.push(limit);
+  } else {
+    sql += ` AND p.created_at >= NOW() - INTERVAL '90 days'`;
+    sql += ` ORDER BY p.created_at DESC LIMIT $2`;
+    params.push(limit);
+  }
+
+  const result = await query(sql, params);
+  return result.rows.map(r => ({
+    ...r,
+    content: `Petition: ${r.title}. Summary: ${r.summary}. (Status: ${r.status}, Priority: ${r.priority_level})`
+  }));
 }
 
 async function generateLLMSolutions(issues, mode = 'solutions') {
@@ -1356,7 +1501,7 @@ async function summarizeFromChatMessages(question, communityId) {
   }
   // Fetch messages using existing function
   const messages = await fetchCommunityChatMessages(communityId, question);
-  
+
   if (!messages.length) {
     // Handle no messages case
     const dateFilter = getDateFilterConfig(question);
@@ -1364,12 +1509,12 @@ async function summarizeFromChatMessages(question, communityId) {
       dateFilter.mode === 'calendar_date' && dateFilter.label
         ? `No chat messages found for ${dateFilter.label} in this community.`
         : dateFilter.mode === 'weekday' && dateFilter.label
-        ? `No chat messages found for ${dateFilter.label} in this community.`
-        : dateFilter.mode === 'rolling_period' && dateFilter.label
-        ? `No chat messages found in the last ${dateFilter.label} in this community.`
-        : dateFilter.mode === 'calendar_period' && dateFilter.label
-        ? `No chat messages found for ${dateFilter.label} in this community.`
-        : 'No chat messages found for the requested time range.';
+          ? `No chat messages found for ${dateFilter.label} in this community.`
+          : dateFilter.mode === 'rolling_period' && dateFilter.label
+            ? `No chat messages found in the last ${dateFilter.label} in this community.`
+            : dateFilter.mode === 'calendar_period' && dateFilter.label
+              ? `No chat messages found for ${dateFilter.label} in this community.`
+              : 'No chat messages found for the requested time range.';
 
     return {
       answer: noDataMessage,
@@ -1381,15 +1526,15 @@ async function summarizeFromChatMessages(question, communityId) {
   }
 
 
-// Detect user intent
-const intent = detectIntent(question);
-  
+  // Detect user intent
+  const intent = detectIntent(question);
+
   logger.info('Detected intent', { intent, question: question.substring(0, 100) });
 
   // Prepare data based on intent
   let promptData;
   let prompt;
-  
+
   if (intent === 'solutions' || intent === 'recommendations') {
     // For solutions/recommendations, provide issues as a clean list
     const issuesList = messages
@@ -1398,29 +1543,41 @@ const intent = detectIntent(question);
       .map(m => `- ${normalizeIssueText(m.content)}`)
       .filter((v, i, a) => a.indexOf(v) === i) // Remove duplicates
       .join('\n');
-    
+
     promptData = issuesList || '- No specific issues found';
     prompt = getPrompt(intent, promptData, question);
-    
+  } else if (intent === 'per_message_recommendations') {
+    // For per-message recommendation solutions, keep each message as a separate item.
+    const msgItems = messages
+      .filter(m => !isLowSignalMessage(m.content))
+      .map(m => normalizeIssueText(m.content))
+      .filter(Boolean)
+      .filter((v, i, a) => a.indexOf(v) === i)
+      .slice(0, 12);
+
+    const messagesList = msgItems.map((t, i) => `${i + 1}. ${t}`).join('\n');
+    promptData = messagesList || '1. No specific messages found';
+    prompt = getPrompt(intent, promptData, question);
+
   } else if (intent === 'summary') {
     // For summary, provide full transcript with timestamps
     const transcript = formatMessagesAsTranscript(messages);
-    const includeRecommendations = question.toLowerCase().includes('recommend');
-    
+    const includeRecommendations = shouldIncludeRecommendationsInSummary(question);
+
     promptData = transcript;
     prompt = getPrompt(intent, promptData, question, { includeRecommendations });
-    
+
   } else if (['sentiment', 'toxicity', 'abuse', 'categorization', 'topics', 'duplication', 'duplicates', 'announcement', 'announcements'].includes(intent)) {
     // For analysis tasks, provide messages as numbered list
     const messagesList = formatMessagesAsList(messages);
-    
+
     promptData = messagesList;
     prompt = getPrompt(intent, promptData, question);
-    
+
   } else {
     // For general questions, provide transcript
     const transcript = formatMessagesAsTranscript(messages);
-    
+
     promptData = transcript;
     prompt = getPrompt('general', promptData, question);
   }
@@ -1428,13 +1585,13 @@ const intent = detectIntent(question);
   // Query LLM with the constructed prompt
   let answer = '';
   let llmSuccess = false;
-  
+
   try {
     logger.info('Querying LLM', { intent, promptLength: prompt.length });
-    
+
     const llmResponse = await queryLLM(prompt, null, 0.3);
     answer = String(llmResponse?.response || '').trim();
-    
+
     // Check if LLM returned a valid response
     if (answer && !isLimitMessage(answer)) {
       llmSuccess = true;
@@ -1470,31 +1627,168 @@ const intent = detectIntent(question);
   };
 }
 
+async function summarizeFromComplaints(question, communityId) {
+  const messages = await fetchCommunityComplaints(communityId, question);
+
+  if (!messages.length) {
+    const dateFilter = getDateFilterConfig(question);
+    const noDataMessage = `No complaints found for the requested time range (${dateFilter.label || 'recent'}).`;
+
+    return {
+      answer: noDataMessage,
+      sources: [],
+      confidence: 0,
+      sourceCount: 0,
+      status: 'no_complaints',
+    };
+  }
+
+  const transcript = messages.map(m => `- [${m.category}] ${m.title}: ${m.description} (By: ${m.creator_name})`).join('\n');
+
+  const prompt = `You are a helpful community assistant. Provide a concise summary and analysis of the following community complaints for the requested period.
+Highlight key recurring categories, urgent issues, and provide suggested next steps for each category.
+
+Complaints:
+${transcript}
+
+Question: ${question}
+
+Output Format MUST have exactly two sections:
+
+Summary:
+- [Key point 1]
+- [Key point 2]
+
+Solutions:
+- [Practical solution 1]
+- [Practical solution 2]
+
+Result:`;
+
+  try {
+    const result = await queryLLM(prompt, null, 0.3);
+    const answer = String(result?.response || '').trim();
+
+    if (answer && !isLimitMessage(answer)) {
+      return {
+        answer,
+        sources: messages.slice(0, 5).map((m, idx) => ({
+          id: `complaint-${idx}`,
+          title: `${m.title} (${m.category})`,
+          similarity: null,
+        })),
+        confidence: 85,
+        sourceCount: messages.length,
+        status: 'llm_success',
+      };
+    }
+  } catch (error) {
+    logger.error('Complaint summarization failed', { error: error.message });
+  }
+
+  return {
+    answer: `I found ${messages.length} complaints. Here are the main ones:\n\n` + transcript.split('\n').slice(0, 10).join('\n'),
+    sources: [],
+    confidence: 50,
+    sourceCount: messages.length,
+    status: 'deterministic_fallback',
+  };
+}
+
+async function summarizeFromPetitions(question, communityId) {
+  const messages = await fetchCommunityPetitions(communityId, question);
+
+  if (!messages.length) {
+    const dateFilter = getDateFilterConfig(question);
+    return {
+      answer: `No petitions found for the requested time range (${dateFilter.label || 'recent'}).`,
+      sources: [],
+      confidence: 0,
+      sourceCount: 0,
+      status: 'no_petitions',
+    };
+  }
+
+  const transcript = messages.map(m => `- ${m.title}: ${m.summary} (By: ${m.author_name})`).join('\n');
+
+  const prompt = `You are a helpful community assistant. Provide a concise summary of the following community petitions.
+Analyze the main concerns and suggest practical solutions or actions the community head should take.
+
+Petitions:
+${transcript}
+
+Question: ${question}
+
+Output Format MUST have exactly two sections:
+
+Summary:
+- [Key point 1]
+- [Key point 2]
+
+Solutions:
+- [Practical solution 1]
+- [Practical solution 2]
+
+Result:`;
+
+  try {
+    const result = await queryLLM(prompt, null, 0.3);
+    const answer = String(result?.response || '').trim();
+
+    if (answer && !isLimitMessage(answer)) {
+      return {
+        answer,
+        sources: messages.slice(0, 5).map((m, idx) => ({
+          id: `petition-${idx}`,
+          title: m.title,
+          similarity: null,
+        })),
+        confidence: 85,
+        sourceCount: messages.length,
+        status: 'llm_success',
+      };
+    }
+  } catch (error) {
+    logger.error('Petition summarization failed', { error: error.message });
+  }
+
+  return {
+    answer: `I found ${messages.length} petitions. Here are the titles:\n\n` + messages.map(m => `- ${m.title}`).join('\n'),
+    sources: [],
+    confidence: 50,
+    sourceCount: messages.length,
+    status: 'deterministic_fallback',
+  };
+}
+
 /**
  * Clean LLM output based on intent
  */
 function cleanLLMOutput(text, intent) {
   let cleaned = String(text || '').trim();
-  
+
   // Remove common AI verbosity
   cleaned = cleaned.replace(/^(Here (is|are)|Here's|This is|Based on|According to)\s*/i, '');
   cleaned = cleaned.replace(/^(I understand|I analyzed|I reviewed|Let me provide)\s*[^.!?]*[.!?]\s*/i, '');
-  
-  // Remove sender name patterns
-  cleaned = cleaned.replace(/^[A-Za-z][A-Za-z0-9 _.-]{0,30}:\s*/gm, '');
-  
+
+  // Remove sender name patterns (but keep structured labels like "Message:", "Summary:", etc.)
+  cleaned = cleaned.replace(
+    /^(?!(Message|Summary|Recommendations?|Recommendation|Solutions?|Topics?|Announcements?|Duplicate|Duplicates|Toxicity|Sentiment)\b)[A-Za-z][A-Za-z0-9 _.-]{0,30}:\s*/gm,
+    ''
+  );
+
   // Remove "Note:" prefixes
   cleaned = cleaned.replace(/^note\s*:\s*/gim, '');
-  
+
   // Clean up whitespace
   cleaned = cleaned.replace(/\r/g, '').replace(/\n{3,}/g, '\n\n').trim();
-  
+
   // For summary, remove unwanted sections
   if (intent === 'summary') {
     // Remove "Query:" or "Title:" sections
     cleaned = cleaned.replace(/^(Query|Title|User Request)\s*:[\s\S]*?\n\n/im, '');
   }
-  
+
   return cleaned;
 }
 
@@ -1508,31 +1802,36 @@ async function buildDeterministicAnswer(intent, messages, question) {
 
     case 'recommendations':
       return await buildDeterministicRecommendations(messages);
-    
+
+    case 'per_message_recommendations':
+      return await buildDeterministicPerMessageRecommendations(messages, question);
+
     case 'summary':
-      return buildDeterministicSummary(messages);
-    
+      return shouldIncludeRecommendationsInSummary(question)
+        ? await buildDeterministicSummaryWithRecommendations(messages, question)
+        : await buildDeterministicSummary(messages);
+
     case 'sentiment':
-      return buildSentimentAnswer(question, messages);
-    
+      return await buildSentimentAnswer(question, messages);
+
     case 'toxicity':
     case 'abuse':
-      return buildAbuseAnswer(messages);
-    
+      return await buildAbuseAnswer(messages);
+
     case 'categorization':
     case 'topics':
-      return buildCategorizationAnswer(messages);
-    
+      return await buildCategorizationAnswer(messages);
+
     case 'duplication':
     case 'duplicates':
-      return buildDuplicationAnswer(messages);
-    
+      return await buildDuplicationAnswer(messages);
+
     case 'announcement':
     case 'announcements':
-      return buildAnnouncementAnswer(messages, question);
-    
+      return await buildAnnouncementAnswer(messages, question);
+
     default:
-      return buildGeneralAnswer(messages, question);
+      return await buildGeneralAnswer(messages, question);
   }
 }
 
@@ -1551,11 +1850,11 @@ async function buildDeterministicSolutions(messages) {
   if (llmAnswer) return `Solutions:\n\n${llmAnswer}`;
 
   // Hard fallback: at least show the issues with category-aware labels
-  const solutions = issues.map((issue, idx) => {
-    const category = categorizeIssue(issue);
+  const solutions = await Promise.all(issues.map(async (issue, idx) => {
+    const category = await categorizeIssue(issue);
     const label = getCategoryLabel(category);
     return `${idx + 1}. **${issue}**\n   Category: ${label}\n   Action: Review and address this issue with relevant stakeholders promptly.`;
-  });
+  }));
 
   return `Solutions:\n\n${solutions.join('\n\n')}`;
 }
@@ -1575,65 +1874,269 @@ async function buildDeterministicRecommendations(messages) {
   if (llmAnswer) return `Recommendations:\n\n${llmAnswer}`;
 
   // Hard fallback
-  const lines = issues.map((issue, idx) => {
-    const category = categorizeIssue(issue);
+  const lines = await Promise.all(issues.map(async (issue, idx) => {
+    const category = await categorizeIssue(issue);
     const label = getCategoryLabel(category);
     return `${idx + 1}. **${issue}** (${label})\n   - Assess impact, consult affected members, and implement a targeted resolution plan.`;
-  });
+  }));
 
   return `Recommendations:\n\n${lines.join('\n\n')}`;
 }
 /**
  * Deterministic Summary Builder
  */
-function buildDeterministicSummary(messages) {
+async function getDeterministicSummaryItems(messages) {
   const issues = extractUniqueIssues(messages);
-  
-  if (!issues.length) {
+  if (!issues.length) return [];
+
+  const categoryOrder = [
+    'safety',
+    'electricity',
+    'water',
+    'sanitation',
+    'maintenance',
+    'facilities',
+    'noise',
+    'parking',
+    'general',
+  ];
+
+  const byCategory = new Map(categoryOrder.map((c) => [c, []]));
+
+  await Promise.all(issues.map(async (issue) => {
+    const category = await categorizeIssue(issue);
+    if (!byCategory.has(category)) byCategory.set(category, []);
+    byCategory.get(category).push(issue);
+  }));
+
+  const items = [];
+  for (const category of categoryOrder) {
+    const list = byCategory.get(category) || [];
+    for (const issue of list) {
+      items.push({
+        category,
+        categoryLabel: getCategoryLabel(category),
+        issue,
+      });
+    }
+  }
+
+  // Any unexpected categories appended at end
+  for (const [category, list] of byCategory.entries()) {
+    if (categoryOrder.includes(category)) continue;
+    for (const issue of list) {
+      items.push({
+        category,
+        categoryLabel: getCategoryLabel(category),
+        issue,
+      });
+    }
+  }
+
+  return items;
+}
+
+async function buildDeterministicSummary(messages) {
+  const transcript = formatMessagesAsTranscript(messages);
+  const prompt = `Provide a concise, professional summary of the following community chat messages.
+Focus on key issues, concerns, and resolutions discussed.
+Output exactly one paragraph.
+
+Transcript:
+${transcript.slice(0, 3000)}
+
+Summary:`;
+
+  try {
+    const result = await queryLLM(prompt, null, 0.3);
+    const answer = String(result?.response || '').trim();
+    if (answer && !isLimitMessage(answer)) return `Summary:\n\n${answer}`;
+  } catch (error) {
+    logger.warn('LLM summary failed, using fallback', { error: error.message });
+  }
+
+  const items = await getDeterministicSummaryItems(messages);
+  if (!items.length) {
     return 'Summary:\n\nNo significant discussion points found in the chat.';
   }
 
-  const categorized = {};
-  issues.forEach(issue => {
-    const category = categorizeIssue(issue);
-    if (!categorized[category]) categorized[category] = [];
-    categorized[category].push(issue);
+  let output = 'Summary:\n\n';
+  items.forEach((item, idx) => {
+    output += `${idx + 1}. ${item.categoryLabel}: ${item.issue}\n`;
   });
 
-  let output = 'Summary:\n\n';
-  let idx = 1;
-  
-  for (const [category, items] of Object.entries(categorized)) {
-    const categoryLabel = getCategoryLabel(category);
-    items.forEach(item => {
-      output += `${idx}. **${categoryLabel}:** ${item}\n`;
-      idx++;
-    });
+  return output.trim();
+}
+
+function recommendationForCategory(category, issue) {
+  const safeIssue = normalizeIssueText(issue);
+  switch (category) {
+    case 'safety':
+      return `Owner: Community HEAD/ADMIN — ensure immediate safety, document details, and escalate to security/authorities today if needed (${safeIssue}).`;
+    case 'water':
+      return `Owner: Maintenance — raise a ticket, inspect source (tank/line/leak), schedule plumber within 24h, and post ETA/updates (${safeIssue}).`;
+    case 'electricity':
+      return `Owner: Maintenance/Electrician — confirm scope, check supply/breakers, contact utility, and post outage + fix timeline within 1 hour (${safeIssue}).`;
+    case 'sanitation':
+      return `Owner: Housekeeping/Vendor — schedule pickup/cleaning today, assign responsibility, add bins/signage, and monitor daily for 7 days (${safeIssue}).`;
+    case 'maintenance':
+      return `Owner: Maintenance — create a fix list with assignees + deadlines, share progress updates, and close only after verification (${safeIssue}).`;
+    case 'facilities':
+      return `Owner: Facility Manager — inspect equipment, pause unsafe use, book repair this week, and publish temporary alternatives/rules (${safeIssue}).`;
+    case 'noise':
+      return `Owner: Moderators — remind quiet hours now; if repeated, collect evidence and enforce policy (warnings/fines) within 48h (${safeIssue}).`;
+    case 'parking':
+      return `Owner: Community Admin — clarify allocation/rules, mark slots, and handle violations consistently starting this week (${safeIssue}).`;
+    default:
+      return `Owner: Community Admin — collect details, assign an owner, agree next steps, and track resolution publicly with updates (${safeIssue}).`;
+  }
+}
+
+async function generateLLMMessageSolutions(messageTexts, question) {
+  const texts = (Array.isArray(messageTexts) ? messageTexts : [])
+    .map((t) => normalizeIssueText(t))
+    .filter(Boolean)
+    .slice(0, 12);
+
+  if (!texts.length) return '';
+
+  const list = texts.map((t, i) => `${i + 1}. ${t}`).join('\n');
+  const prompt = `You are a practical community assistant.
+
+User request: ${String(question || '').trim()}
+
+For each message, provide a short, concrete fix.
+
+Rules:
+- Output plain text only (no markdown like **).
+- Do NOT use the words "Owner:".
+- Avoid the phrase "raise a ticket" (say the real action instead).
+- 1-2 sentences per item.
+- Format exactly like this:
+
+1. Message: "<message text>"
+   Solution: <solution>
+
+Messages:
+${list}
+
+Output:`;
+
+  try {
+    const result = await queryLLM(prompt, null, 0.25);
+    const answer = String(result?.response || '').trim();
+    if (answer && !isLimitMessage(answer)) return answer;
+  } catch (error) {
+    logger.error('LLM per-message solutions failed', { error: error.message });
   }
 
-  return output.trim();
+  return '';
+}
+
+async function buildDeterministicSummaryWithRecommendations(messages, question) {
+  const summary = await buildDeterministicSummary(messages);
+  const items = await getDeterministicSummaryItems(messages);
+
+  if (!items.length) return summary;
+
+  const llmActions = await generateLLMMessageSolutions(
+    items.map((i) => i.issue),
+    question
+  );
+
+  if (llmActions) {
+    return `${summary}\n\nRecommendations:\n${llmActions}`.trim();
+  }
+
+  // NEW: Feed the summary into Ollama to give a concrete solution
+  try {
+    const ollamaPrompt = `You are a practical community assistant. 
+Based on this chat summary, provide a concise, actionable solution (1-2 sentences):
+
+${summary}
+
+Solution:`;
+
+    const ollamaResult = await queryLLM(ollamaPrompt, null, 0.2);
+    const ollamaSolution = String(ollamaResult?.response || '').trim();
+
+    if (ollamaSolution && !isLimitMessage(ollamaSolution)) {
+      return `${summary}\n\nRecommendations (AI):\n${ollamaSolution}`.trim();
+    }
+  } catch (error) {
+    logger.warn('Ollama summary-to-solution failed, falling back to deterministic labels', { error: error.message });
+  }
+
+  // Hard fallback: provide deterministic recommendations based on categories
+  const manual = await Promise.all(items.slice(0, 6).map(async (item, idx) => {
+    const rec = await detailedRecommendationForCategory(item.category, item.issue);
+    return `${idx + 1}. Message: "${normalizeIssueText(item.issue)}"\n   Solution: ${rec}`;
+  }));
+
+  return `${summary}\n\nRecommendations:\n${manual.join('\n\n')}`.trim();
+}
+
+
+async function buildDeterministicPerMessageRecommendations(messages, question) {
+  const unique = extractUniqueIssues(messages);
+  if (!unique.length) {
+    return 'No specific issues found to provide recommendations for.';
+  }
+
+  const llmAnswer = await generateLLMMessageSolutions(unique, question);
+  if (llmAnswer) return llmAnswer;
+
+  const minimal = unique
+    .slice(0, 6)
+    .map(
+      (t, idx) =>
+        `${idx + 1}. Message: "${normalizeIssueText(t)}"\n   Solution: Share exact location/photos and contact the relevant maintenance team to fix it.`
+    );
+  return minimal.join('\n\n');
+}
+
+async function detailedRecommendationForCategory(category, message) {
+  const safeMessage = normalizeIssueText(message);
+
+  const prompt = `You are a practical community manager assistant.
+A member reported the following issue in the '${category}' category:
+"${safeMessage}"
+
+Provide a concise, practical solution (under 30 words) explaining exactly what action the community management or maintenance team should take to resolve this specific issue. Do not prefix with "Solution:" or "Owner:". Output just the raw action text.`;
+
+  try {
+    const result = await queryLLM(prompt, null, 0.25);
+    const answer = String(result?.response || '').trim();
+    if (answer && !isLimitMessage(answer)) {
+      return answer;
+    }
+  } catch (error) {
+    logger.warn('LLM detailed recommendation failed, using generic fallback', { error: error.message });
+  }
+
+  return `Collect exact details/location, assign an owner with a deadline, and post an update after inspection and after resolution.`;
 }
 
 /**
  * Deterministic Categorization Builder
  */
-function buildCategorizationAnswer(messages) {
+async function buildCategorizationAnswer(messages) {
   const issues = extractUniqueIssues(messages);
-  
+
   if (!issues.length) {
     return 'Topics Discussed:\n\nNo specific topics identified in the chat.';
   }
 
   const categorized = {};
-  issues.forEach(issue => {
-    const category = categorizeIssue(issue);
+  await Promise.all(issues.map(async (issue) => {
+    const category = await categorizeIssue(issue);
     if (!categorized[category]) categorized[category] = [];
     categorized[category].push(issue);
-  });
+  }));
 
   let output = 'Topics Discussed:\n\n';
   let idx = 1;
-  
+
   for (const [category, items] of Object.entries(categorized)) {
     const categoryLabel = getCategoryLabel(category);
     output += `${idx}. **${categoryLabel}** (${items.length} message${items.length > 1 ? 's' : ''})\n`;
@@ -1645,7 +2148,7 @@ function buildCategorizationAnswer(messages) {
   const priorities = Object.entries(categorized)
     .filter(([cat]) => ['safety', 'sanitation', 'water', 'electricity'].includes(cat))
     .map(([cat]) => getCategoryLabel(cat));
-  
+
   if (priorities.length) {
     output += `**Priority Topics:** ${priorities.join(', ')}`;
   }
@@ -1656,44 +2159,26 @@ function buildCategorizationAnswer(messages) {
 /**
  * Deterministic Duplication Builder
  */
-function buildDuplicationAnswer(messages) {
-  const contentMap = {};
-  
-  messages.forEach(m => {
-    const normalized = normalizeIssueText(m.content).toLowerCase();
-    if (normalized && normalized.length > 10) {
-      if (!contentMap[normalized]) {
-        contentMap[normalized] = [];
-      }
-      contentMap[normalized].push(m);
-    }
-  });
+async function buildDuplicationAnswer(messages) {
+  const transcript = formatMessagesAsTranscript(messages.slice(-50));
+  const prompt = `Identify repeated or duplicate issues/complaints in the following community chat transcript.
+Group similar concerns together and mention how many times they were raised.
+Output a clear, professional list of duplicate issues.
 
-  const duplicates = Object.entries(contentMap)
-    .filter(([_, msgs]) => msgs.length > 1)
-    .sort((a, b) => b[1].length - a[1].length);
+Transcript:
+${transcript}
 
-  if (!duplicates.length) {
-    return 'Duplicate Issues Found:\n\nNo duplicate or repeated issues identified.';
+Duplicate Issues:`;
+
+  try {
+    const result = await queryLLM(prompt, null, 0.3);
+    const answer = String(result?.response || '').trim();
+    if (answer && !isLimitMessage(answer)) return `Duplicate Issues Found:\n\n${answer}`;
+  } catch (error) {
+    logger.warn('LLM duplication detection failed', { error: error.message });
   }
 
-  let output = 'Duplicate Issues Found:\n\n';
-  
-  duplicates.slice(0, 5).forEach(([content, msgs], idx) => {
-    const firstMsg = msgs[0];
-    const senders = [...new Set(msgs.map(m => m.sender_name).filter(Boolean))];
-    const pattern = senders.length > 1 ? 'Multiple reporters' : 
-                   msgs.length > 2 ? 'Repeated mentions' : 'Follow-up';
-    
-    output += `${idx + 1}. **${normalizeIssueText(content)}** - Mentioned ${msgs.length} times\n`;
-    output += `   - Pattern: ${pattern}\n`;
-    if (senders.length > 1) {
-      output += `   - Reported by: ${senders.slice(0, 3).join(', ')}${senders.length > 3 ? ', ...' : ''}\n`;
-    }
-    output += `   - Urgency: ${msgs.length >= 3 ? 'High' : 'Medium'}\n\n`;
-  });
-
-  return output.trim();
+  return 'Duplicate Issues Found:\n\nNo duplicate or repeated issues identified.';
 }
 
 /**
@@ -1701,7 +2186,7 @@ function buildDuplicationAnswer(messages) {
  */
 function extractUniqueIssues(messages) {
   const issues = new Set();
-  
+
   messages.forEach(m => {
     const content = normalizeIssueText(m.content);
     if (content && !isLowSignalMessage(content) && content.length > 10) {
@@ -1715,9 +2200,30 @@ function extractUniqueIssues(messages) {
 /**
  * Categorize issue
  */
-function categorizeIssue(issue) {
+async function categorizeIssue(issue) {
   const lower = issue.toLowerCase();
-  
+
+  const prompt = `Categorize the following community issue into one of these categories: safety, sanitation, water, electricity, facilities, noise, maintenance, parking, general.
+Output ONLY the category name in lowercase.
+
+Issue: "${issue}"
+
+Category:`;
+
+  try {
+    const result = await queryLLM(prompt, null, 0.1);
+    const cat = String(result?.response || '').trim().toLowerCase();
+    const valid = ['safety', 'sanitation', 'water', 'electricity', 'facilities', 'noise', 'maintenance', 'parking', 'general'];
+    if (valid.includes(cat)) return cat;
+
+    // Heuristic fallback if LLM gives weird output
+    for (const v of valid) {
+      if (cat.includes(v)) return v;
+    }
+  } catch (error) {
+    logger.warn('LLM categorization failed, using keyword fallback', { error: error.message });
+  }
+
   if (lower.match(/\b(abuse|harass|attack|threat|safe|security|violence|assault|danger)\b/)) {
     return 'safety';
   }
@@ -1742,7 +2248,7 @@ function categorizeIssue(issue) {
   if (lower.match(/\b(parking|vehicle|car|bike)\b/)) {
     return 'parking';
   }
-  
+
   return 'general';
 }
 
@@ -1761,30 +2267,35 @@ function getCategoryLabel(category) {
     parking: 'Parking & Vehicles',
     general: 'General Discussion',
   };
-  
+
   return labels[category] || 'General';
 }
 
 /**
  * Build general answer (existing function from rag.service.js)
  */
-function buildGeneralAnswer(messages, question) {
-  const ranked = messages
-    .map((m) => ({
-      ...m,
-      relevance: messageRelevanceScore(question, m.content),
-    }))
-    .sort((a, b) => b.relevance - a.relevance || new Date(b.created_at) - new Date(a.created_at));
+async function buildGeneralAnswer(messages, question) {
+  const transcript = formatMessagesAsTranscript(messages.slice(-60));
+  const prompt = `You are a helpful community assistant. Answer the user's question based ONLY on the provided chat transcript.
+If the information is not in the transcript, say you don't know based on the recent chat.
+Keep the answer concise and practical.
 
-  const relevant = ranked.filter((m) => m.relevance > 0).slice(0, 5);
-  const chosen = relevant.length ? relevant : ranked.filter((m) => isImportantMessage(m.content)).slice(-5);
+Question: ${question}
 
-  if (!chosen.length) {
-    return 'I could not find relevant information to answer that question based on the community chat.';
+Transcript:
+${transcript}
+
+Answer:`;
+
+  try {
+    const result = await queryLLM(prompt, null, 0.3);
+    const answer = String(result?.response || '').trim();
+    if (answer && !isLimitMessage(answer)) return answer;
+  } catch (error) {
+    logger.warn('LLM general answer failed', { error: error.message });
   }
 
-  const points = chosen.map(m => `- ${normalizeIssueText(m.content)}`).join('\n');
-  return `Based on community chat:\n\n${points}`;
+  return 'I could not find relevant information to answer that question based on the community chat.';
 }
 
 // Export the improved function
@@ -1824,6 +2335,12 @@ async function ensureBotHistoryTable() {
   botHistoryTableReady = true;
 }
 
+async function getHistoryTableName(type) {
+  if (type === 'complaints' || type === 'complaint') return 'complaint_bot_history';
+  if (type === 'petitions' || type === 'petition') return 'petition_bot_history';
+  return 'bot_chat_history';
+}
+
 async function saveBotHistory({
   userId,
   communityId,
@@ -1834,12 +2351,14 @@ async function saveBotHistory({
   sourceCount = 0,
   status = 'success',
   errorMessage = null,
+  type = 'chat',
 }) {
   try {
-    await ensureBotHistoryTable();
+    const tableName = await getHistoryTableName(type);
+    await ensureBotHistoryTable(); // Ensures chat history table, but we assume other tables exist if type is specified
 
     await query(
-      `INSERT INTO bot_chat_history
+      `INSERT INTO ${tableName}
        (user_id, community_id, question, answer, session_hash, confidence, source_count, status, error_message, created_at)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,NOW())`,
       [
@@ -1855,7 +2374,7 @@ async function saveBotHistory({
       ]
     );
   } catch (error) {
-    logger.error('Failed to save bot chat history', { error: error.message });
+    logger.error(`Failed to save bot history for ${type}`, { error: error.message });
   }
 }
 
@@ -1864,10 +2383,10 @@ async function saveBotHistory({
  */
 async function initEmbeddingModel() {
   if (embeddingPipeline) return embeddingPipeline;
-  
+
   const startTime = Date.now();
   logger.info('Loading embedding model...');
-  
+
   try {
     const candidates = [
       { model: EMBEDDING_MODEL, quantized: false },
@@ -1912,12 +2431,12 @@ async function initEmbeddingModel() {
     if (!embeddingPipeline) {
       throw lastError || new Error('No compatible embedding model could be loaded');
     }
-    
+
     const duration = Date.now() - startTime;
     logPerformance('Embedding model initialization', duration);
-    
+
     logger.info('✅ Embedding model loaded', { duration: `${duration}ms` });
-    
+
     return embeddingPipeline;
   } catch (error) {
     logger.error('Failed to load embedding model', { error: error.message });
@@ -1930,22 +2449,22 @@ async function initEmbeddingModel() {
  */
 async function generateEmbedding(text) {
   const startTime = Date.now();
-  
+
   try {
     const pipeline = await initEmbeddingModel();
-    
+
     // Generate embedding
     const output = await pipeline(text, {
       pooling: 'mean',
       normalize: true,
     });
-    
+
     // Convert to array
     const embedding = Array.from(output.data);
-    
+
     const duration = Date.now() - startTime;
     logPerformance('Embedding generation', duration);
-    
+
     return embedding;
   } catch (error) {
     logger.error('Embedding generation error', { error: error.message });
@@ -1958,11 +2477,11 @@ async function generateEmbedding(text) {
  */
 async function addDocument(communityId, title, content, uploadedBy) {
   const startTime = Date.now();
-  
+
   try {
     // Generate embedding
     const embedding = await generateEmbedding(content);
-    
+
     // Insert into database
     const result = await query(
       `INSERT INTO community_docs 
@@ -1971,17 +2490,17 @@ async function addDocument(communityId, title, content, uploadedBy) {
        RETURNING id`,
       [communityId, title, content, JSON.stringify(embedding), uploadedBy]
     );
-    
+
     const duration = Date.now() - startTime;
     logPerformance('Document addition', duration);
-    
+
     logger.info('Document added to vector DB', {
       docId: result.rows[0].id,
       communityId,
       title,
       duration: `${duration}ms`,
     });
-    
+
     return result.rows[0].id;
   } catch (error) {
     logger.error('Document addition error', { error: error.message });
@@ -1994,23 +2513,23 @@ async function addDocument(communityId, title, content, uploadedBy) {
  */
 async function searchDocuments(question, communityId, limit = 5) {
   const startTime = Date.now();
-  
+
   try {
     // Generate embedding for question
     const questionEmbedding = await generateEmbedding(question);
-    
+
     // Search similar documents
     const documents = await vectorSearch(questionEmbedding, communityId, limit);
-    
+
     const duration = Date.now() - startTime;
     logPerformance('Document search', duration);
-    
+
     logger.debug('Document search completed', {
       communityId,
       resultsFound: documents.length,
       duration: `${duration}ms`,
     });
-    
+
     return documents;
   } catch (error) {
     if (isMissingRelation(error, 'community_docs')) {
@@ -2035,16 +2554,21 @@ function sanitizePromptForOllama(prompt) {
  */
 async function queryOllama(prompt, context = '', temperature = 0.7) {
   const startTime = Date.now();
-  
+  const sanitizedPrompt = sanitizePromptForOllama(prompt);
+  logger.info('Querying Ollama', {
+    model: OLLAMA_MODEL,
+    promptLength: sanitizedPrompt.length,
+    host: OLLAMA_HOST
+  });
+
   try {
     const payload = {
       model: OLLAMA_MODEL,
-      prompt: sanitizePromptForOllama(prompt),
+      prompt: sanitizedPrompt,
       temperature: temperature,
       stream: false,
     };
 
-    // Ollama expects context as token array; sending wrong type causes HTTP 400.
     if (Array.isArray(context) && context.length > 0) {
       payload.context = context;
     }
@@ -2060,10 +2584,14 @@ async function queryOllama(prompt, context = '', temperature = 0.7) {
         transformRequest: [(data) => JSON.stringify(data)],
       }
     );
-    
+
     const duration = Date.now() - startTime;
+    logger.info('Ollama Response Received', {
+      duration: `${duration}ms`,
+      model: OLLAMA_MODEL
+    });
     logPerformance('Ollama query', duration);
-    
+
     return {
       response: response.data.response,
       context: response.data.context,
@@ -2187,7 +2715,6 @@ Current Petition Details (use these to correct, summarize, or suggest solutions)
 - ID: #${d.petition_id || 'N/A'}
 - Title: ${d.title || 'N/A'}
 - Summary: ${d.summary || 'N/A'}
-- Problem Statement: ${d.problem_statement || 'N/A'}
 - Proposed Action: ${d.proposed_action || 'N/A'}
 - Goal Type: ${d.goal_type || 'N/A'}
 - Impact Area: ${d.impact_area || 'N/A'}
@@ -2283,7 +2810,6 @@ async function fetchPetitionItemContextById(petitionId, communityId) {
        p.petition_id,
        p.title,
        p.summary,
-       p.problem_statement,
        p.proposed_action,
        p.goal_type,
        p.other_goal_type,
@@ -2309,7 +2835,6 @@ async function fetchPetitionItemContextById(petitionId, communityId) {
       petition_id: row.petition_id,
       title: row.title,
       summary: row.summary,
-      problem_statement: row.problem_statement,
       proposed_action: row.proposed_action,
       goal_type: row.goal_type === 'Other' ? row.other_goal_type || row.goal_type : row.goal_type,
       impact_area: row.impact_area === 'Other' ? row.other_impact_area || row.impact_area : row.impact_area,
@@ -2368,7 +2893,6 @@ async function fetchLatestPetitionItemContext(communityId) {
        p.petition_id,
        p.title,
        p.summary,
-       p.problem_statement,
        p.proposed_action,
        p.goal_type,
        p.other_goal_type,
@@ -2395,7 +2919,6 @@ async function fetchLatestPetitionItemContext(communityId) {
       petition_id: row.petition_id,
       title: row.title,
       summary: row.summary,
-      problem_statement: row.problem_statement,
       proposed_action: row.proposed_action,
       goal_type: row.goal_type === 'Other' ? row.other_goal_type || row.goal_type : row.goal_type,
       impact_area: row.impact_area === 'Other' ? row.other_impact_area || row.impact_area : row.impact_area,
@@ -2413,7 +2936,7 @@ async function fetchLatestPetitionItemContext(communityId) {
  */
 async function askBot(question, communityId, userId, previousContext = null, itemContext = null) {
   const startTime = Date.now();
-  
+
   try {
     // If itemContext wasn't provided by the client, try to infer from question (e.g. "complaint ID 22")
     let inferredRef = null;
@@ -2518,7 +3041,15 @@ async function askBot(question, communityId, userId, previousContext = null, ite
       isTranslationQuery(question) ||
       isLanguageFilterQuery(question);
 
-    if (isIntentOrSummary && !hasItemContext) {
+    const qLower = String(question || '').toLowerCase();
+    const mentionsComplaint = qLower.includes('complaint') || qLower.includes('complain');
+    const mentionsPetition = qLower.includes('petition');
+    const mentionsItem = mentionsComplaint || mentionsPetition;
+
+    // If the user asks for chat-related intents (summary/announcements/sentiment/etc.),
+    // prefer summarizing community chat even if the client passed item_context implicitly.
+    // Only prefer item_context when the question explicitly mentions complaint/petition.
+    if (isIntentOrSummary && (!hasItemContext || !mentionsItem)) {
       const fallbackSessionHash = generateSessionHash(userId, communityId);
       const chatSummary = await summarizeFromChatMessages(question, communityId);
       await saveBotHistory({
@@ -2629,7 +3160,7 @@ Answer:`;
 
     // Search for relevant documents
     const relevantDocs = await searchDocuments(question, communityId);
-    
+
     // When itemContext (petition/complaint) is provided, answer using it even without docs
     if (relevantDocs.length === 0 && itemContext && itemContext.type && itemContext.data) {
       const itemContextBlock = formatItemContext(itemContext);
@@ -2669,7 +3200,7 @@ Provide a helpful, accurate response based on the ${itemContext.type} details ab
         logger.warn('Item context answer failed', { error: err?.message, communityId });
       }
     }
-    
+
     if (relevantDocs.length === 0) {
       logger.info('No relevant documents found', { communityId, question });
       const noInfoSessionHash = generateSessionHash(userId, communityId);
@@ -2703,14 +3234,14 @@ Provide a helpful, accurate response based on the ${itemContext.type} details ab
         sessionHash: noInfoSessionHash,
       };
     }
-    
+
     // Build context from documents
     const documentContext = relevantDocs
       .map((doc, idx) => `[Document ${idx + 1}] ${doc.title}\n${doc.content}`)
       .join('\n\n');
-    
+
     const itemContextBlock = formatItemContext(itemContext);
-    
+
     // Build prompt - include petition/complaint details when provided for correction, summarization, solution suggestions
     const prompt = `You are a helpful assistant for ALL types of communities: hostels, residential societies, clubs, political groups, companies, educational institutions, neighborhoods, NGOs, and informal friend groups. Answer the following question based on the provided context.
 ${itemContextBlock ? `\nIMPORTANT: The user is asking about a specific ${itemContext.type}. Use the details below to correct, improve, summarize, or suggest solutions. Adapt recommendations to the community type. For solution generation, consider best practices across formal and informal communities.` : ''}
@@ -2722,7 +3253,7 @@ ${itemContextBlock}
 Question: ${question}
 
 Answer:`;
-    
+
     // Query Ollama
     const llmResponse = await queryLLM(prompt, previousContext, 0.25);
     const llmAnswer = String(llmResponse.response || '').trim();
@@ -2746,16 +3277,16 @@ Answer:`;
         sessionHash: fallbackSessionHash,
       };
     }
-    
+
     // Calculate confidence based on similarity scores
     const avgSimilarity = relevantDocs.reduce((sum, doc) => sum + doc.similarity, 0) / relevantDocs.length;
     const confidence = Math.round(avgSimilarity * 100);
-    
+
     // Generate or retrieve session hash
-    const sessionHash = previousContext 
+    const sessionHash = previousContext
       ? crypto.createHash('sha256').update(previousContext).digest('hex').substring(0, 16)
       : generateSessionHash(userId, communityId);
-    
+
     // Store session context
     await setBotSession(sessionHash, {
       userId,
@@ -2765,10 +3296,10 @@ Answer:`;
       lastAnswer: llmResponse.response,
       timestamp: Date.now(),
     });
-    
+
     const duration = Date.now() - startTime;
     logPerformance('Bot query (full)', duration);
-    
+
     logger.info('Bot query completed', {
       communityId,
       userId,
@@ -2787,7 +3318,7 @@ Answer:`;
       sourceCount: relevantDocs.length,
       status: 'success',
     });
-    
+
     return {
       answer: llmAnswer,
       sources: relevantDocs.map(doc => ({
@@ -2861,13 +3392,15 @@ Answer:`;
   }
 }
 
-async function getBotHistory(communityId, userId, limit = 50) {
+async function getBotHistory(communityId, userId, limit = 50, type = 'chat') {
   try {
-    await ensureBotHistoryTable();
+    const tableName = await getHistoryTableName(type);
+    await ensureBotHistoryTable(); // Ensures chat history table, but we assume other tables exist if type is specified
+
     const boundedLimit = Math.min(Math.max(parseInt(limit, 10) || 50, 1), 200);
     const result = await query(
       `SELECT id, user_id, community_id, question, answer, session_hash, confidence, source_count, status, created_at
-       FROM bot_chat_history
+       FROM ${tableName}
        WHERE community_id = $1 AND user_id = $2
        ORDER BY created_at DESC
        LIMIT $3`,
@@ -2878,7 +3411,7 @@ async function getBotHistory(communityId, userId, limit = 50) {
     // Fallback: show community history even if user_id changed between logins.
     const fallback = await query(
       `SELECT id, user_id, community_id, question, answer, session_hash, confidence, source_count, status, created_at
-       FROM bot_chat_history
+       FROM ${tableName}
        WHERE community_id = $1
        ORDER BY created_at DESC
        LIMIT $2`,
@@ -2886,22 +3419,22 @@ async function getBotHistory(communityId, userId, limit = 50) {
     );
     return fallback.rows.reverse();
   } catch (error) {
-    logger.error('Failed to fetch bot chat history', { error: error.message, communityId, userId });
+    logger.error(`Failed to fetch bot history for ${type}`, { error: error.message, communityId, userId });
     return [];
   }
 }
 
-async function deleteBotHistoryEntry(communityId, userId, historyId) {
+async function deleteBotHistoryEntry(communityId, userId, historyId, type = 'chat') {
   try {
-    await ensureBotHistoryTable();
+    const tableName = await getHistoryTableName(type);
     const result = await query(
-      `DELETE FROM bot_chat_history
+      `DELETE FROM ${tableName}
        WHERE id = $1 AND community_id = $2 AND user_id = $3`,
       [historyId, communityId, userId]
     );
     return result.rowCount > 0;
   } catch (error) {
-    logger.error('Failed to delete bot chat history entry', {
+    logger.error(`Failed to delete bot history entry for ${type}`, {
       error: error.message,
       communityId,
       userId,
@@ -2911,17 +3444,17 @@ async function deleteBotHistoryEntry(communityId, userId, historyId) {
   }
 }
 
-async function clearBotHistory(communityId, userId) {
+async function clearBotHistory(communityId, userId, type = 'chat') {
   try {
-    await ensureBotHistoryTable();
+    const tableName = await getHistoryTableName(type);
     const result = await query(
-      `DELETE FROM bot_chat_history
+      `DELETE FROM ${tableName}
        WHERE community_id = $1 AND user_id = $2`,
       [communityId, userId]
     );
     return result.rowCount || 0;
   } catch (error) {
-    logger.error('Failed to clear bot chat history', {
+    logger.error(`Failed to clear bot history for ${type}`, {
       error: error.message,
       communityId,
       userId,
@@ -2937,12 +3470,12 @@ async function continueConversation(question, sessionHash, communityId, userId, 
   try {
     // Retrieve previous session
     const session = await getBotSession(sessionHash);
-    
+
     if (!session || session.communityId !== communityId) {
       logger.warn('Invalid or expired session', { sessionHash, communityId });
       return await askBot(question, communityId, userId, null, itemContext);
     }
-    
+
     // Use previous context
     return await askBot(question, communityId, userId, session.context, itemContext);
   } catch (error) {
@@ -2964,7 +3497,7 @@ async function getDocumentCount(communityId) {
       'SELECT COUNT(*) as count FROM community_docs WHERE community_id = $1',
       [communityId]
     );
-    
+
     return parseInt(result.rows[0].count);
   } catch (error) {
     logger.error('Document count error', { error: error.message });
@@ -2981,7 +3514,7 @@ async function deleteDocument(docId, communityId) {
       'DELETE FROM community_docs WHERE id = $1 AND community_id = $2 RETURNING id',
       [docId, communityId]
     );
-    
+
     return result.rowCount > 0;
   } catch (error) {
     logger.error('Document deletion error', { error: error.message });
@@ -2997,7 +3530,7 @@ async function checkOllamaHealth() {
     const response = await axios.get(`${OLLAMA_HOST}/api/tags`, {
       timeout: 5000,
     });
-    
+
     return {
       available: true,
       models: response.data.models || [],
@@ -3009,6 +3542,43 @@ async function checkOllamaHealth() {
       error: error.message,
       provider: 'ollama',
     };
+  }
+}
+
+/**
+ * AI Action Suggestion for Petitions/Complaints
+ */
+async function suggestAction(itemId, itemType, communityId) {
+  try {
+    let itemData = null;
+    if (itemType === 'petition') {
+      const result = await query(
+        'SELECT * FROM petitions WHERE petition_id = $1 AND community_id = $2',
+        [itemId, communityId]
+      );
+      itemData = result.rows[0];
+    } else if (itemType === 'complaint') {
+      const result = await query(
+        'SELECT * FROM complaints WHERE complaint_id = $1 AND community_id = $2',
+        [itemId, communityId]
+      );
+      itemData = result.rows[0];
+    }
+
+    if (!itemData) {
+      throw new Error(`${itemType} with ID ${itemId} not found in community ${communityId}`);
+    }
+
+    const prompt = getPrompt('suggest_action', itemData, '', { itemType });
+    const result = await queryLLM(prompt, null, 0.4);
+
+    return {
+      suggestion: result.response,
+      item: itemData,
+    };
+  } catch (error) {
+    logger.error('AI suggestion error', { error: error.message, itemId, itemType });
+    throw error;
   }
 }
 
@@ -3026,7 +3596,12 @@ module.exports = {
   getBotHistory,
   deleteBotHistoryEntry,
   clearBotHistory,
+  summarizeFromChatMessages,
+  summarizeFromComplaints,
+  summarizeFromPetitions,
   translateText,
   detectLanguageOfText,
   detectLanguageOfMessages,
+  suggestAction,
 };
+
