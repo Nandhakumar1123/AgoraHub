@@ -16,6 +16,9 @@ import {
   Modal,
 } from "react-native";
 import { useRoute, useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import { StatusBar } from "react-native";
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE_URL } from '../lib/api';
@@ -44,6 +47,7 @@ interface ChatMessage {
 }
 
 export default function ViewComplaintsScreen() {
+  const insets = useSafeAreaInsets();
   const route = useRoute<any>();
   const navigation = useNavigation<any>();
   const [complaints, setComplaints] = useState<Complaint[]>([]);
@@ -485,7 +489,13 @@ export default function ViewComplaintsScreen() {
   );
 
   return (
-    <View style={styles.container}>
+    <View style={styles.safeArea}>
+      <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
+      <LinearGradient
+        colors={['#0f172a', '#1e293b', '#0f172a']}
+        style={styles.background}
+      >
+        <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Complaints Dashboard</Text>
@@ -812,12 +822,16 @@ export default function ViewComplaintsScreen() {
           </View>
         </TouchableOpacity>
       </Modal>
+        </View>
+      </LinearGradient>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#0f172a" },
+  safeArea: { flex: 1, backgroundColor: "#0f172a" },
+  background: { flex: 1 },
+  container: { flex: 1 },
   header: {
     backgroundColor: "rgba(15, 23, 42, 0.8)",
     paddingVertical: 40,

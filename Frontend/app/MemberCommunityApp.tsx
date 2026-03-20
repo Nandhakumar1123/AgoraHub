@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigation, useRoute, RouteProp, NavigationProp } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import {
   ActivityIndicator,
@@ -57,6 +59,34 @@ interface Message {
 }
 
 const { width, height } = Dimensions.get('window');
+import nlpService from '../lib/nlpService';
+
+interface ChatbotMessage {
+  id: string;
+  text: string;
+  isBot: boolean;
+  historyId?: number;
+  sources?: any[];
+  confidence?: number;
+  timestamp: Date;
+}
+
+interface BotHistoryItem {
+  id: number;
+  question: string;
+  answer: string;
+  created_at: string;
+  confidence?: number;
+}
+
+interface CachedChatbotMessage {
+  id: string;
+  text: string;
+  isBot: boolean;
+  historyId?: number;
+  confidence?: number;
+  timestamp: string;
+}
 
 // =====================================================
 // 🔹 FIXED: Custom hook for real-time messages
@@ -338,10 +368,11 @@ const SendIcon = () => (
 const memberFeatures = [
   { id: 1, title: 'Raise Complaint', icon: '⚠️', color: '#FF6B6B' },
   { id: 2, title: 'Raise Petition', icon: '📝', color: '#4ECDC4' },
-  { id: 3, title: 'Anonymous Chat', icon: '💬', color: '#45B7D1' },
-  { id: 4, title: 'Community Events', icon: '📅', color: '#96CEB4' },
-  { id: 5, title: 'Resources', icon: '📚', color: '#FECA57' },
-  { id: 6, title: 'Polling', icon: '🗳️', color: '#667eea' },
+  { id: 3, title: 'AI Assistant', icon: '🤖', color: '#8E44AD' },
+  { id: 4, title: 'Anonymous Chat', icon: '💬', color: '#45B7D1' },
+  { id: 5, title: 'Community Events', icon: '📅', color: '#96CEB4' },
+  { id: 6, title: 'Resources', icon: '📚', color: '#FECA57' },
+  { id: 7, title: 'Polling', icon: '🗳️', color: '#667eea' },
 ];
 
 // Media options
@@ -355,6 +386,7 @@ const mediaOptions = [
 ];
 
 const MemberCommunityApp: React.FC = () => {
+  const insets = useSafeAreaInsets();
   const route = useRoute<MemberCommunityRouteProp>();
   const communityId = Number(route.params?.community?.id || route.params?.community?.community_id || 36);
 
@@ -362,10 +394,270 @@ const MemberCommunityApp: React.FC = () => {
   const [currentUserName, setCurrentUserName] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [mediaModalVisible, setMediaModalVisible] = useState(false);
+  const [pollModalVisible, setPollModalVisible] = useState(false);
+  
+  // AI assistant state
+  const [showAssistant, setShowAssistant] = useState(false);
+  const [chatbotMessages, setChatbotMessages] = useState<ChatbotMessage[]>([]);
+  const [question, setQuestion] = useState('');
+  const [isLoadingChatbot, setIsLoadingChatbot] = useState(false);
+  const [hasLoadedBotHistory, setHasLoadedBotHistory] = useState(false);
+  const [editingBotHistoryId, setEditingBotHistoryId] = useState<number | null>(null);
+  const [sessionHash, setSessionHash] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Only load if currentUserId is set
+    if (currentUserId) {
+      const cacheKey = `botMessageCache:${communityId}`;
+      AsyncStorage.getItem(cacheKey).then((cached) => {
+        if (cached) {
+          try {
+            const parsed: CachedChatbotMessage[] = JSON.parse(cached);
+            setChatbotMessages(parsed.map(m => ({
+              ...m,
+              timestamp: new Date(m.timestamp)
+            })));
+          } catch (e) {
+            console.error('Failed to parse cached bot messages', e);
+          }
+        }
+      });
+    }
+  }, [communityId, currentUserId]);
+
+  useEffect(() => {
+    if (currentUserId && chatbotMessages.length > 0) {
+      const cacheKey = `botMessageCache:${communityId}`;
+      const payload = chatbotMessages.map(m => ({
+        ...m,
+        timestamp: m.timestamp.toISOString()
+      }));
+      AsyncStorage.setItem(cacheKey, JSON.stringify(payload)).catch(() => { });
+    }
+  }, [chatbotMessages, communityId, currentUserId]);
+
+  const loadBotHistory = useCallback(async () => {
+    if (!currentUserId) return;
+    try {
+      const response = await nlpService.getBotHistory(Number(communityId), 50);
+      if (response && response.success) {
+        const history: BotHistoryItem[] = response.data?.history || response.history || [];
+        const loaded: ChatbotMessage[] = [];
+        history.forEach((item) => {
+          const ts = item.created_at ? new Date(item.created_at) : new Date();
+          loaded.push({
+            id: `q-${item.id}`,
+            text: item.question,
+            isBot: false,
+            historyId: item.id,
+            timestamp: ts,
+          });
+          if (!isLimitMessage(item.answer)) {
+            loaded.push({
+              id: `a-${item.id}`,
+              text: item.answer,
+              isBot: true,
+              historyId: item.id,
+              confidence: item.confidence,
+              timestamp: ts,
+            });
+          }
+        });
+        setChatbotMessages(loaded);
+      }
+    } catch (error) {
+      console.error('Failed to load bot history:', error);
+    }
+  }, [communityId, currentUserId]);
+
+  useEffect(() => {
+    if (showAssistant && !hasLoadedBotHistory) {
+      loadBotHistory().then(() => setHasLoadedBotHistory(true));
+    }
+  }, [showAssistant, hasLoadedBotHistory, loadBotHistory]);
+
+  const isLimitMessage = (text: string) => {
+    const t = String(text || '').toLowerCase();
+    return (
+      t.includes('limit') &&
+      (t.includes('exceeded') || t.includes('quota') || t.includes('too many requests'))
+    );
+  };
+
+  const splitBotSections = (text: string) => {
+    const raw = String(text || '');
+    // Support multiple label variants from LLM
+    const parts = raw.split(/(?:Summary|Recommendations|Solutions|Suggested Actions|Action Plan):\s*/i);
+    
+    // If we have at least TWO parts, the first might be empty or a preamble, 
+    // the second is usually the summary, and the third is recommendations.
+    // However, usually it's "Summary: ... Solutions: ..."
+    
+    let summary = '';
+    let recommendations = '';
+    
+    if (raw.toLowerCase().includes('summary:') && raw.toLowerCase().includes('solutions:')) {
+      const sIndex = raw.toLowerCase().indexOf('summary:');
+      const rIndex = raw.toLowerCase().indexOf('solutions:');
+      if (sIndex < rIndex) {
+        summary = raw.substring(sIndex + 8, rIndex).trim();
+        recommendations = raw.substring(rIndex + 10).trim();
+      }
+    } else if (raw.toLowerCase().includes('summary:') && raw.toLowerCase().includes('recommendations:')) {
+      const sIndex = raw.toLowerCase().indexOf('summary:');
+      const rIndex = raw.toLowerCase().indexOf('recommendations:');
+      if (sIndex < rIndex) {
+        summary = raw.substring(sIndex + 8, rIndex).trim();
+        recommendations = raw.substring(rIndex + 16).trim();
+      }
+    }
+    
+    if (!summary && !recommendations) {
+      // Fallback to regex split if explicit labels aren't found in order
+      const match = raw.split(/(?:Recommendations|Solutions|Suggested Actions|Action Plan):\s*/i);
+      if (match.length >= 2) {
+        summary = match[0].replace(/Summary:\s*/i, '').trim();
+        recommendations = match.slice(1).join('\n').trim();
+      } else {
+        summary = raw.trim();
+      }
+    }
+    
+    return { summary, recommendations };
+  };
+
+  const renderChatbotMessage = (msg: ChatbotMessage, idx: number) => {
+    const isBot = msg.isBot;
+    const { summary, recommendations } = isBot ? splitBotSections(msg.text) : { summary: msg.text, recommendations: '' };
+
+    return (
+      <View
+        key={msg.id || idx}
+        style={{
+          alignSelf: isBot ? 'flex-start' : 'flex-end',
+          backgroundColor: isBot ? '#F8F9FA' : '#E7FFDB',
+          padding: 14,
+          borderRadius: 20,
+          borderTopLeftRadius: isBot ? 4 : 20,
+          borderTopRightRadius: isBot ? 20 : 4,
+          marginBottom: 12,
+          maxWidth: '85%',
+          elevation: 2,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.15,
+          shadowRadius: 2,
+          borderWidth: isBot ? 1 : 0,
+          borderColor: '#EDF2F7',
+        }}
+      >
+        {isBot ? (
+          <View>
+            {summary ? (
+              <View style={styles.chatbotSectionBlock}>
+                {recommendations ? <Text style={styles.chatbotSectionTitle}>Summary</Text> : null}
+                <Text style={{ color: '#2D3748', fontSize: 15, lineHeight: 22 }}>{summary}</Text>
+              </View>
+            ) : null}
+            
+            {recommendations ? (
+              <View style={[styles.chatbotSectionBlock, { marginTop: 12, borderTopWidth: 1, borderTopColor: '#E2E8F0', paddingTop: 10 }]}>
+                <Text style={[styles.chatbotSectionTitle, { color: '#38A169' }]}>Proposed Solutions</Text>
+                <Text style={{ color: '#2D3748', fontSize: 15, lineHeight: 22 }}>{recommendations}</Text>
+              </View>
+            ) : null}
+            
+            {msg.sources && msg.sources.length > 0 && (
+              <View style={{ marginTop: 10, paddingTop: 8, borderTopWidth: 0.5, borderTopColor: '#CBD5E0' }}>
+                <Text style={{ fontSize: 11, fontWeight: '700', color: '#718096', marginBottom: 4 }}>SOURCES</Text>
+                {msg.sources.slice(0, 3).map((s, i) => (
+                  <Text key={i} style={{ fontSize: 11, color: '#A0AEC0' }}>• {s.title || 'Community Document'}</Text>
+                ))}
+              </View>
+            )}
+          </View>
+        ) : (
+          <Text style={{ color: '#1A202C', fontSize: 15, lineHeight: 20 }}>{msg.text}</Text>
+        )}
+        
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', marginTop: 4 }}>
+          {isBot && msg.confidence && (
+            <Text style={{ fontSize: 10, color: '#A0AEC0', marginRight: 8 }}>
+              {msg.confidence}% confident
+            </Text>
+          )}
+          <Text style={{ fontSize: 10, color: '#718096' }}>
+            {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
+  const handleAskBot = async () => {
+    const prompt = question.trim();
+    if (!prompt) return;
+
+    const userMessage: ChatbotMessage = {
+      id: Date.now().toString(),
+      text: prompt,
+      isBot: false,
+      timestamp: new Date(),
+    };
+
+    setChatbotMessages((prev) => [...prev, userMessage]);
+    setQuestion('');
+    setIsLoadingChatbot(true);
+
+    try {
+      const response = await nlpService.askBot(prompt, Number(communityId), sessionHash || undefined);
+      if (response && response.success) {
+        const botMessage: ChatbotMessage = {
+          id: (Date.now() + 1).toString(),
+          text: response.data.answer || 'No response from AI.',
+          isBot: true,
+          sources: response.data.sources,
+          confidence: response.data.confidence,
+          timestamp: new Date(),
+        };
+        setChatbotMessages((prev) => [...prev, botMessage]);
+        setSessionHash(response.data.sessionHash || null);
+      }
+    } catch (error) {
+      console.error('AI query failed:', error);
+      const errorMessage: ChatbotMessage = {
+        id: (Date.now() + 1).toString(),
+        text: 'Sorry, I encountered an error. Please try again later.',
+        isBot: true,
+        timestamp: new Date(),
+      };
+      setChatbotMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setIsLoadingChatbot(false);
+    }
+  };
+
+  const handleClearBotChat = async () => {
+    Alert.alert('Clear AI chat', 'Are you sure?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Clear',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await nlpService.clearBotHistory(Number(communityId));
+            setChatbotMessages([]);
+            setSessionHash(null);
+          } catch (e) {
+            console.error('Failed to clear bot history', e);
+          }
+        }
+      }
+    ]);
+  };
   const [messageText, setMessageText] = useState('');
   const [isValidatingAccess, setIsValidatingAccess] = useState(true);
   const [hasAccess, setHasAccess] = useState(false);
-  const [pollModalVisible, setPollModalVisible] = useState(false);
 
   const navigation = useNavigation<MemberCommunityNavigationProp>();
   const community = route.params?.community;
@@ -567,6 +859,8 @@ const MemberCommunityApp: React.FC = () => {
           }
         }
       });
+    } else    if (feature.title === 'AI Assistant') {
+      setShowAssistant(true);
     } else if (feature.title === 'Polling') {
       navigation.navigate('PollsListScreen' as any, {
         communityId: community?.id || community?.community_id || 36,
@@ -684,8 +978,13 @@ const MemberCommunityApp: React.FC = () => {
   });
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#075E54" />
+    <View style={styles.safeArea}>
+      <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
+      <LinearGradient
+        colors={['#0f172a', '#1e293b', '#0f172a']}
+        style={styles.background}
+      >
+        <SafeAreaView style={styles.container}>
 
       {/* WhatsApp-style Header */}
       <View style={styles.header}>
@@ -833,7 +1132,7 @@ const MemberCommunityApp: React.FC = () => {
                     {/* POLL CARD INTEGRATION */}
                     {message.message_type === 'poll' && (
                       <PollMessageCard
-                        communityId={String(communityId)}
+                        communityId={Number(communityId)}
                         pollId={Number(message.content || '0')}
                         currentUserId={Number(currentUserId)}
                         isAdmin={false}
@@ -966,7 +1265,71 @@ const MemberCommunityApp: React.FC = () => {
           }}
         />
       </Modal>
-    </SafeAreaView>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={showAssistant}
+        onRequestClose={() => setShowAssistant(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { height: height * 0.85 }]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>AI Community Assistant</Text>
+              <View style={{ flexDirection: 'row', gap: 15 }}>
+                <TouchableOpacity onPress={handleClearBotChat}>
+                  <Text style={{ color: '#E53E3E', fontSize: 16 }}>Clear</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => setShowAssistant(false)}>
+                  <Text style={styles.closeButton}>×</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <ScrollView
+              style={{ flex: 1, padding: 15 }}
+              contentContainerStyle={{ paddingBottom: 20 }}
+              ref={(ref) => ref?.scrollToEnd({ animated: true })}
+            >
+              {chatbotMessages.length === 0 ? (
+                <View style={{ alignItems: 'center', marginTop: 40 }}>
+                  <Text style={{ fontSize: 40 }}>🤖</Text>
+                  <Text style={{ color: '#718096', textAlign: 'center', marginTop: 10, fontSize: 16 }}>
+                    Hello! I'm your community's AI assistant. Ask me anything about rules, events, or local info!
+                  </Text>
+                </View>
+              ) : (
+                chatbotMessages.map((msg, idx) => renderChatbotMessage(msg, idx))
+              )}
+              {isLoadingChatbot && (
+                <View style={{ alignSelf: 'flex-start', backgroundColor: '#F0F2F5', padding: 12, borderRadius: 15, marginBottom: 10 }}>
+                  <ActivityIndicator size="small" color="#075E54" />
+                </View>
+              )}
+            </ScrollView>
+
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={styles.input}
+                placeholder="Ask something..."
+                placeholderTextColor="#A0AEC0"
+                value={question}
+                onChangeText={setQuestion}
+                multiline
+              />
+              <TouchableOpacity
+                style={[styles.sendButton, !question.trim() && { opacity: 0.5 }]}
+                disabled={!question.trim() || isLoadingChatbot}
+                onPress={handleAskBot}
+              >
+                <Text style={{ color: 'white', fontWeight: 'bold' }}>Ask</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+        </SafeAreaView>
+      </LinearGradient>
+    </View>
   );
 };
 
@@ -974,9 +1337,15 @@ export default MemberCommunityApp;
 
 // Styles (keeping original styles unchanged)
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#0f172a',
+  },
+  background: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#ECE5DD',
   },
   iconPlaceholder: {
     justifyContent: 'center',
@@ -984,24 +1353,21 @@ const styles = StyleSheet.create({
   },
   iconText: {
     fontSize: 18,
-    color: 'white',
+    color: '#94a3b8',
   },
   boldIconText: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: 'white',
+    color: '#f8fafc',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#075E54',
-    paddingHorizontal: 8,
-    paddingVertical: 10,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    backgroundColor: 'rgba(30, 41, 59, 0.7)',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
   backButton: {
     padding: 8,
@@ -1029,13 +1395,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   communityName: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: 'white',
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#f8fafc',
   },
   communitySubtitle: {
-    fontSize: 13,
-    color: '#D1F4CC',
+    fontSize: 12,
+    color: '#94a3b8',
     marginTop: 2,
   },
   headerButton: {
@@ -1043,7 +1409,6 @@ const styles = StyleSheet.create({
   },
   messagesWrapper: {
     flex: 1,
-    backgroundColor: '#ECE5DD',
   },
   messagesContent: {
     paddingVertical: 8,
@@ -1053,19 +1418,16 @@ const styles = StyleSheet.create({
     marginVertical: 12,
   },
   dateHeaderBadge: {
-    backgroundColor: '#DCF8C6',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    elevation: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   dateHeaderText: {
-    fontSize: 13,
-    color: '#075E54',
+    fontSize: 12,
+    color: '#94a3b8',
     fontWeight: '600',
   },
   messageWrapper: {
@@ -1082,25 +1444,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   messageBubble: {
-    maxWidth: '75%',
-    minWidth: 100,
-    padding: 8,
-    paddingBottom: 4,
-    borderRadius: 8,
-    position: 'relative',
-    elevation: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 1,
+    maxWidth: '80%',
+    padding: 12,
+    borderRadius: 20,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
   },
   ownMessage: {
-    backgroundColor: '#DCF8C6',
-    borderTopRightRadius: 0,
+    backgroundColor: '#6366f1',
+    borderTopRightRadius: 4,
   },
   otherMessage: {
-    backgroundColor: 'white',
-    borderTopLeftRadius: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderTopLeftRadius: 4,
   },
   announcementMessage: {
     backgroundColor: '#FFF9E6',
@@ -1157,9 +1514,9 @@ const styles = StyleSheet.create({
     borderLeftColor: 'transparent',
   },
   senderName: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#075E54',
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#818cf8',
     marginBottom: 4,
   },
   announcementLabel: {
@@ -1192,12 +1549,12 @@ const styles = StyleSheet.create({
   },
   messageText: {
     fontSize: 15,
-    lineHeight: 20,
-    color: '#000',
+    lineHeight: 22,
+    color: '#f8fafc',
     marginBottom: 2,
   },
   ownMessageText: {
-    color: '#000',
+    color: '#ffffff',
   },
   announcementText: {
     color: '#856404',
@@ -1222,11 +1579,11 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   messageTime: {
-    fontSize: 11,
-    color: '#667781',
+    fontSize: 10,
+    color: '#94a3b8',
   },
   ownMessageTime: {
-    color: '#667781',
+    color: 'rgba(255, 255, 255, 0.7)',
   },
   checkMark: {
     fontSize: 16,
@@ -1251,12 +1608,12 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
-    paddingHorizontal: 8,
-    paddingVertical: 8,
-    backgroundColor: '#F0F0F0',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: 'rgba(15, 23, 42, 0.95)',
     borderTopWidth: 1,
-    borderTopColor: '#DDD',
+    borderTopColor: 'rgba(255, 255, 255, 0.05)',
   },
   attachButton: {
     padding: 8,
@@ -1269,22 +1626,29 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    backgroundColor: 'white',
-    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 24,
     paddingHorizontal: 16,
-    paddingVertical: 8,
-    fontSize: 16,
-    maxHeight: 100,
-    marginRight: 8,
-    color: '#000',
+    paddingVertical: 10,
+    fontSize: 15,
+    maxHeight: 120,
+    marginRight: 12,
+    color: '#f8fafc',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   sendButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#25D366',
+    backgroundColor: '#6366f1',
     justifyContent: 'center',
     alignItems: 'center',
+    elevation: 4,
+    shadowColor: '#6366f1',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
   },
   modalOverlay: {
     flex: 1,
@@ -1292,11 +1656,11 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: 'white',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    backgroundColor: '#1e293b',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     paddingBottom: 20,
-    maxHeight: height * 0.7,
+    maxHeight: '85%',
   },
   modalHeader: {
     flexDirection: 'row',
@@ -1304,12 +1668,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#EEE',
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
   modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#075E54',
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#f8fafc',
   },
   closeButton: {
     fontSize: 24,
@@ -1321,7 +1685,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  chatbotSectionBlock: {
+    marginBottom: 4,
+  },
+  chatbotSectionTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#4A5568',
+    textTransform: 'uppercase',
+    marginBottom: 4,
+    letterSpacing: 0.5,
   },
   featureIcon: {
     width: 48,

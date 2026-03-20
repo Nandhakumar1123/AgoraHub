@@ -20,6 +20,7 @@ import {
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE_URL } from "../lib/api";
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width, height } = Dimensions.get("window");
 const BASE_URL = API_BASE_URL;
@@ -322,7 +323,10 @@ export default function RegistrationScreen({ navigation: propNavigation }: { nav
     <SafeAreaProvider>
       <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom, backgroundColor: '#0f172a' }]}>
         <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
-        <View style={styles.background}>
+        <LinearGradient
+          colors={['#0f172a', '#1e293b', '#0f172a']}
+          style={styles.background}
+        >
           <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
             style={styles.keyboardAvoid}
@@ -781,7 +785,7 @@ export default function RegistrationScreen({ navigation: propNavigation }: { nav
               </View>
             </View>
           </Modal>
-        </View>
+        </LinearGradient>
       </View>
     </SafeAreaProvider>
   );

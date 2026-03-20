@@ -19,6 +19,7 @@ import {
   View,
   StatusBar,
 } from "react-native";
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width, height } = Dimensions.get("window");
 const BASE_URL = API_BASE_URL;
@@ -259,7 +260,8 @@ export default function LoginScreen({ navigation: propNavigation }: { navigation
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: '#0f172a' }]}>
       <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
-      <View
+      <LinearGradient
+        colors={['#0f172a', '#1e293b', '#0f172a']}
         style={styles.background}
       >
         <KeyboardAvoidingView
@@ -475,7 +477,7 @@ export default function LoginScreen({ navigation: propNavigation }: { navigation
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
-      </View>
+      </LinearGradient>
     </SafeAreaView>
   );
 }
@@ -644,7 +646,8 @@ const styles = StyleSheet.create({
   loginButtonText: {
     color: "#ffffff",
     fontSize: 18,
-    fontWeight: "700",
+    fontWeight: "800",
+    letterSpacing: 0.5,
   },
   forgotPasswordContainer: {
     alignItems: "center",

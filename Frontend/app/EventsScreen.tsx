@@ -21,8 +21,11 @@ import {
   ActivityIndicator,
   RefreshControl,
   Image,
-  Dimensions
+  Dimensions,
+  StatusBar
 } from "react-native";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width, height } = Dimensions.get("window");
 
@@ -39,6 +42,7 @@ interface Event {
 }
 
 export default function EventsScreen() {
+  const insets = useSafeAreaInsets();
   const params = useLocalSearchParams();
   const navigation = useNavigation<any>();
   const router = useRouter();
@@ -628,7 +632,13 @@ const handleDeleteEvent = async (eventId: number) => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={styles.safeArea}>
+      <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
+      <LinearGradient
+        colors={['#0f172a', '#1e293b', '#0f172a']}
+        style={styles.background}
+      >
+        <View style={styles.container}>
       <View style={styles.tabHeader}>
         <TouchableOpacity
           style={[styles.tabButton, activeTab === "create" && styles.tabButtonActive]}
@@ -851,18 +861,22 @@ const handleDeleteEvent = async (eventId: number) => {
         </View>
       </Modal>
 
+        </View>
+      </LinearGradient>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f8fafc" },
+  container: { flex: 1 },
+  safeArea: { flex: 1, backgroundColor: "#0f172a" },
+  background: { flex: 1 },
   tabHeader: {
     flexDirection: "row",
-    backgroundColor: "#ffffff",
+    backgroundColor: "rgba(30, 41, 59, 0.7)",
     paddingTop: 55,
     borderBottomWidth: 1,
-    borderBottomColor: "#e2e8f0",
+    borderBottomColor: "rgba(255, 255, 255, 0.1)",
   },
   tabButton: {
     flex: 1,
@@ -892,26 +906,26 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(30, 41, 59, 0.5)',
     borderRadius: 12,
     paddingHorizontal: 12,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     height: 48,
   },
   searchBarInput: {
     flex: 1,
     marginLeft: 8,
     fontSize: 14,
-    color: '#1e293b'
+    color: '#f8fafc'
   },
   filterIconButton: {
     width: 48,
     height: 48,
     borderRadius: 12,
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(30, 41, 59, 0.5)',
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     justifyContent: 'center',
     alignItems: 'center'
   },
@@ -920,11 +934,11 @@ const styles = StyleSheet.create({
     borderColor: '#6366f1'
   },
   filterDropdown: {
-    backgroundColor: '#fff',
+    backgroundColor: '#1e293b',
     borderRadius: 12,
     padding: 8,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     marginBottom: 10,
     elevation: 3,
     shadowColor: '#000',
@@ -940,19 +954,19 @@ const styles = StyleSheet.create({
   },
   filterDropdownText: {
     fontSize: 14,
-    color: '#64748b',
+    color: '#94a3b8',
     fontWeight: '600'
   },
   filterDropdownTextActive: {
     color: '#6366f1'
   },
   eventListItem: {
-    backgroundColor: "#fff",
+    backgroundColor: "rgba(30, 41, 59, 0.5)",
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: "#e2e8f0",
+    borderColor: "rgba(255, 255, 255, 0.1)",
     elevation: 2,
   },
   listHeaderRow: {
@@ -966,23 +980,23 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 6,
   },
-  upcomingBadge: { backgroundColor: '#dcfce7' },
-  pastBadge: { backgroundColor: '#fee2e2' },
+  upcomingBadge: { backgroundColor: 'rgba(22, 163, 74, 0.2)' },
+  pastBadge: { backgroundColor: 'rgba(239, 68, 68, 0.2)' },
   statusBadgeText: { fontSize: 10, fontWeight: '800' },
-  upcomingBadgeText: { color: '#16a34a' },
-  pastBadgeText: { color: '#ef4444' },
+  upcomingBadgeText: { color: '#4ade80' },
+  pastBadgeText: { color: '#f87171' },
   itemActionGroup: {
     flexDirection: 'row',
     gap: 15,
     alignItems: 'center'
   },
-  listTitle: { fontSize: 17, fontWeight: "800", color: "#1e293b" },
-  listContent: { fontSize: 14, color: "#64748b", marginVertical: 8 },
+  listTitle: { fontSize: 17, fontWeight: "800", color: "#f8fafc" },
+  listContent: { fontSize: 14, color: "#94a3b8", marginVertical: 8 },
   listFooter: { 
     flexDirection: 'row', 
     justifyContent: 'space-between', 
     borderTopWidth: 1, 
-    borderTopColor: '#f1f5f9', 
+    borderTopColor: 'rgba(255, 255, 255, 0.05)', 
     paddingTop: 10 
   },
   footerRow: {
@@ -991,56 +1005,56 @@ const styles = StyleSheet.create({
     gap: 4
   },
   listDate: { fontSize: 12, color: "#6366f1", fontWeight: "600" },
-  listAudience: { fontSize: 12, color: "#0369a1", fontWeight: "600" },
+  listAudience: { fontSize: 12, color: "#38bdf8", fontWeight: "600" },
   progressContainer: {
     flexDirection: "row",
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 20,
-    backgroundColor: "#ffffff",
+    backgroundColor: "rgba(30, 41, 59, 0.5)",
     borderBottomWidth: 1,
-    borderBottomColor: "#e2e8f0",
+    borderBottomColor: "rgba(255, 255, 255, 0.1)",
   },
   progressStep: { flex: 1, flexDirection: "row", alignItems: "center" },
   progressDot: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: "#e2e8f0",
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
     alignItems: "center",
     justifyContent: "center",
   },
   progressDotActive: { backgroundColor: "#6366f1" },
   progressNumber: { color: "#94a3b8", fontSize: 14, fontWeight: "700" },
   progressCheck: { color: "#ffffff", fontSize: 16, fontWeight: "700" },
-  progressLine: { flex: 1, height: 3, backgroundColor: "#e2e8f0", marginHorizontal: 4 },
+  progressLine: { flex: 1, height: 3, backgroundColor: "rgba(255, 255, 255, 0.1)", marginHorizontal: 4 },
   progressLineActive: { backgroundColor: "#6366f1" },
   scrollView: { flex: 1 },
   stepContent: { padding: 25, paddingTop: 40, minHeight: 500 },
   stepEmoji: { fontSize: 64, textAlign: "center", marginBottom: 20 },
-  stepTitle: { fontSize: 28, fontWeight: "800", color: "#1e293b", textAlign: "center", marginBottom: 8 },
-  stepSubtitle: { fontSize: 16, color: "#64748b", textAlign: "center", marginBottom: 30 },
+  stepTitle: { fontSize: 28, fontWeight: "800", color: "#f8fafc", textAlign: "center", marginBottom: 8 },
+  stepSubtitle: { fontSize: 16, color: "#94a3b8", textAlign: "center", marginBottom: 30 },
   bigInput: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "rgba(30, 41, 59, 0.5)",
     borderWidth: 2,
-    borderColor: "#e2e8f0",
+    borderColor: "rgba(255, 255, 255, 0.1)",
     borderRadius: 16,
     padding: 20,
     fontSize: 18,
-    color: "#1e293b",
+    color: "#f8fafc",
     fontWeight: "600",
   },
   textArea: { minHeight: 180, textAlignVertical: "top" },
   charCount: { alignItems: "flex-end", marginTop: 8 },
   charCountText: { fontSize: 13, color: "#94a3b8", fontWeight: "500" },
-  dateLabel: { fontSize: 16, fontWeight: "700", color: "#475569", marginBottom: 12 },
+  dateLabel: { fontSize: 16, fontWeight: "700", color: "#94a3b8", marginBottom: 12 },
   calendarCard: {
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(30, 41, 59, 0.5)',
     borderRadius: 12,
     padding: 16,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -1048,11 +1062,11 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   calendarButton: {
-    backgroundColor: '#f8fafc',
+    backgroundColor: 'rgba(30, 41, 59, 0.3)',
     borderRadius: 8,
     padding: 16,
     borderWidth: 2,
-    borderColor: '#e5e7eb',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     borderStyle: 'dashed',
   },
   dateRangeDisplay: {
@@ -1066,32 +1080,35 @@ const styles = StyleSheet.create({
   dateRangeLabel: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#6b7280',
+    color: '#94a3b8',
     marginBottom: 4,
   },
   dateRangeValue: {
     fontSize: 14,
     fontWeight: '600',
+    color: '#f8fafc'
   },
   calendarButtonText: {
     fontSize: 14,
-    color: '#3b82f6',
+    color: '#6366f1',
     fontWeight: '600',
     textAlign: 'center',
   },
   calendarModalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   calendarModalContent: {
-    backgroundColor: '#fff',
+    backgroundColor: '#1e293b',
     borderRadius: 16,
     padding: 20,
     width: '90%',
     maxWidth: 400,
     maxHeight: '70%',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   calendarHeader: {
     flexDirection: 'row',
@@ -1102,55 +1119,57 @@ const styles = StyleSheet.create({
   calendarTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1e293b',
+    color: '#f8fafc',
   },
   closeCalendarButton: {
     padding: 5,
   },
   closeCalendarText: {
     fontSize: 18,
-    color: '#6b7280',
+    color: '#94a3b8',
   },
   calendar: {
     marginBottom: 10,
+    borderRadius: 12,
+    backgroundColor: '#1e293b',
   },
   calendarInstructions: {
-    backgroundColor: '#f8fafc',
+    backgroundColor: 'rgba(30, 41, 59, 0.5)',
     padding: 10,
     borderRadius: 8,
     marginBottom: 10,
   },
   instructionText: {
     fontSize: 12,
-    color: '#6b7280',
+    color: '#94a3b8',
     textAlign: 'center',
   },
   skipButton: { alignSelf: "center", paddingVertical: 12, paddingHorizontal: 24, marginTop: 15 },
   skipText: { fontSize: 15, color: "#6366f1", fontWeight: "600" },
   attachmentCard: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "rgba(30, 41, 59, 0.5)",
     borderRadius: 16,
     padding: 30,
     alignItems: "center",
     marginBottom: 20,
     borderWidth: 2,
-    borderColor: "#e2e8f0",
+    borderColor: "rgba(255, 255, 255, 0.1)",
     borderStyle: "dashed",
   },
-  attachmentCardActive: { borderColor: "#6366f1", borderStyle: "solid", backgroundColor: "#f0f9ff" },
+  attachmentCardActive: { borderColor: "#6366f1", borderStyle: "solid", backgroundColor: "rgba(99, 102, 241, 0.1)" },
   attachmentIcon: { fontSize: 48, marginBottom: 12 },
-  attachmentPlaceholder: { fontSize: 16, color: "#64748b", fontWeight: "500" },
-  attachmentName: { fontSize: 16, color: "#1e293b", fontWeight: "700", textAlign: "center", marginBottom: 4 },
-  attachmentSize: { fontSize: 14, color: "#64748b" },
-  audienceCard: { backgroundColor: "#ffffff", borderRadius: 16, padding: 20, borderWidth: 2, borderColor: "#e2e8f0" },
-  audienceLabel: { fontSize: 16, fontWeight: "700", color: "#475569", marginBottom: 12 },
-  audienceInput: { fontSize: 17, color: "#1e293b", fontWeight: "600" },
+  attachmentPlaceholder: { fontSize: 16, color: "#94a3b8", fontWeight: "500" },
+  attachmentName: { fontSize: 16, color: "#f8fafc", fontWeight: "700", textAlign: "center", marginBottom: 4 },
+  attachmentSize: { fontSize: 14, color: "#94a3b8" },
+  audienceCard: { backgroundColor: "rgba(30, 41, 59, 0.5)", borderRadius: 16, padding: 20, borderWidth: 2, borderColor: "rgba(255, 255, 255, 0.1)" },
+  audienceLabel: { fontSize: 16, fontWeight: "700", color: "#94a3b8", marginBottom: 12 },
+  audienceInput: { fontSize: 17, color: "#f8fafc", fontWeight: "600" },
   previewCard: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "rgba(30, 41, 59, 0.8)",
     borderRadius: 20,
     padding: 20,
     borderWidth: 1,
-    borderColor: "#e2e8f0",
+    borderColor: "rgba(255, 255, 255, 0.1)",
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowOffset: { width: 0, height: 4 },
@@ -1158,17 +1177,17 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   previewHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 15 },
-  previewTitle: { flex: 1, fontSize: 20, fontWeight: "800", color: "#1e293b", marginRight: 10 },
+  previewTitle: { flex: 1, fontSize: 20, fontWeight: "800", color: "#f8fafc", marginRight: 10 },
   badge: { backgroundColor: "#6366f1", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
   badgeText: { color: "#ffffff", fontSize: 11, fontWeight: "800" },
-  previewDetails: { fontSize: 15, color: "#475569", lineHeight: 22, marginBottom: 15 },
-  previewDates: { backgroundColor: "#f8fafc", borderRadius: 12, padding: 12, marginBottom: 12 },
-  previewDate: { fontSize: 14, color: "#64748b", fontWeight: "600", marginBottom: 4 },
-  previewAudience: { backgroundColor: "#f0f9ff", borderRadius: 12, padding: 12, marginBottom: 12 },
-  previewAudienceText: { fontSize: 14, color: "#0369a1", fontWeight: "600" },
-  previewAttachment: { backgroundColor: "#fef3c7", borderRadius: 12, padding: 12, marginBottom: 12 },
-  previewAttachmentText: { fontSize: 14, color: "#92400e", fontWeight: "600" },
-  previewFooter: { borderTopWidth: 1, borderTopColor: "#e2e8f0", paddingTop: 12, marginTop: 8 },
+  previewDetails: { fontSize: 15, color: "#cbd5e1", lineHeight: 22, marginBottom: 15 },
+  previewDates: { backgroundColor: "rgba(255, 255, 255, 0.05)", borderRadius: 12, padding: 12, marginBottom: 12 },
+  previewDate: { fontSize: 14, color: "#94a3b8", fontWeight: "600", marginBottom: 4 },
+  previewAudience: { backgroundColor: "rgba(99, 102, 241, 0.1)", borderRadius: 12, padding: 12, marginBottom: 12 },
+  previewAudienceText: { fontSize: 14, color: "#38bdf8", fontWeight: "600" },
+  previewAttachment: { backgroundColor: "rgba(245, 158, 11, 0.1)", borderRadius: 12, padding: 12, marginBottom: 12 },
+  previewAttachmentText: { fontSize: 14, color: "#fbbf24", fontWeight: "600" },
+  previewFooter: { borderTopWidth: 1, borderTopColor: "rgba(255, 255, 255, 0.1)", paddingTop: 12, marginTop: 8 },
   previewAuthor: { fontSize: 13, color: "#94a3b8", fontWeight: "500" },
   publishButton: {
     backgroundColor: "#6366f1",
@@ -1186,30 +1205,30 @@ const styles = StyleSheet.create({
   navigationContainer: {
     flexDirection: "row",
     padding: 20,
-    backgroundColor: "#ffffff",
+    backgroundColor: "rgba(30, 41, 59, 0.8)",
     borderTopWidth: 1,
-    borderTopColor: "#e2e8f0",
+    borderTopColor: "rgba(255, 255, 255, 0.1)",
     gap: 12,
   },
   backButton: {
     flex: 1,
-    backgroundColor: "#f8fafc",
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
     padding: 16,
     borderRadius: 12,
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#e2e8f0",
+    borderColor: "rgba(255, 255, 255, 0.1)",
   },
-  backButtonText: { color: "#475569", fontSize: 16, fontWeight: "700" },
+  backButtonText: { color: "#cbd5e1", fontSize: 16, fontWeight: "700" },
   cancelFormBtn: {
-    backgroundColor: '#fff',
+    backgroundColor: 'transparent',
     borderWidth: 1,
     borderColor: '#ef4444',
     padding: 16,
     borderRadius: 12,
     alignItems: 'center'
   },
-  cancelFormText: { color: '#ef4444', fontWeight: '700' },
+  cancelFormText: { color: '#f87171', fontWeight: '700' },
   nextButton: {
     flex: 2,
     backgroundColor: "#6366f1",
@@ -1228,19 +1247,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600'
   },
-  // Modal Overlay
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.7)',
+    backgroundColor: 'rgba(0,0,0,0.85)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalContent: {
     width: width * 0.9,
     height: height * 0.7,
-    backgroundColor: '#fff',
+    backgroundColor: '#1e293b',
     borderRadius: 20,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   modalHeader: {
     flexDirection: 'row',
@@ -1248,19 +1268,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9'
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)'
   },
   modalTitle: {
     fontSize: 16,
     fontWeight: '800',
-    color: '#1e293b'
+    color: '#f8fafc'
   },
   closeButton: {
     padding: 2
   },
   imageContainer: {
     flex: 1,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#0f172a',
     justifyContent: 'center',
     alignItems: 'center'
   },

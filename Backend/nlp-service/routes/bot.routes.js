@@ -12,6 +12,15 @@ const {
   summarizeFromComplaints,
   summarizeFromPetitions,
   suggestAction,
+  askBot,
+  continueConversation,
+  addDocument,
+  getDocumentCount,
+  deleteDocument,
+  checkOllamaHealth,
+  getBotHistory,
+  deleteBotHistoryEntry,
+  clearBotHistory,
 } = require('../services/rag.service');
 const { verifyToken, verifyCommunityAccess, requireRole } = require('../middleware/auth');
 const { ipRateLimit, endpointRateLimit } = require('../middleware/rate-limit');

@@ -725,6 +725,7 @@ function isSummaryQuery(question) {
   return (
     q.includes('summary') ||
     q.includes('summar') ||
+    q.includes('sumar') ||
     q.includes('important content') ||
     q.includes('key points') ||
     q.includes('highlights')
@@ -744,7 +745,7 @@ function isTopicOnlySummaryQuery(question) {
   const q = String(question || '').toLowerCase();
   return (
     (q.includes('list topics') || q.includes('just topics') || q.includes('only topics') || q.includes('about what topic')) &&
-    q.includes('summar')
+    (q.includes('summar') || q.includes('sumar'))
   );
 }
 

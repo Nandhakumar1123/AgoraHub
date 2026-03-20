@@ -124,7 +124,7 @@ ${transcript}
 5. Correct spelling/grammar errors
 6. Present facts, not opinions
 
-**Output Format MUST have exactly two sections:**
+**Output Format MUST have exactly two sections (Summary and Solutions):**
 
 Summary:
 - [Key point 1]
@@ -133,7 +133,9 @@ ${includeRecommendations ? `
 Solutions:
 - [Practical step 1]
 - [Practical step 2]
-` : ''}
+` : 'Solutions: - [No specific actions suggested based on this chat]'}
+
+IMPORTANT: Do NOT output any other text or headers. Just the two sections above.
 Answer with exactly this format:`;
 }
 
@@ -472,7 +474,7 @@ function detectIntent(question) {
   }
 
   // Summary
-  if (q.match(/\b(summar|overview|recap|highlight|key point)/)) {
+  if (q.match(/\b(summar|sumar|overview|recap|highlight|key point)/)) {
     return 'summary';
   }
 

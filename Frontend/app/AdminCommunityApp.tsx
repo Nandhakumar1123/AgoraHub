@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigation, useRoute, RouteProp, NavigationProp } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import {
   ActivityIndicator,
@@ -95,7 +97,7 @@ interface CachedChatbotMessage {
 }
 
 const { width, height } = Dimensions.get('window');
-const NLP_API_URL = 'http://10.216.115.57:3002/api';  // Your IP
+
 
 // Custom hook for real-time messages
 const useCommunityMessages = (communityId: number, currentUserId: number | null) => {
@@ -483,6 +485,7 @@ const mediaOptions = [
 ];
 
 const AdminCommunityApp: React.FC = () => {
+  const insets = useSafeAreaInsets();
   const route = useRoute<AdminCommunityRouteProp>();
   const communityId = Number(route.params?.community?.id || route.params?.community?.community_id || 36);
 
@@ -1305,8 +1308,13 @@ const AdminCommunityApp: React.FC = () => {
   const messageGroups = groupMessagesByDate(messages);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#1e3a5f" />
+    <View style={styles.safeArea}>
+      <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
+      <LinearGradient
+        colors={['#0f172a', '#1e293b', '#0f172a']}
+        style={styles.background}
+      >
+        <SafeAreaView style={styles.container}>
 
       {/* Admin Header */}
       <View style={styles.header}>
@@ -1758,7 +1766,9 @@ const AdminCommunityApp: React.FC = () => {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+        </SafeAreaView>
+      </LinearGradient>
+    </View>
   );
 };
 
@@ -1766,9 +1776,15 @@ export default AdminCommunityApp;
 
 // Styles
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#0f172a',
+  },
+  background: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#ECE5DD',
   },
   iconPlaceholder: {
     justifyContent: 'center',
@@ -1776,25 +1792,21 @@ const styles = StyleSheet.create({
   },
   iconText: {
     fontSize: 18,
-    color: 'white',
+    color: '#94a3b8',
   },
-
   boldIconText: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: 'white',
+    color: '#f8fafc',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1e3a5f',
-    paddingHorizontal: 8,
-    paddingVertical: 10,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    backgroundColor: 'rgba(30, 41, 59, 0.7)',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
   backButton: {
     padding: 8,
@@ -1822,13 +1834,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   communityName: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: 'white',
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#f8fafc',
   },
   communitySubtitle: {
-    fontSize: 13,
-    color: '#cbd5e0',
+    fontSize: 12,
+    color: '#94a3b8',
     marginTop: 2,
   },
   headerButton: {
@@ -1836,7 +1848,6 @@ const styles = StyleSheet.create({
   },
   messagesWrapper: {
     flex: 1,
-    backgroundColor: '#ECE5DD',
   },
   messagesContent: {
     paddingVertical: 8,
@@ -1846,19 +1857,16 @@ const styles = StyleSheet.create({
     marginVertical: 12,
   },
   dateHeaderBadge: {
-    backgroundColor: '#DCF8C6',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    elevation: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   dateHeaderText: {
-    fontSize: 13,
-    color: '#075E54',
+    fontSize: 12,
+    color: '#94a3b8',
     fontWeight: '600',
   },
   messageWrapper: {
@@ -1876,25 +1884,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   messageBubble: {
-    maxWidth: '75%',
-    minWidth: 100,
-    padding: 8,
-    paddingBottom: 4,
-    borderRadius: 8,
-    position: 'relative',
-    elevation: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 1,
+    maxWidth: '80%',
+    padding: 12,
+    borderRadius: 20,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
   },
   adminMessage: {
-    backgroundColor: '#D4E4F7',
-    borderTopRightRadius: 0,
+    backgroundColor: '#6366f1',
+    borderTopRightRadius: 4,
   },
   memberMessage: {
-    backgroundColor: 'white',
-    borderTopLeftRadius: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderTopLeftRadius: 4,
   },
   announcementMessage: {
     backgroundColor: '#FFF9E6',
@@ -1951,9 +1954,9 @@ const styles = StyleSheet.create({
     borderLeftColor: 'transparent',
   },
   senderName: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#075E54',
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#818cf8',
     marginBottom: 4,
   },
   adminBadge: {
@@ -1993,12 +1996,12 @@ const styles = StyleSheet.create({
   },
   messageText: {
     fontSize: 15,
-    lineHeight: 20,
-    color: '#000',
+    lineHeight: 22,
+    color: '#f8fafc',
     marginBottom: 2,
   },
   adminMessageText: {
-    color: '#1a202c',
+    color: '#ffffff',
   },
   announcementText: {
     color: '#856404',
@@ -2023,11 +2026,11 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   messageTime: {
-    fontSize: 11,
-    color: '#667781',
+    fontSize: 10,
+    color: '#94a3b8',
   },
   adminMessageTime: {
-    color: '#4a5568',
+    color: 'rgba(255, 255, 255, 0.7)',
   },
   checkMark: {
     fontSize: 16,
@@ -2054,11 +2057,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'center',
-    backgroundColor: 'white',
-    paddingHorizontal: 8,
-    paddingVertical: 8,
+    backgroundColor: 'rgba(15, 23, 42, 0.95)',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
+    borderTopColor: 'rgba(255, 255, 255, 0.05)',
   },
   editBanner: {
     width: '100%',
@@ -2097,22 +2100,29 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
-    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 24,
     paddingHorizontal: 16,
-    paddingVertical: 8,
-    fontSize: 16,
-    maxHeight: 100,
-    color: '#000',
+    paddingVertical: 10,
+    fontSize: 15,
+    maxHeight: 120,
+    color: '#f8fafc',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   sendButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#1e3a5f',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#6366f1',
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 8,
+    marginLeft: 12,
+    elevation: 4,
+    shadowColor: '#6366f1',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
   },
   saveText: {
     color: 'white',
@@ -2125,24 +2135,24 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: 'white',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    backgroundColor: '#1e293b',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     paddingBottom: 20,
-    maxHeight: '70%',
+    maxHeight: '80%',
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
+    padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#1a202c',
+    color: '#f8fafc',
   },
   closeButton: {
     fontSize: 24,
@@ -2154,7 +2164,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
   },
   featureIcon: {
     width: 44,
@@ -2171,7 +2181,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     fontWeight: '500',
-    color: '#2d3748',
+    color: '#e2e8f0',
   },
   featureArrow: {
     fontSize: 24,
@@ -2218,8 +2228,8 @@ const styles = StyleSheet.create({
   sendAnnouncementButton: {
     flex: 1,
     paddingVertical: 14,
-    borderRadius: 8,
-    backgroundColor: '#1e3a5f',
+    borderRadius: 12,
+    backgroundColor: '#6366f1',
     alignItems: 'center',
   },
   sendAnnouncementButtonDisabled: {
@@ -2310,7 +2320,7 @@ const styles = StyleSheet.create({
   },
   chatbotModal: {
     flex: 1,
-    backgroundColor: '#F4F7FB',
+    backgroundColor: '#0f172a',
   },
   chatbotHeader: {
     flexDirection: 'row',
@@ -2318,8 +2328,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#d7deea',
-    backgroundColor: '#1E3A5F',
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: '#0f172a',
   },
   chatbotTitle: {
     fontSize: 18,
@@ -2369,16 +2379,18 @@ const styles = StyleSheet.create({
   chatbotMessageTouchableArea: {},
   chatbotUserBubble: {
     alignSelf: 'flex-end',
-    backgroundColor: '#0B6BFF',
-    borderColor: '#0A5EE0',
+    backgroundColor: '#6366f1',
+    borderWidth: 0,
   },
   chatbotBotBubble: {
     alignSelf: 'flex-start',
-    backgroundColor: '#E8EEF9',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   chatbotMessageText: {
-    fontSize: 16,
-    color: '#0F172A',
+    fontSize: 15,
+    lineHeight: 22,
+    color: '#f8fafc',
   },
   chatbotSectionBlock: {
     marginBottom: 8,
@@ -2456,10 +2468,10 @@ const styles = StyleSheet.create({
   chatbotInputContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    padding: 12,
+    padding: 16,
     borderTopWidth: 1,
-    borderTopColor: '#d7deea',
-    backgroundColor: '#EEF3FA',
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(15, 23, 42, 0.95)',
   },
   chatbotEditBanner: {
     width: '100%',
@@ -2484,18 +2496,19 @@ const styles = StyleSheet.create({
   },
   chatbotInput: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 24,
     paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginRight: 8,
-    maxHeight: 100,
+    paddingVertical: 10,
+    marginRight: 12,
+    maxHeight: 120,
     borderWidth: 1,
-    borderColor: '#D2DCEB',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    color: '#f8fafc',
   },
   chatbotAskButton: {
-    backgroundColor: '#155EEF',
-    borderRadius: 20,
+    backgroundColor: '#6366f1',
+    borderRadius: 24,
     paddingVertical: 10,
     paddingHorizontal: 20,
     justifyContent: 'center',

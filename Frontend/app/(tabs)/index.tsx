@@ -1,89 +1,257 @@
 import React, { useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Dimensions, Platform } from "react-native";
 import { useRouter } from "expo-router";
-import { User, ChevronDown, Mail } from "lucide-react-native";
+import { User, ChevronRight, Mail, Users, MessageSquare, Calendar, Info, ArrowRight, Zap, Target, Heart } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
+import { LinearGradient } from 'expo-linear-gradient';
 
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const isSmallScreen = SCREEN_WIDTH < 380;
 
 const Openpage = () => {
   const router = useRouter();
-  const [hovered, setHovered] = useState<number | null>(null);
   const insets = useSafeAreaInsets();
   const tabBarHeight = useBottomTabBarHeight();
 
-  const posts = [
-    { id: 1, title: "Welcome to Our Community!", content: "Let's collaborate and share ideas.", author: "Admin", date: "2025-09-27" },
-    { id: 2, title: "React Tips", content: "Share your favorite React tips and tricks.", author: "Jane", date: "2025-09-26" },
-    { id: 3, title: "Upcoming Events", content: "Join our upcoming coding events and hackathons.", author: "John", date: "2025-09-25" },
-  ];
-
-
   const handleJoinNow = () => router.push("/LoginScreen");
 
+  const cards = [
+    { id: 1, title: "Collaborate", icon: <Users color="#6366f1" size={24} />, desc: "Connect with like-minded individuals in your community." },
+    { id: 2, title: "Communicate", icon: <MessageSquare color="#f43f5e" size={24} />, desc: "Share ideas and engage in meaningful discussions." },
+    { id: 3, title: "Celebrate", icon: <Calendar color="#10b981" size={24} />, desc: "Participate in local events and hackathons." },
+  ];
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <ScrollView 
-        style={styles.scrollView} 
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: tabBarHeight + 20 }]}
-        showsVerticalScrollIndicator={false}
+    <View style={styles.container}>
+      <LinearGradient
+        colors={['#4f46e5', '#818cf8', '#f3f4f6']}
+        style={[styles.backgroundGradient, { paddingTop: insets.top }]}
       >
-        <View style={styles.header}>
-          <Text style={styles.logo}>CommunityHub</Text>
-          <View style={styles.nav}>
-            <Text style={styles.navItem}>Home</Text>
-            <Text style={styles.navItem}>Community</Text>
-            <Text style={styles.navItem}>Events</Text>
-            <Text style={styles.navItem}>About</Text>
+        <ScrollView 
+          style={styles.scrollView} 
+          contentContainerStyle={[styles.scrollContent, { paddingBottom: tabBarHeight + 40 }]}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Enhanced Header */}
+          <View style={styles.header}>
+            <Text style={styles.logo}>Community<Text style={styles.logoSpan}>Hub</Text></Text>
+            <TouchableOpacity style={styles.loginBtnSmall} onPress={() => router.push("/LoginScreen")}>
+              <Text style={styles.loginBtnTextSmall}>Sign In</Text>
+            </TouchableOpacity>
           </View>
-        </View>
 
+          {/* Premium Hero Section */}
+          <View style={styles.hero}>
+            <View style={styles.heroBadge}>
+              <Zap size={14} color="#4f46e5" fill="#4f46e5" />
+              <Text style={styles.heroBadgeText}>Powering Local Communities</Text>
+            </View>
+            <Text style={styles.heroTitle}>Connect, Share,{"\n"}and <Text style={styles.heroHighlight}>Grow</Text></Text>
+            <Text style={styles.heroSubtitle}>
+              The ultimate platform to exchange ideas, collaborate on projects, and participate in impactful events.
+            </Text>
+            
+            <TouchableOpacity style={styles.joinButton} onPress={handleJoinNow} activeOpacity={0.8}>
+                <LinearGradient
+                    colors={['#4f46e5', '#6366f1']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.joinButtonGradient}
+                >
+                    <Text style={styles.joinButtonText}>Get Started Now</Text>
+                    <ArrowRight width={20} height={20} color="white" style={{ marginLeft: 8 }} />
+                </LinearGradient>
+            </TouchableOpacity>
+          </View>
 
-        <View style={styles.hero}>
-          <Text style={styles.heroTitle}>Connect, Share, and Grow</Text>
-          <Text style={styles.heroSubtitle}>Join our community to exchange ideas, collaborate, and participate in events.</Text>
-          <TouchableOpacity style={styles.joinButton} onPress={handleJoinNow}>
-            <Text style={styles.joinButtonText}>Join Now</Text>
-            <User width={20} height={20} color="#4f46e5" style={{ marginLeft: 8 }} />
-          </TouchableOpacity>
-        </View>
+          {/* Features / Cards Section */}
+          <View style={styles.featuresSection}>
+            <Text style={styles.sectionHeading}>Why Join Us?</Text>
+            <View style={styles.cardsContainer}>
+              {cards.map((card) => (
+                <View key={card.id} style={styles.card}>
+                  <View style={styles.cardIconWrapper}>{card.icon}</View>
+                  <Text style={styles.cardTitle}>{card.title}</Text>
+                  <Text style={styles.cardDesc}>{card.desc}</Text>
+                  <TouchableOpacity style={styles.cardLink}>
+                    <Text style={styles.cardLinkText}>Learn More</Text>
+                    <ChevronRight size={14} color="#6366f1" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+          </View>
 
+          {/* Glassmorphism Stats Section */}
+          <View style={styles.statsContainer}>
+            <View style={styles.statBox}>
+              <Text style={styles.statNumber}>10k+</Text>
+              <Text style={styles.statLabel}>Members</Text>
+            </View>
+            <View style={[styles.statBox, styles.statBoxBorder]}>
+              <Text style={styles.statNumber}>500+</Text>
+              <Text style={styles.statLabel}>Events</Text>
+            </View>
+            <View style={styles.statBox}>
+              <Text style={styles.statNumber}>50+</Text>
+              <Text style={styles.statLabel}>Hubs</Text>
+            </View>
+          </View>
 
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>© 2025 CommunityHub. All rights reserved.</Text>
-        </View>
-      </ScrollView>
+          {/* Footer */}
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>© 2025 CommunityHub</Text>
+            <View style={styles.footerLinks}>
+              <Text style={styles.footerLink}>Privacy</Text>
+              <Text style={styles.footerDot}>•</Text>
+              <Text style={styles.footerLink}>Terms</Text>
+            </View>
+          </View>
+        </ScrollView>
+      </LinearGradient>
     </View>
   );
 };
 
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f3f4f6" },
+  backgroundGradient: { flex: 1 },
   scrollView: { flex: 1 },
-  scrollContent: { flexGrow: 1 },
-  header: { flexDirection: "row", justifyContent: "space-between", padding: 16, backgroundColor: "#4f46e5" },
-  logo: { fontSize: 24, fontWeight: "bold", color: "white" },
-  nav: { flexDirection: "row", gap: 16 },
-  navItem: { color: "white", marginHorizontal: 8 },
-  hero: { padding: 24, alignItems: "center", backgroundColor: "#6366f1" },
-  heroTitle: { fontSize: 28, fontWeight: "bold", color: "white", marginBottom: 8 },
-  heroSubtitle: { fontSize: 16, color: "white", textAlign: "center", marginBottom: 16 },
-  joinButton: { flexDirection: "row", alignItems: "center", backgroundColor: "white", paddingHorizontal: 20, paddingVertical: 10, borderRadius: 30 },
-  joinButtonText: { color: "#4f46e5", fontWeight: "bold" },
-  sectionTitle: { fontSize: 22, textAlign: "center", marginVertical: 16, fontWeight: "bold", color: "#1f2937" },
-  posts: { padding: 16 },
-  postCard: { backgroundColor: "white", borderRadius: 12, padding: 16, marginBottom: 12, elevation: 2 },
-  postHovered: { transform: [{ scale: 1.02 }], shadowColor: "#000", shadowOpacity: 0.2, shadowRadius: 6 },
-  postTitle: { fontSize: 18, fontWeight: "bold", color: "#4f46e5", marginBottom: 8 },
-  postContent: { color: "#374151", marginBottom: 8 },
-  postFooter: { flexDirection: "row", justifyContent: "space-between" },
-  postMeta: { fontSize: 12, color: "#9ca3af" },
-  footer: { backgroundColor: "#4f46e5", padding: 16, alignItems: "center" },
-  footerText: { color: "white" },
-});
+  scrollContent: { paddingHorizontal: 20 },
+  
+  header: { 
+    flexDirection: "row", 
+    justifyContent: "space-between", 
+    alignItems: "center",
+    height: 60,
+    marginBottom: 20,
+  },
+  logo: { fontSize: 22, fontWeight: "900", color: "white", letterSpacing: -0.5 },
+  logoSpan: { color: "#e0e7ff", fontWeight: "400" },
+  loginBtnSmall: {
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.3)",
+  },
+  loginBtnTextSmall: { color: "white", fontWeight: "600", fontSize: 14 },
 
+  hero: { 
+    paddingVertical: 30, 
+    alignItems: "center",
+  },
+  heroBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 50,
+    marginBottom: 16,
+    gap: 6,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  heroBadgeText: { fontSize: 12, color: "#4f46e5", fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.5 },
+  heroTitle: { 
+    fontSize: isSmallScreen ? 34 : 42, 
+    fontWeight: "800", 
+    color: "white", 
+    textAlign: "center", 
+    lineHeight: isSmallScreen ? 42 : 50,
+    marginBottom: 16,
+  },
+  heroHighlight: { color: "#312e81" },
+  heroSubtitle: { 
+    fontSize: 16, 
+    color: "#e0e7ff", 
+    textAlign: "center", 
+    lineHeight: 24,
+    marginBottom: 32,
+    paddingHorizontal: 10,
+  },
+  joinButton: {
+    width: "100%",
+    maxWidth: 280,
+    borderRadius: 30,
+    overflow: "hidden",
+    shadowColor: "#4f46e5",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 15,
+    elevation: 10,
+  },
+  joinButtonGradient: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+  },
+  joinButtonText: { color: "white", fontSize: 18, fontWeight: "800" },
+
+  featuresSection: { marginTop: 40 },
+  sectionHeading: { fontSize: 24, fontWeight: "800", color: "#1f2937", marginBottom: 24, textAlign: "left" },
+  cardsContainer: { gap: 16 },
+  card: { 
+    backgroundColor: "white", 
+    borderRadius: 24, 
+    padding: 24, 
+    shadowColor: "#000", 
+    shadowOpacity: 0.05, 
+    shadowRadius: 10, 
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: "#f3f4f6",
+  },
+  cardIconWrapper: {
+    width: 48,
+    height: 48,
+    borderRadius: 16,
+    backgroundColor: "#f5f3ff",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
+  },
+  cardTitle: { fontSize: 18, fontWeight: "700", color: "#1f2937", marginBottom: 8 },
+  cardDesc: { fontSize: 14, color: "#6b7280", lineHeight: 20, marginBottom: 16 },
+  cardLink: { flexDirection: "row", alignItems: "center", gap: 4 },
+  cardLinkText: { fontSize: 14, color: "#6366f1", fontWeight: "700" },
+
+  statsContainer: {
+    flexDirection: "row",
+    backgroundColor: "rgba(255, 255, 255, 0.7)",
+    borderRadius: 24,
+    marginTop: 40,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.5)",
+  },
+  statBox: { flex: 1, alignItems: "center" },
+  statBoxBorder: { borderLeftWidth: 1, borderRightWidth: 1, borderColor: "rgba(0,0,0,0.05)" },
+  statNumber: { fontSize: 20, fontWeight: "800", color: "#4f46e5" },
+  statLabel: { fontSize: 12, color: "#6b7280", marginTop: 4, fontWeight: "600" },
+
+  footer: { 
+    marginTop: 60, 
+    paddingVertical: 24, 
+    borderTopWidth: 1, 
+    borderTopColor: "rgba(0,0,0,0.05)",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  footerText: { fontSize: 12, color: "#9ca3af", fontWeight: "500" },
+  footerLinks: { flexDirection: "row", gap: 8, alignItems: "center" },
+  footerLink: { fontSize: 12, color: "#6b7280", fontWeight: "600" },
+  footerDot: { color: "#d1d5db", fontSize: 10 },
+});
 
 export default Openpage;
 
