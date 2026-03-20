@@ -829,11 +829,11 @@ export default function ViewComplaintsScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: "#0f172a" },
+  safeArea: { flex: 1, backgroundColor: "transparent" },
   background: { flex: 1 },
   container: { flex: 1 },
   header: {
-    backgroundColor: "rgba(15, 23, 42, 0.8)",
+    backgroundColor: "rgba(15, 23, 42, 0.4)",
     paddingVertical: 40,
     paddingHorizontal: 20,
     borderBottomLeftRadius: 30,
@@ -848,7 +848,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     paddingHorizontal: 20,
     paddingVertical: 15,
-    backgroundColor: "rgba(30, 41, 59, 0.9)",
+    backgroundColor: "rgba(30, 41, 59, 0.6)",
     marginHorizontal: 15,
     marginTop: -15,
     borderRadius: 16,
@@ -893,7 +893,7 @@ const styles = StyleSheet.create({
   searchInput: { flex: 1, fontSize: 15, color: "#f8fafc" },
   listContainer: { padding: 15, paddingTop: 5 },
   card: {
-    backgroundColor: "rgba(30, 41, 59, 0.7)", borderRadius: 16, padding: 16, marginBottom: 15,
+    backgroundColor: "rgba(30, 41, 59, 0.5)", borderRadius: 16, padding: 16, marginBottom: 15,
     borderWidth: 1, borderColor: "rgba(255,255,255,0.05)",
   },
   cardHeader: { flexDirection: "row", alignItems: "center", marginBottom: 10 },

@@ -1339,7 +1339,7 @@ export default MemberCommunityApp;
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: 'transparent',
   },
   background: {
     flex: 1,
@@ -1363,7 +1363,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(30, 41, 59, 0.7)',
+    backgroundColor: 'rgba(30, 41, 59, 0.4)',
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
@@ -1611,7 +1611,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: 'rgba(15, 23, 42, 0.95)',
+    backgroundColor: 'rgba(15, 23, 42, 0.6)',
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.05)',
   },
@@ -1656,7 +1656,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#1e293b',
+    backgroundColor: 'rgba(30, 41, 59, 0.8)',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingBottom: 20,

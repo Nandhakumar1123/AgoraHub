@@ -258,7 +258,7 @@ export default function LoginScreen({ navigation: propNavigation }: { navigation
   const rememberMe = formData?.rememberMe || false;
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: '#0f172a' }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: 'transparent' }]}>
       <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
       <LinearGradient
         colors={['#0f172a', '#1e293b', '#0f172a']}
@@ -535,7 +535,7 @@ const styles = StyleSheet.create({
   loginBox: {
     width: width * 0.9,
     maxWidth: 400,
-    backgroundColor: "rgba(30, 41, 59, 0.7)",
+    backgroundColor: "rgba(30, 41, 59, 0.4)",
     borderRadius: 24,
     padding: 30,
     borderWidth: 1,
@@ -574,7 +574,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(255, 255, 255, 0.1)",
     borderRadius: 16,
-    backgroundColor: "rgba(15, 23, 42, 0.6)",
+    backgroundColor: "rgba(15, 23, 42, 0.4)",
     paddingHorizontal: 16,
     height: 56,
   },

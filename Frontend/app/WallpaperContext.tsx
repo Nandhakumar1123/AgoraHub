@@ -16,10 +16,9 @@ type WallpaperContextType = {
     blur: number;
 
 
-    setImageWallpaper: (uri: string) => void;
-    setGradientWallpaper: (colors: string[]) => void;
-    clearWallpaper: () => void;
-    setBlur: (value: number) => void;
+    updateWallpaper: (uri: string | null) => void;
+    updateGradient: (colors: string[]) => void;
+    updateBlur: (value: number) => void;
 };
 
 
@@ -31,10 +30,9 @@ const WallpaperContext = createContext<WallpaperContextType>({
     blur: 25,
 
 
-    setImageWallpaper: () => { },
-    setGradientWallpaper: () => { },
-    clearWallpaper: () => { },
-    setBlur: () => { },
+    updateWallpaper: () => { },
+    updateGradient: () => { },
+    updateBlur: () => { },
 });
 
 
@@ -86,7 +84,12 @@ export const WallpaperProvider = ({ children }: any) => {
     /* ================= SET IMAGE ================= */
 
 
-    const setImageWallpaper = async (uri: string) => {
+    const updateWallpaper = async (uri: string | null) => {
+        if (!uri) {
+            setWallpaper(null);
+            await AsyncStorage.removeItem("APP_WALLPAPER");
+            return;
+        }
         setWallpaper({ type: "image", value: uri });
 
 
@@ -98,7 +101,7 @@ export const WallpaperProvider = ({ children }: any) => {
     /* ================= SET GRADIENT ================= */
 
 
-    const setGradientWallpaper = async (colors: string[]) => {
+    const updateGradient = async (colors: string[]) => {
         setWallpaper({ type: "gradient", value: colors });
 
 
@@ -122,7 +125,7 @@ export const WallpaperProvider = ({ children }: any) => {
     /* ================= BLUR ================= */
 
 
-    const setBlur = async (value: number) => {
+    const updateBlur = async (value: number) => {
         setBlurState(value);
         await AsyncStorage.setItem("APP_BLUR", value.toString());
     };
@@ -133,16 +136,15 @@ export const WallpaperProvider = ({ children }: any) => {
             value={{
                 wallpaper,
                 blur,
-                setImageWallpaper,
-                setGradientWallpaper,
-                clearWallpaper,
-                setBlur,
+                updateWallpaper,
+                updateGradient,
+                updateBlur,
             }}
         >
             {children}
         </WallpaperContext.Provider>
     );
-};
+}
 
 
 /* ================= HOOK ================= */

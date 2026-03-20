@@ -16,16 +16,11 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
 import Constants from "expo-constants";
 import axios from "axios";
-import { AppContext } from "./_layout"; // adjust if needed
+import { AppContext } from "./_layout";
+import { API_ROOT } from "../lib/api";
 
 
-/* ================= BASE URL ================= */
-
-
-const BASE_URL =
-    Platform.OS === "web"
-        ? "http://localhost:3002"
-        : "http://10.14.105.170:3002";
+const BASE_URL = API_ROOT;
 
 
 const SettingScreen = () => {
@@ -107,7 +102,7 @@ const SettingScreen = () => {
     return (
         <View style={[styles.container, themeStyles.container]}>
             <LinearGradient
-                colors={isDark ? ["#1f2937", "#111827"] : ["#6366f1", "#8b5cf6"]}
+                colors={isDark ? ["rgba(31, 41, 55, 0.4)", "rgba(17, 24, 39, 0.4)"] : ["rgba(99, 102, 241, 0.4)", "rgba(139, 92, 246, 0.4)"]}
                 style={styles.header}
             >
                 <Text style={styles.headerText}>Settings</Text>
@@ -145,7 +140,7 @@ const SettingScreen = () => {
                         </View>
                         <TouchableOpacity
                             style={styles.row}
-                            onPress={() => router.push("/wallpaper")}
+                            onPress={() => router.push("/wallpaper" as any)}
                         >
                             <Text style={[styles.optionText, themeStyles.text]}>
                                 Wallpaper
@@ -166,7 +161,7 @@ const SettingScreen = () => {
                     <View style={[styles.card, themeStyles.card]}>
                         <TouchableOpacity
                             style={styles.option}
-                            onPress={() => router.push("/ChangePasswordScreen")}
+                            onPress={() => router.push("/ChangePasswordScreen" as any)}
                         >
                             <Text style={[styles.optionText, themeStyles.text]}>
                                 Change Password

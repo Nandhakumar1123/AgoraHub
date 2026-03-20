@@ -393,6 +393,175 @@ app.post("/api/login", async (req, res) => {
 });
 
 // ========================================================================
+// PROFILE & ACCOUNT ENDPOINTS
+// ========================================================================
+
+// Get user profile
+app.get("/api/profile", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.user_id;
+    
+    // Fetch from users and user_profiles (if exists)
+    const result = await pool.query(
+      `SELECT u.user_id, u.full_name, u.email, u.mobile_number, u.profile_type, 
+              up.bio, up.profile_image, up.description
+       FROM users u
+       LEFT JOIN user_profiles up ON u.user_id = up.user_id
+       WHERE u.user_id = $1`,
+      [userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error("Error fetching profile:", error);
+    res.status(500).json({ error: "Failed to fetch profile" });
+  }
+});
+
+// Update user profile
+app.put("/api/profile", authenticateToken, async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const userId = req.user.user_id;
+    const { full_name, mobile_number, bio, description } = req.body;
+
+    await client.query("BEGIN");
+
+    // Update users table
+    if (full_name || mobile_number) {
+      const updates = [];
+      const values = [];
+      if (full_name) {
+        updates.push(`full_name = $${updates.length + 1}`);
+        values.push(full_name);
+      }
+      if (mobile_number) {
+        updates.push(`mobile_number = $${updates.length + 1}`);
+        values.push(mobile_number);
+      }
+      values.push(userId);
+      await client.query(
+        `UPDATE users SET ${updates.join(", ")} WHERE user_id = $${values.length}`,
+        values
+      );
+    }
+
+    // Update or Insert into user_profiles
+    const profileCheck = await client.query(
+      `SELECT 1 FROM user_profiles WHERE user_id = $1`,
+      [userId]
+    );
+
+    if (profileCheck.rows.length > 0) {
+      await client.query(
+        `UPDATE user_profiles 
+         SET bio = COALESCE($1, bio), 
+             description = COALESCE($2, description),
+             updated_at = CURRENT_TIMESTAMP
+         WHERE user_id = $3`,
+        [bio, description, userId]
+      );
+    } else {
+      await client.query(
+        `INSERT INTO user_profiles (user_id, bio, description)
+         VALUES ($1, $2, $3)`,
+        [userId, bio || "", description || ""]
+      );
+    }
+
+    await client.query("COMMIT");
+    res.json({ message: "Profile updated successfully" });
+  } catch (error) {
+    await client.query("ROLLBACK");
+    console.error("Error updating profile:", error);
+    res.status(500).json({ error: "Failed to update profile" });
+  } finally {
+    client.release();
+  }
+});
+
+// Change password
+app.post("/api/change-password", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.user_id;
+    const { currentPassword, oldPassword, newPassword } = req.body;
+    const effectiveCurrentPassword = currentPassword || oldPassword;
+
+    if (!effectiveCurrentPassword || !newPassword) {
+      return res.status(400).json({ error: "Current and new passwords are required" });
+    }
+
+    const userResult = await pool.query(
+      `SELECT password_hash FROM users WHERE user_id = $1`,
+      [userId]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const isMatch = await bcrypt.compare(effectiveCurrentPassword, userResult.rows[0].password_hash);
+    if (!isMatch) {
+      return res.status(400).json({ error: "Incorrect current password" });
+    }
+
+    const newHash = await bcrypt.hash(newPassword, 10);
+    await pool.query(
+      `UPDATE users SET password_hash = $1 WHERE user_id = $2`,
+      [newHash, userId]
+    );
+
+    res.json({ message: "Password changed successfully" });
+  } catch (error) {
+    console.error("Error changing password:", error);
+    res.status(500).json({ error: "Failed to change password" });
+  }
+});
+
+// Delete account
+app.delete("/api/delete-account", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.user_id;
+    
+    // Cascading delete should handle memberships, profiles, etc.
+    await pool.query(`DELETE FROM users WHERE user_id = $1`, [userId]);
+    
+    res.json({ message: "Account deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting account:", error);
+    res.status(500).json({ error: "Failed to delete account" });
+  }
+});
+
+// Upload profile image (Simplified)
+app.post("/api/profile/upload-image", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.user_id;
+    const { imageUri } = req.body; 
+
+    if (!imageUri) {
+      return res.status(400).json({ error: "No image provided" });
+    }
+
+    await pool.query(
+      `INSERT INTO user_profiles (user_id, profile_image)
+       VALUES ($1, $2)
+       ON CONFLICT (user_id) DO UPDATE SET profile_image = $2, updated_at = CURRENT_TIMESTAMP`,
+      [userId, imageUri]
+    );
+
+    res.json({ message: "Image uploaded successfully", profile_image: imageUri });
+  } catch (error) {
+    console.error("Error uploading image:", error);
+    res.status(500).json({ error: "Failed to upload image" });
+  }
+});
+
+// ========================================================================
 // NLP SERVICE ROUTES
 // ========================================================================
 

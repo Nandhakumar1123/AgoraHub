@@ -1778,7 +1778,7 @@ export default AdminCommunityApp;
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: 'transparent',
   },
   background: {
     flex: 1,
@@ -1802,7 +1802,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(30, 41, 59, 0.7)',
+    backgroundColor: 'rgba(30, 41, 59, 0.4)',
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
@@ -2057,7 +2057,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'center',
-    backgroundColor: 'rgba(15, 23, 42, 0.95)',
+    backgroundColor: 'rgba(15, 23, 42, 0.6)',
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderTopWidth: 1,
@@ -2320,7 +2320,7 @@ const styles = StyleSheet.create({
   },
   chatbotModal: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: 'transparent',
   },
   chatbotHeader: {
     flexDirection: 'row',
@@ -2471,7 +2471,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.1)',
-    backgroundColor: 'rgba(15, 23, 42, 0.95)',
+    backgroundColor: 'rgba(15, 23, 42, 0.8)',
   },
   chatbotEditBanner: {
     width: '100%',

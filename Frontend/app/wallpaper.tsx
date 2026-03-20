@@ -9,6 +9,7 @@ import {
     Dimensions,
     Modal,
     Button,
+    Alert,
 } from "react-native";
 
 
@@ -50,13 +51,16 @@ const gradients = [
 ];
 
 
+import { useWallpaper } from "./WallpaperContext";
+
+
 export default function WallpaperScreen() {
     const {
         updateWallpaper,
         updateGradient,
         updateBlur,
         blur,
-    } = useContext(AppContext);
+    } = useWallpaper();
 
 
     const [preview, setPreview] = useState<string | null>(null);
@@ -99,6 +103,7 @@ export default function WallpaperScreen() {
 
         setPreview(null);
         setGradientPreview(null);
+        Alert.alert("Success", "Wallpaper applied successfully!");
     };
 
 

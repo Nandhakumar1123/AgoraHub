@@ -13,12 +13,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { AppContext } from "./_layout";
+import { API_ROOT } from "../lib/api";
 
 
-const BASE_URL =
-    Platform.OS === "web"
-        ? "http://localhost:3002"
-        : "http://10.14.105.170:3002";
+const BASE_URL = API_ROOT;
 
 
 interface ApiErrorResponse {
@@ -120,7 +118,7 @@ export default function ChangePasswordScreen() {
             const response = await axios.post(
                 `${BASE_URL}/api/change-password`,
                 {
-                    oldPassword,
+                    currentPassword: oldPassword,
                     newPassword,
                 },
                 {
@@ -180,7 +178,7 @@ export default function ChangePasswordScreen() {
                 style={[
                     styles.inputContainer,
                     {
-                        backgroundColor: isDark ? "#1f2937" : "#fff",
+                        backgroundColor: isDark ? "rgba(31, 41, 55, 0.4)" : "rgba(255, 255, 255, 0.4)",
                         borderColor: isDark ? "#374151" : "#ddd",
                     },
                 ]}

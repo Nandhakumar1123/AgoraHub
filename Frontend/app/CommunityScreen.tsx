@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Feather';
+import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { jwtDecode } from 'jwt-decode';
 import { API_BASE_URL } from '../lib/api';
@@ -36,6 +37,7 @@ type CommunityMember = {
 export default function CommunityScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>();
+  const router = useRouter();
   const route = useRoute<any>();
 
   // User info
@@ -334,13 +336,19 @@ export default function CommunityScreen() {
       <View style={styles.safeArea}>
         <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
         <LinearGradient
-          colors={['#0f172a', '#1e293b', '#0f172a']}
+          colors={['rgba(15, 23, 42, 0.5)', 'rgba(30, 41, 59, 0.5)', 'rgba(15, 23, 42, 0.5)']}
           style={[styles.background, { paddingTop: insets.top }]}
         >
         <View style={styles.header}>
           <Text style={styles.headerIcon}>👥</Text>
           <Text style={styles.headerTitle}>Community Manager</Text>
           <View style={styles.headerRight}>
+            <TouchableOpacity 
+              onPress={() => router.push('/ProfileScreen')} 
+              style={styles.headerButton}
+            >
+              <Icon name="user" size={20} color="#cbd5e1" />
+            </TouchableOpacity>
             <TouchableOpacity onPress={() => setView('joinCommunity')} style={styles.headerButton}>
               <Text style={styles.headerButtonText}>Join</Text>
             </TouchableOpacity>
@@ -407,7 +415,7 @@ export default function CommunityScreen() {
     return (
       <View style={styles.safeArea}>
         <LinearGradient
-          colors={['#0f172a', '#1e293b', '#0f172a']}
+          colors={['rgba(15, 23, 42, 0.5)', 'rgba(30, 41, 59, 0.5)', 'rgba(15, 23, 42, 0.5)']}
           style={[styles.background, { paddingTop: insets.top, flex: 1 }]}
         >
         <ScrollView style={styles.scrollContent}>
@@ -503,7 +511,7 @@ export default function CommunityScreen() {
     return (
       <View style={styles.safeArea}>
         <LinearGradient
-          colors={['#0f172a', '#1e293b', '#0f172a']}
+          colors={['rgba(15, 23, 42, 0.5)', 'rgba(30, 41, 59, 0.5)', 'rgba(15, 23, 42, 0.5)']}
           style={[styles.background, { paddingTop: insets.top, alignItems: 'center', justifyContent: 'center' }]}
         >
           <Text style={styles.headerTitle}>🎉 Community Created!</Text>
@@ -525,7 +533,7 @@ export default function CommunityScreen() {
     return (
       <View style={styles.safeArea}>
         <LinearGradient
-          colors={['#0f172a', '#1e293b', '#0f172a']}
+          colors={['rgba(15, 23, 42, 0.5)', 'rgba(30, 41, 59, 0.5)', 'rgba(15, 23, 42, 0.5)']}
           style={[styles.background, { paddingTop: insets.top, flex: 1 }]}
         >
           <View style={styles.header}>
@@ -559,7 +567,7 @@ export default function CommunityScreen() {
     return (
       <View style={styles.safeArea}>
         <LinearGradient
-          colors={['#0f172a', '#1e293b', '#0f172a']}
+          colors={['rgba(15, 23, 42, 0.5)', 'rgba(30, 41, 59, 0.5)', 'rgba(15, 23, 42, 0.5)']}
           style={[styles.background, { paddingTop: insets.top, flex: 1 }]}
         >
         <View style={styles.header}>
@@ -632,7 +640,7 @@ export default function CommunityScreen() {
     return (
       <View style={styles.safeArea}>
         <LinearGradient
-          colors={['#0f172a', '#1e293b', '#0f172a']}
+          colors={['rgba(15, 23, 42, 0.5)', 'rgba(30, 41, 59, 0.5)', 'rgba(15, 23, 42, 0.5)']}
           style={[styles.background, { paddingTop: insets.top, flex: 1 }]}
         >
         <View style={styles.header}>
@@ -696,7 +704,7 @@ export default function CommunityScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#0f172a' },
+  safeArea: { flex: 1, backgroundColor: 'transparent' },
   header: {
     paddingHorizontal: 20,
     paddingVertical: 16,

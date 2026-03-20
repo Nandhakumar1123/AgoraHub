@@ -9874,3 +9874,345 @@
 2026-03-19 22:41:57 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"2ms","ip":"127.0.0.1"}
 2026-03-19 22:45:15 [INFO]: SIGINT received, shutting down gracefully...
 2026-03-19 22:45:15 [INFO]: ✅ All connections closed
+2026-03-20 14:41:40 [INFO]: ✅ PostgreSQL connected
+2026-03-20 14:41:40 [INFO]: ✅ PostgreSQL connected
+2026-03-20 14:41:40 [INFO]: ✅ Redis connected (NLP service available)
+2026-03-20 14:41:40 [INFO]: Preloading NLP models...
+2026-03-20 14:41:40 [INFO]: Preloading NLP models...
+2026-03-20 14:41:40 [INFO]: Loading sentiment analysis model...
+2026-03-20 14:41:40 [INFO]: Loading toxicity detection model...
+2026-03-20 14:41:41 [INFO]: ✅ Sentiment analysis model loaded {"duration":"747ms"}
+2026-03-20 14:41:42 [WARN]: Slow operation {"operation":"Toxicity model initialization","duration":"1491ms"}
+2026-03-20 14:41:42 [INFO]: ✅ Toxicity detection model loaded {"duration":"1491ms"}
+2026-03-20 14:41:42 [INFO]: ✅ All NLP models preloaded
+2026-03-20 14:41:42 [INFO]: 🚀 Civix Platform running on port 3002
+2026-03-20 14:41:42 [INFO]: Environment: development
+2026-03-20 14:41:42 [INFO]: Accessible at http://localhost:3002 (local)
+2026-03-20 14:41:42 [INFO]: Socket.io enabled for real-time features
+2026-03-20 14:41:42 [INFO]: NLP ChatBot service: OPTIONAL
+2026-03-20 14:42:03 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 14:42:03 [INFO]: ✅ All connections closed
+2026-03-20 14:42:05 [INFO]: ✅ PostgreSQL connected
+2026-03-20 14:42:05 [INFO]: ✅ PostgreSQL connected
+2026-03-20 14:42:05 [INFO]: ✅ Redis connected (NLP service available)
+2026-03-20 14:42:05 [INFO]: Preloading NLP models...
+2026-03-20 14:42:05 [INFO]: Preloading NLP models...
+2026-03-20 14:42:05 [INFO]: Loading sentiment analysis model...
+2026-03-20 14:42:05 [INFO]: Loading toxicity detection model...
+2026-03-20 14:42:06 [INFO]: ✅ Sentiment analysis model loaded {"duration":"409ms"}
+2026-03-20 14:42:06 [INFO]: ✅ Toxicity detection model loaded {"duration":"791ms"}
+2026-03-20 14:42:06 [INFO]: ✅ All NLP models preloaded
+2026-03-20 14:42:06 [INFO]: 🚀 Civix Platform running on port 3002
+2026-03-20 14:42:06 [INFO]: Environment: development
+2026-03-20 14:42:06 [INFO]: Accessible at http://localhost:3002 (local)
+2026-03-20 14:42:06 [INFO]: Socket.io enabled for real-time features
+2026-03-20 14:42:06 [INFO]: NLP ChatBot service: OPTIONAL
+2026-03-20 14:43:30 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"20ms","ip":"127.0.0.1"}
+2026-03-20 14:43:39 [INFO]: ✅ PostgreSQL connected
+2026-03-20 14:43:40 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":401,"duration":"348ms","ip":"127.0.0.1"}
+2026-03-20 14:43:45 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"242ms","ip":"127.0.0.1"}
+2026-03-20 14:43:45 [INFO]: ✅ PostgreSQL connected
+2026-03-20 14:43:45 [INFO]: ✅ PostgreSQL connected
+2026-03-20 14:43:45 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"124ms","ip":"127.0.0.1"}
+2026-03-20 14:43:45 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"18ms","ip":"127.0.0.1"}
+2026-03-20 14:43:49 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":500,"duration":"38ms","ip":"127.0.0.1"}
+2026-03-20 14:43:49 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"2ms","ip":"127.0.0.1"}
+2026-03-20 14:43:58 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"2ms","ip":"127.0.0.1"}
+2026-03-20 14:43:58 [INFO]: HTTP Request {"method":"GET","path":"/stats/46","status":401,"duration":"12ms","ip":"127.0.0.1"}
+2026-03-20 14:44:08 [INFO]: ✅ PostgreSQL connected
+2026-03-20 14:44:08 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"282ms","ip":"127.0.0.1"}
+2026-03-20 14:44:08 [INFO]: ✅ PostgreSQL connected
+2026-03-20 14:44:08 [INFO]: ✅ PostgreSQL connected
+2026-03-20 14:44:08 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"115ms","ip":"127.0.0.1"}
+2026-03-20 14:44:08 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"15ms","ip":"127.0.0.1"}
+2026-03-20 14:44:10 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"10ms","ip":"127.0.0.1"}
+2026-03-20 14:44:10 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/messages","status":304,"duration":"32ms","ip":"127.0.0.1"}
+2026-03-20 14:44:10 [INFO]: HTTP Request {"method":"GET","path":"/stats/46","status":304,"duration":"164ms","ip":"127.0.0.1"}
+2026-03-20 14:44:10 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"65ms","ip":"127.0.0.1"}
+2026-03-20 14:44:10 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1/my-vote","status":304,"duration":"5ms","ip":"127.0.0.1"}
+2026-03-20 14:47:05 [INFO]: ✅ PostgreSQL connected
+2026-03-20 14:47:05 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":500,"duration":"62ms","ip":"127.0.0.1"}
+2026-03-20 14:47:05 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"1ms","ip":"127.0.0.1"}
+2026-03-20 14:50:35 [INFO]: ✅ PostgreSQL connected
+2026-03-20 14:50:35 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"259ms","ip":"127.0.0.1"}
+2026-03-20 14:50:36 [INFO]: ✅ PostgreSQL connected
+2026-03-20 14:50:36 [INFO]: ✅ PostgreSQL connected
+2026-03-20 14:50:36 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"109ms","ip":"127.0.0.1"}
+2026-03-20 14:50:36 [INFO]: ✅ PostgreSQL connected
+2026-03-20 14:50:36 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"197ms","ip":"127.0.0.1"}
+2026-03-20 14:53:21 [INFO]: ✅ PostgreSQL connected
+2026-03-20 14:53:21 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":500,"duration":"181ms","ip":"127.0.0.1"}
+2026-03-20 14:53:21 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"1ms","ip":"127.0.0.1"}
+2026-03-20 14:59:43 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 14:59:43 [INFO]: ✅ All connections closed
+2026-03-20 14:59:46 [INFO]: ✅ PostgreSQL connected
+2026-03-20 14:59:46 [INFO]: ✅ PostgreSQL connected
+2026-03-20 14:59:46 [INFO]: ✅ Redis connected (NLP service available)
+2026-03-20 14:59:46 [INFO]: Preloading NLP models...
+2026-03-20 14:59:46 [INFO]: Preloading NLP models...
+2026-03-20 14:59:46 [INFO]: Loading sentiment analysis model...
+2026-03-20 14:59:46 [INFO]: Loading toxicity detection model...
+2026-03-20 14:59:47 [INFO]: ✅ Sentiment analysis model loaded {"duration":"446ms"}
+2026-03-20 14:59:47 [INFO]: ✅ Toxicity detection model loaded {"duration":"826ms"}
+2026-03-20 14:59:47 [INFO]: ✅ All NLP models preloaded
+2026-03-20 14:59:47 [INFO]: 🚀 Civix Platform running on port 3002
+2026-03-20 14:59:47 [INFO]: Environment: development
+2026-03-20 14:59:47 [INFO]: Accessible at http://localhost:3002 (local)
+2026-03-20 14:59:47 [INFO]: Socket.io enabled for real-time features
+2026-03-20 14:59:47 [INFO]: NLP ChatBot service: OPTIONAL
+2026-03-20 15:00:00 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"16ms","ip":"127.0.0.1"}
+2026-03-20 15:00:11 [INFO]: ✅ PostgreSQL connected
+2026-03-20 15:00:11 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"368ms","ip":"127.0.0.1"}
+2026-03-20 15:00:11 [INFO]: ✅ PostgreSQL connected
+2026-03-20 15:00:11 [INFO]: ✅ PostgreSQL connected
+2026-03-20 15:00:11 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"146ms","ip":"127.0.0.1"}
+2026-03-20 15:00:11 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"16ms","ip":"127.0.0.1"}
+2026-03-20 15:00:13 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":500,"duration":"28ms","ip":"127.0.0.1"}
+2026-03-20 15:00:13 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"2ms","ip":"127.0.0.1"}
+2026-03-20 15:06:22 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 15:06:22 [INFO]: ✅ All connections closed
+2026-03-20 15:06:26 [INFO]: ✅ PostgreSQL connected
+2026-03-20 15:06:26 [INFO]: ✅ PostgreSQL connected
+2026-03-20 15:06:26 [INFO]: ✅ Redis connected (NLP service available)
+2026-03-20 15:06:26 [INFO]: Preloading NLP models...
+2026-03-20 15:06:26 [INFO]: Preloading NLP models...
+2026-03-20 15:06:26 [INFO]: Loading sentiment analysis model...
+2026-03-20 15:06:26 [INFO]: Loading toxicity detection model...
+2026-03-20 15:06:26 [INFO]: ✅ Sentiment analysis model loaded {"duration":"362ms"}
+2026-03-20 15:06:27 [INFO]: ✅ Toxicity detection model loaded {"duration":"699ms"}
+2026-03-20 15:06:27 [INFO]: ✅ All NLP models preloaded
+2026-03-20 15:06:27 [INFO]: 🚀 Civix Platform running on port 3002
+2026-03-20 15:06:27 [INFO]: Environment: development
+2026-03-20 15:06:27 [INFO]: Accessible at http://localhost:3002 (local)
+2026-03-20 15:06:27 [INFO]: Socket.io enabled for real-time features
+2026-03-20 15:06:27 [INFO]: NLP ChatBot service: OPTIONAL
+2026-03-20 15:06:34 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"11ms","ip":"127.0.0.1"}
+2026-03-20 15:06:48 [INFO]: ✅ PostgreSQL connected
+2026-03-20 15:06:48 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"277ms","ip":"127.0.0.1"}
+2026-03-20 15:06:48 [INFO]: ✅ PostgreSQL connected
+2026-03-20 15:06:48 [INFO]: ✅ PostgreSQL connected
+2026-03-20 15:06:48 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"136ms","ip":"127.0.0.1"}
+2026-03-20 15:06:48 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"17ms","ip":"127.0.0.1"}
+2026-03-20 15:07:11 [INFO]: ✅ PostgreSQL connected
+2026-03-20 15:07:11 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":500,"duration":"83ms","ip":"127.0.0.1"}
+2026-03-20 15:07:11 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"2ms","ip":"127.0.0.1"}
+2026-03-20 15:08:33 [INFO]: ✅ PostgreSQL connected
+2026-03-20 15:08:33 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"252ms","ip":"127.0.0.1"}
+2026-03-20 15:08:33 [INFO]: ✅ PostgreSQL connected
+2026-03-20 15:08:33 [INFO]: ✅ PostgreSQL connected
+2026-03-20 15:08:33 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"98ms","ip":"127.0.0.1"}
+2026-03-20 15:08:33 [INFO]: ✅ PostgreSQL connected
+2026-03-20 15:08:33 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"114ms","ip":"127.0.0.1"}
+2026-03-20 15:16:11 [INFO]: ✅ PostgreSQL connected
+2026-03-20 15:16:11 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"118ms","ip":"127.0.0.1"}
+2026-03-20 15:16:11 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/messages","status":304,"duration":"34ms","ip":"127.0.0.1"}
+2026-03-20 15:16:11 [INFO]: HTTP Request {"method":"GET","path":"/stats/46","status":304,"duration":"184ms","ip":"127.0.0.1"}
+2026-03-20 15:16:11 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"51ms","ip":"127.0.0.1"}
+2026-03-20 15:16:11 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1/my-vote","status":304,"duration":"10ms","ip":"127.0.0.1"}
+2026-03-20 15:16:21 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":500,"duration":"12ms","ip":"127.0.0.1"}
+2026-03-20 15:16:21 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"2ms","ip":"127.0.0.1"}
+2026-03-20 15:33:49 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 15:33:49 [INFO]: ✅ All connections closed
+2026-03-20 15:33:57 [INFO]: ✅ PostgreSQL connected
+2026-03-20 15:33:57 [INFO]: ✅ PostgreSQL connected
+2026-03-20 15:33:57 [INFO]: ✅ Redis connected (NLP service available)
+2026-03-20 15:33:57 [INFO]: Preloading NLP models...
+2026-03-20 15:33:57 [INFO]: Preloading NLP models...
+2026-03-20 15:33:57 [INFO]: Loading sentiment analysis model...
+2026-03-20 15:33:57 [INFO]: Loading toxicity detection model...
+2026-03-20 15:33:59 [WARN]: Slow operation {"operation":"Sentiment model initialization","duration":"1571ms"}
+2026-03-20 15:33:59 [INFO]: ✅ Sentiment analysis model loaded {"duration":"1571ms"}
+2026-03-20 15:34:00 [WARN]: Slow operation {"operation":"Toxicity model initialization","duration":"2649ms"}
+2026-03-20 15:34:00 [INFO]: ✅ Toxicity detection model loaded {"duration":"2649ms"}
+2026-03-20 15:34:00 [INFO]: ✅ All NLP models preloaded
+2026-03-20 15:34:00 [INFO]: 🚀 Civix Platform running on port 3002
+2026-03-20 15:34:00 [INFO]: Environment: development
+2026-03-20 15:34:00 [INFO]: Accessible at http://localhost:3002 (local)
+2026-03-20 15:34:00 [INFO]: Socket.io enabled for real-time features
+2026-03-20 15:34:00 [INFO]: NLP ChatBot service: OPTIONAL
+2026-03-20 15:34:23 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"23ms","ip":"127.0.0.1"}
+2026-03-20 15:34:35 [INFO]: ✅ PostgreSQL connected
+2026-03-20 15:34:35 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"293ms","ip":"127.0.0.1"}
+2026-03-20 15:34:35 [INFO]: ✅ PostgreSQL connected
+2026-03-20 15:34:35 [INFO]: ✅ PostgreSQL connected
+2026-03-20 15:34:35 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"121ms","ip":"127.0.0.1"}
+2026-03-20 15:34:35 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"19ms","ip":"127.0.0.1"}
+2026-03-20 15:34:37 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":200,"duration":"11ms","ip":"127.0.0.1"}
+2026-03-20 15:34:45 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":304,"duration":"19ms","ip":"127.0.0.1"}
+2026-03-20 15:35:04 [INFO]: HTTP Request {"method":"POST","path":"/api/change-password","status":400,"duration":"3ms","ip":"127.0.0.1"}
+2026-03-20 15:35:22 [INFO]: HTTP Request {"method":"POST","path":"/api/change-password","status":400,"duration":"3ms","ip":"127.0.0.1"}
+2026-03-20 15:36:14 [INFO]: HTTP Request {"method":"POST","path":"/api/change-password","status":400,"duration":"3ms","ip":"127.0.0.1"}
+2026-03-20 15:36:28 [INFO]: HTTP Request {"method":"POST","path":"/api/change-password","status":400,"duration":"5ms","ip":"127.0.0.1"}
+2026-03-20 15:42:41 [INFO]: ✅ PostgreSQL connected
+2026-03-20 15:42:41 [INFO]: HTTP Request {"method":"POST","path":"/api/change-password","status":200,"duration":"293ms","ip":"127.0.0.1"}
+2026-03-20 15:42:43 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"0ms","ip":"127.0.0.1"}
+2026-03-20 15:43:23 [INFO]: ✅ PostgreSQL connected
+2026-03-20 15:43:23 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":401,"duration":"180ms","ip":"127.0.0.1"}
+2026-03-20 15:43:35 [INFO]: ✅ PostgreSQL connected
+2026-03-20 15:43:35 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"232ms","ip":"127.0.0.1"}
+2026-03-20 15:43:35 [INFO]: ✅ PostgreSQL connected
+2026-03-20 15:43:35 [INFO]: ✅ PostgreSQL connected
+2026-03-20 15:43:35 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"72ms","ip":"127.0.0.1"}
+2026-03-20 15:43:35 [INFO]: ✅ PostgreSQL connected
+2026-03-20 15:43:35 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"88ms","ip":"127.0.0.1"}
+2026-03-20 15:44:13 [INFO]: ✅ PostgreSQL connected
+2026-03-20 15:44:13 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":304,"duration":"100ms","ip":"127.0.0.1"}
+2026-03-20 15:48:00 [INFO]: ✅ PostgreSQL connected
+2026-03-20 15:48:00 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":304,"duration":"135ms","ip":"127.0.0.1"}
+2026-03-20 15:48:00 [INFO]: ✅ PostgreSQL connected
+2026-03-20 15:48:00 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":304,"duration":"5ms","ip":"127.0.0.1"}
+2026-03-20 15:48:00 [INFO]: ✅ PostgreSQL connected
+2026-03-20 15:48:00 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"170ms","ip":"127.0.0.1"}
+2026-03-20 15:48:00 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"8ms","ip":"127.0.0.1"}
+2026-03-20 15:48:00 [INFO]: ✅ PostgreSQL connected
+2026-03-20 15:48:00 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"256ms","ip":"127.0.0.1"}
+2026-03-20 15:48:00 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"12ms","ip":"127.0.0.1"}
+2026-03-20 15:48:33 [INFO]: ✅ PostgreSQL connected
+2026-03-20 15:48:33 [INFO]: ✅ PostgreSQL connected
+2026-03-20 15:48:33 [INFO]: ✅ PostgreSQL connected
+2026-03-20 15:48:33 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":304,"duration":"126ms","ip":"127.0.0.1"}
+2026-03-20 15:48:33 [INFO]: ✅ PostgreSQL connected
+2026-03-20 15:48:33 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"234ms","ip":"127.0.0.1"}
+2026-03-20 15:48:33 [INFO]: ✅ PostgreSQL connected
+2026-03-20 15:48:33 [INFO]: ✅ PostgreSQL connected
+2026-03-20 15:48:33 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"14ms","ip":"127.0.0.1"}
+2026-03-20 15:48:33 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":304,"duration":"129ms","ip":"127.0.0.1"}
+2026-03-20 15:48:33 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"260ms","ip":"127.0.0.1"}
+2026-03-20 15:48:33 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"17ms","ip":"127.0.0.1"}
+2026-03-20 18:25:29 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 18:25:29 [INFO]: ✅ All connections closed
+2026-03-20 18:25:34 [INFO]: ✅ PostgreSQL connected
+2026-03-20 18:25:34 [INFO]: ✅ PostgreSQL connected
+2026-03-20 18:25:34 [INFO]: ✅ Redis connected (NLP service available)
+2026-03-20 18:25:34 [INFO]: Preloading NLP models...
+2026-03-20 18:25:34 [INFO]: Preloading NLP models...
+2026-03-20 18:25:34 [INFO]: Loading sentiment analysis model...
+2026-03-20 18:25:34 [INFO]: Loading toxicity detection model...
+2026-03-20 18:25:35 [INFO]: ✅ Sentiment analysis model loaded {"duration":"662ms"}
+2026-03-20 18:25:36 [WARN]: Slow operation {"operation":"Toxicity model initialization","duration":"1268ms"}
+2026-03-20 18:25:36 [INFO]: ✅ Toxicity detection model loaded {"duration":"1268ms"}
+2026-03-20 18:25:36 [INFO]: ✅ All NLP models preloaded
+2026-03-20 18:25:36 [INFO]: 🚀 Civix Platform running on port 3002
+2026-03-20 18:25:36 [INFO]: Environment: development
+2026-03-20 18:25:36 [INFO]: Accessible at http://localhost:3002 (local)
+2026-03-20 18:25:36 [INFO]: Socket.io enabled for real-time features
+2026-03-20 18:25:36 [INFO]: NLP ChatBot service: OPTIONAL
+2026-03-20 18:26:18 [INFO]: ✅ PostgreSQL connected
+2026-03-20 18:26:18 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":304,"duration":"210ms","ip":"127.0.0.1"}
+2026-03-20 18:26:19 [INFO]: ✅ PostgreSQL connected
+2026-03-20 18:26:19 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"106ms","ip":"127.0.0.1"}
+2026-03-20 18:26:19 [INFO]: ✅ PostgreSQL connected
+2026-03-20 18:26:19 [INFO]: ✅ PostgreSQL connected
+2026-03-20 18:26:19 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"251ms","ip":"127.0.0.1"}
+2026-03-20 18:26:21 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":304,"duration":"8ms","ip":"127.0.0.1"}
+2026-03-20 18:26:22 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"16ms","ip":"127.0.0.1"}
+2026-03-20 18:26:22 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"16ms","ip":"127.0.0.1"}
+2026-03-20 18:26:30 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"7ms","ip":"127.0.0.1"}
+2026-03-20 18:26:30 [INFO]: ✅ PostgreSQL connected
+2026-03-20 18:26:30 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"65ms","ip":"127.0.0.1"}
+2026-03-20 18:26:48 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"5ms","ip":"127.0.0.1"}
+2026-03-20 18:27:02 [INFO]: ✅ PostgreSQL connected
+2026-03-20 18:27:02 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"307ms","ip":"127.0.0.1"}
+2026-03-20 18:27:02 [INFO]: ✅ PostgreSQL connected
+2026-03-20 18:27:02 [INFO]: ✅ PostgreSQL connected
+2026-03-20 18:27:02 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"87ms","ip":"127.0.0.1"}
+2026-03-20 18:27:02 [INFO]: ✅ PostgreSQL connected
+2026-03-20 18:27:02 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"239ms","ip":"127.0.0.1"}
+2026-03-20 18:27:04 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":304,"duration":"6ms","ip":"127.0.0.1"}
+2026-03-20 18:27:33 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"2ms","ip":"127.0.0.1"}
+2026-03-20 18:33:48 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"1ms","ip":"127.0.0.1"}
+2026-03-20 18:33:54 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 18:33:55 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 18:33:56 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 18:33:56 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 18:33:56 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 18:33:56 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 18:33:56 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 18:33:56 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 18:33:56 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 18:33:56 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 18:33:56 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 18:33:56 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 18:33:56 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 18:33:56 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 18:33:56 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 18:33:56 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 18:33:57 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 18:33:57 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 18:33:57 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 18:33:57 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 18:33:57 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 18:33:57 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 18:33:57 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 18:33:57 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 18:33:57 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 18:33:57 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 18:33:57 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 18:33:57 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 18:33:57 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 18:33:57 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 18:33:57 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 18:33:57 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 18:33:57 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 18:33:57 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-20 18:34:12 [INFO]: ✅ PostgreSQL connected
+2026-03-20 18:34:12 [INFO]: ✅ PostgreSQL connected
+2026-03-20 18:34:12 [INFO]: ✅ Redis connected (NLP service available)
+2026-03-20 18:34:12 [INFO]: Preloading NLP models...
+2026-03-20 18:34:12 [INFO]: Preloading NLP models...
+2026-03-20 18:34:12 [INFO]: Loading sentiment analysis model...
+2026-03-20 18:34:12 [INFO]: Loading toxicity detection model...
+2026-03-20 18:34:13 [INFO]: ✅ Sentiment analysis model loaded {"duration":"368ms"}
+2026-03-20 18:34:13 [INFO]: ✅ Toxicity detection model loaded {"duration":"684ms"}
+2026-03-20 18:34:13 [INFO]: ✅ All NLP models preloaded
+2026-03-20 18:34:13 [INFO]: 🚀 Civix Platform running on port 3002
+2026-03-20 18:34:13 [INFO]: Environment: development
+2026-03-20 18:34:13 [INFO]: Accessible at http://localhost:3002 (local)
+2026-03-20 18:34:13 [INFO]: Socket.io enabled for real-time features
+2026-03-20 18:34:13 [INFO]: NLP ChatBot service: OPTIONAL
+2026-03-20 18:35:44 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"12ms","ip":"127.0.0.1"}
+2026-03-20 18:35:56 [INFO]: ✅ PostgreSQL connected
+2026-03-20 18:35:56 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"327ms","ip":"127.0.0.1"}
+2026-03-20 18:35:57 [INFO]: ✅ PostgreSQL connected
+2026-03-20 18:35:57 [INFO]: ✅ PostgreSQL connected
+2026-03-20 18:35:57 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"135ms","ip":"127.0.0.1"}
+2026-03-20 18:35:57 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"14ms","ip":"127.0.0.1"}
+2026-03-20 18:36:03 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":304,"duration":"13ms","ip":"127.0.0.1"}
+2026-03-20 18:36:18 [INFO]: ✅ PostgreSQL connected
+2026-03-20 18:36:18 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":304,"duration":"64ms","ip":"127.0.0.1"}
+2026-03-20 18:39:36 [INFO]: ✅ PostgreSQL connected
+2026-03-20 18:39:36 [INFO]: ✅ PostgreSQL connected
+2026-03-20 18:39:36 [INFO]: ✅ PostgreSQL connected
+2026-03-20 18:39:36 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":304,"duration":"112ms","ip":"127.0.0.1"}
+2026-03-20 18:39:36 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"124ms","ip":"127.0.0.1"}
+2026-03-20 18:39:36 [INFO]: ✅ PostgreSQL connected
+2026-03-20 18:39:36 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"162ms","ip":"127.0.0.1"}
+2026-03-20 18:40:51 [INFO]: ✅ PostgreSQL connected
+2026-03-20 18:40:51 [INFO]: ✅ PostgreSQL connected
+2026-03-20 18:40:51 [INFO]: ✅ PostgreSQL connected
+2026-03-20 18:40:51 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"197ms","ip":"127.0.0.1"}
+2026-03-20 18:40:51 [INFO]: ✅ PostgreSQL connected
+2026-03-20 18:40:51 [INFO]: ✅ PostgreSQL connected
+2026-03-20 18:40:51 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"223ms","ip":"127.0.0.1"}
+2026-03-20 18:40:51 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"28ms","ip":"127.0.0.1"}
+2026-03-20 18:40:51 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"23ms","ip":"127.0.0.1"}
+2026-03-20 18:41:03 [INFO]: ✅ PostgreSQL connected
+2026-03-20 18:41:03 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/49","status":304,"duration":"118ms","ip":"127.0.0.1"}
+2026-03-20 18:41:03 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/49/messages","status":304,"duration":"83ms","ip":"127.0.0.1"}
+2026-03-20 18:41:03 [INFO]: HTTP Request {"method":"GET","path":"/stats/49","status":304,"duration":"199ms","ip":"127.0.0.1"}
+2026-03-20 18:44:36 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"1ms","ip":"127.0.0.1"}
+2026-03-20 18:44:43 [INFO]: ✅ PostgreSQL connected
+2026-03-20 18:44:44 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"411ms","ip":"127.0.0.1"}
+2026-03-20 18:44:44 [INFO]: ✅ PostgreSQL connected
+2026-03-20 18:44:44 [INFO]: ✅ PostgreSQL connected
+2026-03-20 18:44:44 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"104ms","ip":"127.0.0.1"}
+2026-03-20 18:44:44 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"11ms","ip":"127.0.0.1"}
+2026-03-20 18:44:46 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":304,"duration":"10ms","ip":"127.0.0.1"}
+2026-03-20 18:44:56 [INFO]: ✅ PostgreSQL connected
+2026-03-20 18:44:56 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":304,"duration":"86ms","ip":"127.0.0.1"}
+2026-03-20 18:45:21 [INFO]: ✅ PostgreSQL connected
+2026-03-20 18:45:21 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":304,"duration":"95ms","ip":"127.0.0.1"}
+2026-03-20 18:45:48 [INFO]: ✅ PostgreSQL connected
+2026-03-20 18:45:49 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/49","status":304,"duration":"113ms","ip":"127.0.0.1"}
+2026-03-20 18:45:49 [INFO]: HTTP Request {"method":"GET","path":"/stats/49","status":304,"duration":"125ms","ip":"127.0.0.1"}
+2026-03-20 18:45:49 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/49/messages","status":304,"duration":"22ms","ip":"127.0.0.1"}

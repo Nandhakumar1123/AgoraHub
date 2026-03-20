@@ -635,7 +635,7 @@ const handleDeleteEvent = async (eventId: number) => {
     <View style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
       <LinearGradient
-        colors={['#0f172a', '#1e293b', '#0f172a']}
+        colors={['rgba(15, 23, 42, 0.5)', 'rgba(30, 41, 59, 0.5)', 'rgba(15, 23, 42, 0.5)']}
         style={styles.background}
       >
         <View style={styles.container}>

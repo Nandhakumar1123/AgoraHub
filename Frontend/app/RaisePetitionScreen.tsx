@@ -705,10 +705,10 @@ const RaisePetitionScreen: React.FC = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#0f172a',
+        backgroundColor: 'transparent',
     },
     header: {
-        backgroundColor: 'rgba(15, 23, 42, 0.8)',
+        backgroundColor: 'rgba(15, 23, 42, 0.4)',
         padding: 20,
         paddingTop: 55,
         borderBottomLeftRadius: 24,
