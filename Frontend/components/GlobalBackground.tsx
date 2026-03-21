@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet, Image, Dimensions } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useWallpaper } from './WallpaperContext';
+import { useWallpaper } from '../context/WallpaperContext';
 
 const { width, height } = Dimensions.get('window');
 

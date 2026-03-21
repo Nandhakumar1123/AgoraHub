@@ -414,3 +414,23 @@
 2026-03-19 18:28:16 [ERROR]: Bot history endpoint error {"error":"getBotHistory is not defined","userId":15}
 2026-03-19 18:28:28 [ERROR]: Bot ask endpoint error {"error":"askBot is not defined","userId":15}
 2026-03-19 20:52:35 [ERROR]: Forced shutdown after timeout
+2026-03-21 11:49:15 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-03-21 11:49:15 [ERROR]: Complaint summarization failed {"error":"timeout of 60000ms exceeded"}
+2026-03-21 11:58:02 [ERROR]: Forced shutdown after timeout
+2026-03-21 17:46:15 [ERROR]: Bot history update endpoint error {"error":"updateBotHistoryEntry is not defined","userId":15}
+2026-03-21 17:46:25 [ERROR]: Bot history update endpoint error {"error":"updateBotHistoryEntry is not defined","userId":15}
+2026-03-21 18:14:40 [ERROR]: Bot history update endpoint error {"error":"updateBotHistoryEntry is not defined","userId":15}
+2026-03-21 18:52:29 [ERROR]: Bot query error {"error":"getGeneralQuestionPrompt is not defined","question":"give the solution for water leaking often complaint","communityId":46}
+2026-03-21 18:52:29 [ERROR]: Conversation continuation error {"error":"getGeneralQuestionPrompt is not defined"}
+2026-03-21 18:52:29 [ERROR]: Bot query error {"error":"getGeneralQuestionPrompt is not defined","question":"give the solution for water leaking often complaint","communityId":46}
+2026-03-21 18:52:29 [ERROR]: Bot ask endpoint error {"error":"getGeneralQuestionPrompt is not defined","userId":15}
+2026-03-21 18:52:37 [ERROR]: Bot query error {"error":"getGeneralQuestionPrompt is not defined","question":"give the solution for water leaking often complaint","communityId":46}
+2026-03-21 18:52:37 [ERROR]: Conversation continuation error {"error":"getGeneralQuestionPrompt is not defined"}
+2026-03-21 18:52:37 [ERROR]: Bot query error {"error":"getGeneralQuestionPrompt is not defined","question":"give the solution for water leaking often complaint","communityId":46}
+2026-03-21 18:52:37 [ERROR]: Bot ask endpoint error {"error":"getGeneralQuestionPrompt is not defined","userId":15}
+2026-03-21 19:05:35 [ERROR]: Uncaught exception {"error":"listen EADDRINUSE: address already in use 0.0.0.0:3002","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:3002\n    at Server.setupListenHandle [as _listen2] (node:net:1940:16)\n    at listenInCluster (node:net:1997:12)\n    at node:net:2206:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}
+2026-03-21 19:11:09 [ERROR]: Uncaught exception {"error":"listen EADDRINUSE: address already in use 0.0.0.0:3002","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:3002\n    at Server.setupListenHandle [as _listen2] (node:net:1940:16)\n    at listenInCluster (node:net:1997:12)\n    at node:net:2206:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}
+2026-03-21 19:11:43 [ERROR]: Uncaught exception {"error":"listen EADDRINUSE: address already in use 0.0.0.0:3002","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:3002\n    at Server.setupListenHandle [as _listen2] (node:net:1940:16)\n    at listenInCluster (node:net:1997:12)\n    at node:net:2206:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}
+2026-03-21 19:39:34 [ERROR]: Uncaught exception {"error":"listen EADDRINUSE: address already in use 0.0.0.0:3002","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:3002\n    at Server.setupListenHandle [as _listen2] (node:net:1940:16)\n    at listenInCluster (node:net:1997:12)\n    at node:net:2206:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}
+2026-03-21 19:40:12 [ERROR]: Uncaught exception {"error":"listen EADDRINUSE: address already in use 0.0.0.0:3002","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:3002\n    at Server.setupListenHandle [as _listen2] (node:net:1940:16)\n    at listenInCluster (node:net:1997:12)\n    at node:net:2206:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}
+2026-03-21 20:36:32 [ERROR]: Uncaught exception {"error":"listen EADDRINUSE: address already in use 0.0.0.0:3002","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:3002\n    at Server.setupListenHandle [as _listen2] (node:net:1940:16)\n    at listenInCluster (node:net:1997:12)\n    at node:net:2206:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}

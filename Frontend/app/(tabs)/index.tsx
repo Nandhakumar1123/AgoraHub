@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Dimensions, Platform } from "react-native";
 import { useRouter } from "expo-router";
-import { User, ChevronRight, Mail, Users, MessageSquare, Calendar, Info, ArrowRight, Zap, Target, Heart } from "lucide-react-native";
+import { User, ChevronRight, Mail, Users, MessageSquare, Calendar, Info, ArrowRight, Zap, Target, Heart, Bot } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { LinearGradient } from 'expo-linear-gradient';
@@ -20,6 +20,7 @@ const Openpage = () => {
     { id: 1, title: "Collaborate", icon: <Users color="#6366f1" size={24} />, desc: "Connect with like-minded individuals in your community." },
     { id: 2, title: "Communicate", icon: <MessageSquare color="#f43f5e" size={24} />, desc: "Share ideas and engage in meaningful discussions." },
     { id: 3, title: "Celebrate", icon: <Calendar color="#10b981" size={24} />, desc: "Participate in local events and hackathons." },
+    { id: 4, title: "AI Assistant", icon: <Bot color="#a855f7" size={24} />, desc: "Get answers, raise complaints, or draft petitions with AI.", route: "/ChatWithModeration" },
   ];
 
   return (
@@ -74,7 +75,10 @@ const Openpage = () => {
                   <View style={styles.cardIconWrapper}>{card.icon}</View>
                   <Text style={styles.cardTitle}>{card.title}</Text>
                   <Text style={styles.cardDesc}>{card.desc}</Text>
-                  <TouchableOpacity style={styles.cardLink}>
+                  <TouchableOpacity 
+                    style={styles.cardLink}
+                    onPress={() => card.route ? router.push(card.route) : null}
+                  >
                     <Text style={styles.cardLinkText}>Learn More</Text>
                     <ChevronRight size={14} color="#6366f1" />
                   </TouchableOpacity>

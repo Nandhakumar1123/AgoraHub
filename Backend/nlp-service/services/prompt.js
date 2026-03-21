@@ -114,28 +114,26 @@ function getSummaryPrompt(transcript, question, includeRecommendations = false) 
 **Community Chat Transcript:**
 ${transcript}
 
-**Your Task:** Provide a clear, organized summary of the discussion.
+**Your Task:** Provide a SHORT summary (2-5 lines max) of the discussion.
 
 **Instructions:**
-1. Extract ONLY important content (skip greetings like "hi", "ok", "thanks")
+1. Extract ONLY important content (skip greetings)
 2. Group related topics together
-3. Use neutral, professional language
-4. Remove sender names from summary
-5. Correct spelling/grammar errors
-6. Present facts, not opinions
+3. Remove ALL sender names or mentions of people
+4. Focus only on issues/content
+5. Keep it very brief: 2 to 5 lines maximum for the summary section
 
-**Output Format MUST have exactly two sections (Summary and Solutions):**
+**Output Format MUST have exactly these two sections. Even if you have very little information, PROVIDE BOTH SECTIONS:**
 
 Summary:
 - [Key point 1]
 - [Key point 2]
-${includeRecommendations ? `
+
 Solutions:
 - [Practical step 1]
 - [Practical step 2]
-` : 'Solutions: - [No specific actions suggested based on this chat]'}
 
-IMPORTANT: Do NOT output any other text or headers. Just the two sections above.
+IMPORTANT: Do NOT output any other text or headers. Just the two sections above. Use ONLY plain text. NO asterisks (**) for bolding.
 Answer with exactly this format:`;
 }
 
@@ -152,12 +150,7 @@ ${transcript}
 
 **Your Task:** Answer the question naturally like ChatGPT would.
 
-**Instructions:**
-1. Use chat context when relevant
-2. If context is insufficient, provide helpful general answer
-3. Be conversational yet professional
-4. Give specific, practical advice
-5. Don't just repeat the transcript - synthesize it
+**The user is asking for HELP. If the community context (transcript) is missing or insufficient, DO NOT say "no messages found". Instead, answer from your own AI knowledge to provide the most helpful, detailed advice possible.**
 
 Answer:`;
 }
@@ -474,7 +467,7 @@ function detectIntent(question) {
   }
 
   // Summary
-  if (q.match(/\b(summar|sumar|overview|recap|highlight|key point)/)) {
+  if (q.match(/\b(summar|sumar|overview|recap|highlight|key point|brief|short summary)/)) {
     return 'summary';
   }
 

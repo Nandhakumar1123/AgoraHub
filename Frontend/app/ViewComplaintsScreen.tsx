@@ -234,61 +234,11 @@ export default function ViewComplaintsScreen() {
   }, [fetchComplaints, fetchUserRole]));
 
 
-  // --- AI CHAT FUNCTIONS ---
-  const loadAiHistory = async () => {
-    try {
-      setAiLoading(true);
-      const token = await AsyncStorage.getItem('authToken');
-      if (!token) {
-        console.warn('No auth token for AI history');
-        return;
-      }
-      const res = await axios.get(`${BASE_URL}/bot/ask/complaints/history?community_id=${communityId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const historyMsg = (res.data?.data || []).flatMap((h: any) => [
-        { role: 'user', text: h.question },
-        { role: 'ai', text: h.answer }
-      ]);
-      setChatMessages(historyMsg);
-    } catch (e: any) {
-      console.error('Failed to load history', e.response?.data || e.message);
-      // Fallback empty if fail
-      setChatMessages([]);
-    } finally {
-      setAiLoading(false);
-    }
-  };
-
   const openMainAiChat = () => {
-    setAiChatVisible(true);
-    // Always fetch history when clicked if empty
-    if (chatMessages.length === 0) {
-      loadAiHistory();
-    }
-  };
-
-  const sendAiMessage = async () => {
-    if (!chatInput.trim() || aiLoading) return;
-    const question = chatInput.trim();
-    setChatInput('');
-    setChatMessages(prev => [...prev, { role: 'user', text: question }]);
-    setAiLoading(true);
-    try {
-      const token = await AsyncStorage.getItem('authToken');
-      const res = await axios.post(`${BASE_URL}/bot/ask/complaints`, {
-        question,
-        community_id: communityId,
-      }, { headers: { Authorization: `Bearer ${token}` } });
-      const answer = res.data?.data?.answer || res.data?.answer || "No response from AI.";
-      setChatMessages(prev => [...prev, { role: 'ai', text: answer }]);
-    } catch (e: any) {
-      const errorMsg = e.response?.data?.error || e.message || 'AI unavailable.';
-      setChatMessages(prev => [...prev, { role: 'ai', text: `⚠️ ${errorMsg}` }]);
-    } finally {
-      setAiLoading(false);
-      setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
-    }
+    navigation.navigate('ComplaintAIChatScreen', {
+      communityId,
+      communityName: 'Community' // Ideally pass actual name if available
+    });
   };
 
   const openAiChatForComplaint = (complaint: Complaint) => {
@@ -645,82 +595,7 @@ export default function ViewComplaintsScreen() {
         />
       )}
 
-      {/* ======= Community AI Chat Modal ======= */}
-      <Modal visible={(userRole === 'HEAD' || userRole === 'ADMIN') && aiChatVisible} animationType="slide" onRequestClose={() => setAiChatVisible(false)}>
-        <KeyboardAvoidingView style={{ flex: 1, backgroundColor: '#f0f4ff' }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          {/* Modal Header */}
-          <View style={styles.chatHeader}>
-            <TouchableOpacity onPress={() => setAiChatVisible(false)} style={styles.chatBackBtn}>
-              <Text style={styles.chatBackText}>✕</Text>
-            </TouchableOpacity>
-            <View>
-              <Text style={styles.chatHeaderTitle}>🤖 Complaints AI</Text>
-              <Text style={styles.chatHeaderSub}>Ask for summaries, trends & recommendations</Text>
-            </View>
-          </View>
 
-          {chatMessages.length === 0 && (
-            <View style={styles.chatPlaceholder}>
-              <Text style={styles.chatPlaceholderIcon}>🤖</Text>
-              <Text style={styles.chatPlaceholderTitle}>AI Complaints Analyst</Text>
-              <Text style={styles.chatPlaceholderSub}>Try asking:</Text>
-              {["What are the complaints this month?", "Which category has the most issues?", "Summarize today's complaints"].map(q => (
-                <TouchableOpacity key={q} style={styles.quickAsk} onPress={() => { setChatInput(q); }}>
-                  <Text style={styles.quickAskText}>{q}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
-
-          <ScrollView
-            ref={scrollRef}
-            style={styles.chatScroll}
-            contentContainerStyle={{ padding: 16, paddingBottom: 10 }}
-            onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
-          >
-            {chatMessages.map((msg, i) => (
-              <View key={i} style={[styles.msgRow, msg.role === 'user' ? styles.msgRowUser : styles.msgRowAi]}>
-                <View style={[styles.msgBubble, msg.role === 'user' ? styles.userBubble : styles.aiBubble]}>
-                  <Text style={msg.role === 'user' ? styles.userMsgText : styles.aiMsgText}>{msg.text}</Text>
-                </View>
-                <View style={[styles.msgActions, msg.role === 'user' ? styles.msgActionsUser : styles.msgActionsAi]}>
-                  {msg.role === 'user' && (
-                    <TouchableOpacity style={styles.msgActionBtn} onPress={() => { setChatInput(msg.text); }}>
-                      <Text style={styles.msgActionBtnText}>✏️</Text>
-                    </TouchableOpacity>
-                  )}
-                  <TouchableOpacity style={[styles.msgActionBtn, styles.msgDeleteBtn]} onPress={() => {
-                    setChatMessages(prev => prev.filter((_, idx) => idx !== i));
-                  }}>
-                    <Text style={styles.msgActionBtnText}>🗑️</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            ))}
-            {aiLoading && (
-              <View style={styles.aiBubble}>
-                <ActivityIndicator size="small" color="#6366f1" />
-                <Text style={styles.aiMsgText}> AI is thinking...</Text>
-              </View>
-            )}
-          </ScrollView>
-
-          <View style={styles.chatInputRow}>
-            <TextInput
-              style={styles.chatTextInput}
-              placeholder="Ask about complaints..."
-              placeholderTextColor="#9ca3af"
-              value={chatInput}
-              onChangeText={setChatInput}
-              onSubmitEditing={sendAiMessage}
-              returnKeyType="send"
-            />
-            <TouchableOpacity style={[styles.sendBtn, (!chatInput.trim() || aiLoading) && styles.sendBtnDisabled]} onPress={sendAiMessage} disabled={!chatInput.trim() || aiLoading}>
-              <Text style={styles.sendBtnText}>➤</Text>
-            </TouchableOpacity>
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
 
       {/* ======= Per-Card AI Chat Modal ======= */}
       <Modal visible={cardAiVisible} animationType="slide" onRequestClose={() => setCardAiVisible(false)}>

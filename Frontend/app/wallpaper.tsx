@@ -51,7 +51,7 @@ const gradients = [
 ];
 
 
-import { useWallpaper } from "./WallpaperContext";
+import { useWallpaper } from "../context/WallpaperContext";
 
 
 export default function WallpaperScreen() {

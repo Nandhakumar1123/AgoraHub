@@ -10216,3 +10216,1089 @@
 2026-03-20 18:45:49 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/49","status":304,"duration":"113ms","ip":"127.0.0.1"}
 2026-03-20 18:45:49 [INFO]: HTTP Request {"method":"GET","path":"/stats/49","status":304,"duration":"125ms","ip":"127.0.0.1"}
 2026-03-20 18:45:49 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/49/messages","status":304,"duration":"22ms","ip":"127.0.0.1"}
+2026-03-21 11:41:50 [INFO]: ✅ PostgreSQL connected
+2026-03-21 11:41:50 [INFO]: ✅ PostgreSQL connected
+2026-03-21 11:41:50 [INFO]: ✅ Redis connected (NLP service available)
+2026-03-21 11:41:50 [INFO]: Preloading NLP models...
+2026-03-21 11:41:50 [INFO]: Preloading NLP models...
+2026-03-21 11:41:50 [INFO]: Loading sentiment analysis model...
+2026-03-21 11:41:50 [INFO]: Loading toxicity detection model...
+2026-03-21 11:41:51 [WARN]: Slow operation {"operation":"Sentiment model initialization","duration":"1017ms"}
+2026-03-21 11:41:51 [INFO]: ✅ Sentiment analysis model loaded {"duration":"1017ms"}
+2026-03-21 11:41:52 [WARN]: Slow operation {"operation":"Toxicity model initialization","duration":"2278ms"}
+2026-03-21 11:41:52 [INFO]: ✅ Toxicity detection model loaded {"duration":"2278ms"}
+2026-03-21 11:41:52 [INFO]: ✅ All NLP models preloaded
+2026-03-21 11:41:52 [INFO]: 🚀 Civix Platform running on port 3002
+2026-03-21 11:41:52 [INFO]: Environment: development
+2026-03-21 11:41:52 [INFO]: Accessible at http://localhost:3002 (local)
+2026-03-21 11:41:52 [INFO]: Socket.io enabled for real-time features
+2026-03-21 11:41:52 [INFO]: NLP ChatBot service: OPTIONAL
+2026-03-21 11:44:38 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"30ms","ip":"127.0.0.1"}
+2026-03-21 11:44:49 [INFO]: ✅ PostgreSQL connected
+2026-03-21 11:44:49 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":401,"duration":"359ms","ip":"127.0.0.1"}
+2026-03-21 11:44:56 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"132ms","ip":"127.0.0.1"}
+2026-03-21 11:44:56 [INFO]: ✅ PostgreSQL connected
+2026-03-21 11:44:56 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"97ms","ip":"127.0.0.1"}
+2026-03-21 11:44:56 [INFO]: ✅ PostgreSQL connected
+2026-03-21 11:44:56 [INFO]: ✅ PostgreSQL connected
+2026-03-21 11:44:56 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"129ms","ip":"127.0.0.1"}
+2026-03-21 11:44:59 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"9ms","ip":"127.0.0.1"}
+2026-03-21 11:44:59 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/messages","status":304,"duration":"39ms","ip":"127.0.0.1"}
+2026-03-21 11:44:59 [INFO]: HTTP Request {"method":"GET","path":"/stats/46","status":304,"duration":"204ms","ip":"127.0.0.1"}
+2026-03-21 11:44:59 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"67ms","ip":"127.0.0.1"}
+2026-03-21 11:44:59 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1/my-vote","status":304,"duration":"11ms","ip":"127.0.0.1"}
+2026-03-21 11:45:01 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":304,"duration":"55ms","ip":"127.0.0.1"}
+2026-03-21 11:45:15 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:45:15 [INFO]: ✅ All connections closed
+2026-03-21 11:45:21 [INFO]: ✅ PostgreSQL connected
+2026-03-21 11:45:21 [INFO]: ✅ PostgreSQL connected
+2026-03-21 11:45:21 [INFO]: ✅ Redis connected (NLP service available)
+2026-03-21 11:45:21 [INFO]: Preloading NLP models...
+2026-03-21 11:45:21 [INFO]: Preloading NLP models...
+2026-03-21 11:45:21 [INFO]: Loading sentiment analysis model...
+2026-03-21 11:45:21 [INFO]: Loading toxicity detection model...
+2026-03-21 11:45:22 [INFO]: ✅ Sentiment analysis model loaded {"duration":"513ms"}
+2026-03-21 11:45:22 [WARN]: Slow operation {"operation":"Toxicity model initialization","duration":"1235ms"}
+2026-03-21 11:45:22 [INFO]: ✅ Toxicity detection model loaded {"duration":"1235ms"}
+2026-03-21 11:45:22 [INFO]: ✅ All NLP models preloaded
+2026-03-21 11:45:22 [INFO]: 🚀 Civix Platform running on port 3002
+2026-03-21 11:45:22 [INFO]: Environment: development
+2026-03-21 11:45:22 [INFO]: Accessible at http://localhost:3002 (local)
+2026-03-21 11:45:22 [INFO]: Socket.io enabled for real-time features
+2026-03-21 11:45:22 [INFO]: NLP ChatBot service: OPTIONAL
+2026-03-21 11:45:39 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"19ms","ip":"127.0.0.1"}
+2026-03-21 11:45:47 [INFO]: ✅ PostgreSQL connected
+2026-03-21 11:45:47 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"230ms","ip":"127.0.0.1"}
+2026-03-21 11:45:47 [INFO]: ✅ PostgreSQL connected
+2026-03-21 11:45:47 [INFO]: ✅ PostgreSQL connected
+2026-03-21 11:45:47 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"106ms","ip":"127.0.0.1"}
+2026-03-21 11:45:47 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"15ms","ip":"127.0.0.1"}
+2026-03-21 11:45:49 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"53ms","ip":"127.0.0.1"}
+2026-03-21 11:45:49 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/messages","status":304,"duration":"62ms","ip":"127.0.0.1"}
+2026-03-21 11:45:49 [INFO]: HTTP Request {"method":"GET","path":"/stats/46","status":304,"duration":"591ms","ip":"127.0.0.1"}
+2026-03-21 11:45:49 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"146ms","ip":"127.0.0.1"}
+2026-03-21 11:45:50 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1/my-vote","status":304,"duration":"13ms","ip":"127.0.0.1"}
+2026-03-21 11:45:51 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":304,"duration":"47ms","ip":"127.0.0.1"}
+2026-03-21 11:45:59 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":304,"duration":"11ms","ip":"127.0.0.1"}
+2026-03-21 11:46:12 [INFO]: ✅ PostgreSQL connected
+2026-03-21 11:46:12 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"173ms","ip":"127.0.0.1"}
+2026-03-21 11:46:12 [INFO]: HTTP Request {"method":"GET","path":"/stats/46","status":304,"duration":"16ms","ip":"127.0.0.1"}
+2026-03-21 11:46:12 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/messages","status":304,"duration":"29ms","ip":"127.0.0.1"}
+2026-03-21 11:46:12 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"48ms","ip":"127.0.0.1"}
+2026-03-21 11:46:12 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1/my-vote","status":304,"duration":"9ms","ip":"127.0.0.1"}
+2026-03-21 11:46:14 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":304,"duration":"10ms","ip":"127.0.0.1"}
+2026-03-21 11:46:26 [INFO]: ✅ PostgreSQL connected
+2026-03-21 11:46:26 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"82ms","ip":"127.0.0.1"}
+2026-03-21 11:46:26 [INFO]: HTTP Request {"method":"GET","path":"/stats/46","status":304,"duration":"8ms","ip":"127.0.0.1"}
+2026-03-21 11:46:26 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/messages","status":304,"duration":"11ms","ip":"127.0.0.1"}
+2026-03-21 11:46:27 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"43ms","ip":"127.0.0.1"}
+2026-03-21 11:46:27 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1/my-vote","status":304,"duration":"7ms","ip":"127.0.0.1"}
+2026-03-21 11:46:30 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"11ms","ip":"127.0.0.1"}
+2026-03-21 11:46:30 [INFO]: ✅ PostgreSQL connected
+2026-03-21 11:46:30 [INFO]: HTTP Request {"method":"GET","path":"/api/complaints/46","status":304,"duration":"115ms","ip":"127.0.0.1"}
+2026-03-21 11:46:31 [INFO]: HTTP Request {"method":"GET","path":"/ask/complaints/history","status":304,"duration":"103ms","ip":"127.0.0.1"}
+2026-03-21 11:46:42 [INFO]: HTTP Request {"method":"GET","path":"/stats/46","status":304,"duration":"9ms","ip":"127.0.0.1"}
+2026-03-21 11:46:42 [INFO]: ✅ PostgreSQL connected
+2026-03-21 11:46:42 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"91ms","ip":"127.0.0.1"}
+2026-03-21 11:46:42 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/messages","status":304,"duration":"17ms","ip":"127.0.0.1"}
+2026-03-21 11:46:42 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"38ms","ip":"127.0.0.1"}
+2026-03-21 11:46:42 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1/my-vote","status":304,"duration":"8ms","ip":"127.0.0.1"}
+2026-03-21 11:46:45 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"19ms","ip":"127.0.0.1"}
+2026-03-21 11:46:45 [INFO]: ✅ PostgreSQL connected
+2026-03-21 11:46:46 [INFO]: HTTP Request {"method":"GET","path":"/api/petitions/46","status":200,"duration":"335ms","ip":"127.0.0.1"}
+2026-03-21 11:46:47 [INFO]: HTTP Request {"method":"GET","path":"/ask/petitions/history","status":200,"duration":"208ms","ip":"127.0.0.1"}
+2026-03-21 11:47:03 [INFO]: ✅ PostgreSQL connected
+2026-03-21 11:47:03 [INFO]: HTTP Request {"method":"GET","path":"/api/complaints/46","status":304,"duration":"197ms","ip":"127.0.0.1"}
+2026-03-21 11:47:03 [INFO]: ✅ PostgreSQL connected
+2026-03-21 11:47:03 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"251ms","ip":"127.0.0.1"}
+2026-03-21 11:47:05 [INFO]: HTTP Request {"method":"GET","path":"/ask/complaints/history","status":304,"duration":"100ms","ip":"127.0.0.1"}
+2026-03-21 11:47:17 [INFO]: Querying Ollama {"model":"llama3.2:1b","promptLength":594,"host":"http://127.0.0.1:11434"}
+2026-03-21 11:47:44 [INFO]: Ollama Response Received {"duration":"27128ms","model":"llama3.2:1b"}
+2026-03-21 11:47:44 [WARN]: Slow operation {"operation":"Ollama query","duration":"27128ms"}
+2026-03-21 11:47:45 [INFO]: HTTP Request {"method":"POST","path":"/ask/complaints","status":200,"duration":"28628ms","ip":"127.0.0.1"}
+2026-03-21 11:48:14 [INFO]: Querying Ollama {"model":"llama3.2:1b","promptLength":595,"host":"http://127.0.0.1:11434"}
+2026-03-21 11:49:15 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-03-21 11:49:15 [ERROR]: Complaint summarization failed {"error":"timeout of 60000ms exceeded"}
+2026-03-21 11:49:16 [INFO]: HTTP Request {"method":"POST","path":"/ask/complaints","status":200,"duration":"62409ms","ip":"127.0.0.1"}
+2026-03-21 11:50:21 [INFO]: Querying Ollama {"model":"llama3.2:1b","promptLength":584,"host":"http://127.0.0.1:11434"}
+2026-03-21 11:50:31 [INFO]: Ollama Response Received {"duration":"10296ms","model":"llama3.2:1b"}
+2026-03-21 11:50:31 [WARN]: Slow operation {"operation":"Ollama query","duration":"10296ms"}
+2026-03-21 11:50:32 [INFO]: HTTP Request {"method":"POST","path":"/ask/complaints","status":200,"duration":"10943ms","ip":"127.0.0.1"}
+2026-03-21 11:50:47 [INFO]: ✅ PostgreSQL connected
+2026-03-21 11:50:47 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"174ms","ip":"127.0.0.1"}
+2026-03-21 11:50:47 [INFO]: HTTP Request {"method":"GET","path":"/api/complaints/46","status":304,"duration":"25ms","ip":"127.0.0.1"}
+2026-03-21 11:50:47 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"9ms","ip":"127.0.0.1"}
+2026-03-21 11:50:47 [INFO]: HTTP Request {"method":"GET","path":"/stats/46","status":304,"duration":"46ms","ip":"127.0.0.1"}
+2026-03-21 11:50:48 [INFO]: ✅ PostgreSQL connected
+2026-03-21 11:50:48 [INFO]: ✅ PostgreSQL connected
+2026-03-21 11:50:48 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"184ms","ip":"127.0.0.1"}
+2026-03-21 11:50:48 [INFO]: ✅ PostgreSQL connected
+2026-03-21 11:50:48 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"238ms","ip":"127.0.0.1"}
+2026-03-21 11:50:48 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/messages","status":304,"duration":"40ms","ip":"127.0.0.1"}
+2026-03-21 11:50:49 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"84ms","ip":"127.0.0.1"}
+2026-03-21 11:50:49 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1/my-vote","status":304,"duration":"10ms","ip":"127.0.0.1"}
+2026-03-21 11:51:23 [INFO]: ✅ PostgreSQL connected
+2026-03-21 11:51:23 [INFO]: HTTP Request {"method":"POST","path":"/api/complaints/batch-status","status":200,"duration":"172ms","ip":"127.0.0.1"}
+2026-03-21 11:51:23 [INFO]: HTTP Request {"method":"GET","path":"/api/complaints/46","status":200,"duration":"93ms","ip":"127.0.0.1"}
+2026-03-21 11:51:26 [INFO]: HTTP Request {"method":"POST","path":"/api/complaints/batch-status","status":200,"duration":"12ms","ip":"127.0.0.1"}
+2026-03-21 11:51:26 [INFO]: HTTP Request {"method":"GET","path":"/api/complaints/46","status":200,"duration":"16ms","ip":"127.0.0.1"}
+2026-03-21 11:51:28 [INFO]: HTTP Request {"method":"POST","path":"/api/complaints/batch-status","status":200,"duration":"9ms","ip":"127.0.0.1"}
+2026-03-21 11:51:28 [INFO]: HTTP Request {"method":"GET","path":"/api/complaints/46","status":200,"duration":"12ms","ip":"127.0.0.1"}
+2026-03-21 11:51:31 [INFO]: HTTP Request {"method":"POST","path":"/api/complaints/batch-status","status":200,"duration":"7ms","ip":"127.0.0.1"}
+2026-03-21 11:51:31 [INFO]: HTTP Request {"method":"GET","path":"/api/complaints/46","status":200,"duration":"14ms","ip":"127.0.0.1"}
+2026-03-21 11:51:44 [INFO]: ✅ PostgreSQL connected
+2026-03-21 11:51:44 [INFO]: HTTP Request {"method":"GET","path":"/stats/46","status":304,"duration":"136ms","ip":"127.0.0.1"}
+2026-03-21 11:51:44 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"150ms","ip":"127.0.0.1"}
+2026-03-21 11:51:44 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/messages","status":304,"duration":"26ms","ip":"127.0.0.1"}
+2026-03-21 11:51:44 [INFO]: ✅ PostgreSQL connected
+2026-03-21 11:51:44 [INFO]: ✅ PostgreSQL connected
+2026-03-21 11:51:44 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"167ms","ip":"127.0.0.1"}
+2026-03-21 11:51:44 [INFO]: ✅ PostgreSQL connected
+2026-03-21 11:51:44 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"389ms","ip":"127.0.0.1"}
+2026-03-21 11:51:44 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"70ms","ip":"127.0.0.1"}
+2026-03-21 11:51:44 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1/my-vote","status":304,"duration":"7ms","ip":"127.0.0.1"}
+2026-03-21 11:51:46 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":304,"duration":"21ms","ip":"127.0.0.1"}
+2026-03-21 11:57:45 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"22ms","ip":"127.0.0.1"}
+2026-03-21 11:57:52 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:57 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:57 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:57 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:58 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:58 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:58 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:58 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:58 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:58 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:58 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:58 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:58 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:58 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:58 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:58 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:58 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:58 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:58 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:58 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:58 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:58 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:58 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:58 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:58 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:58 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:58 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:58 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:58 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:58 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:58 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:58 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:58 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:58 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:58 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:58 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:58 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:59 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:59 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:59 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:59 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:59 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:59 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:59 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:59 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:59 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:57:59 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 11:58:02 [ERROR]: Forced shutdown after timeout
+2026-03-21 11:58:21 [INFO]: ✅ PostgreSQL connected
+2026-03-21 11:58:21 [INFO]: ✅ PostgreSQL connected
+2026-03-21 11:58:21 [INFO]: ✅ Redis connected (NLP service available)
+2026-03-21 11:58:21 [INFO]: Preloading NLP models...
+2026-03-21 11:58:21 [INFO]: Preloading NLP models...
+2026-03-21 11:58:21 [INFO]: Loading sentiment analysis model...
+2026-03-21 11:58:21 [INFO]: Loading toxicity detection model...
+2026-03-21 11:58:22 [WARN]: Slow operation {"operation":"Sentiment model initialization","duration":"1044ms"}
+2026-03-21 11:58:22 [INFO]: ✅ Sentiment analysis model loaded {"duration":"1044ms"}
+2026-03-21 11:58:23 [WARN]: Slow operation {"operation":"Toxicity model initialization","duration":"1887ms"}
+2026-03-21 11:58:23 [INFO]: ✅ Toxicity detection model loaded {"duration":"1887ms"}
+2026-03-21 11:58:23 [INFO]: ✅ All NLP models preloaded
+2026-03-21 11:58:23 [INFO]: 🚀 Civix Platform running on port 3002
+2026-03-21 11:58:23 [INFO]: Environment: development
+2026-03-21 11:58:23 [INFO]: Accessible at http://localhost:3002 (local)
+2026-03-21 11:58:23 [INFO]: Socket.io enabled for real-time features
+2026-03-21 11:58:23 [INFO]: NLP ChatBot service: OPTIONAL
+2026-03-21 12:01:28 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"11ms","ip":"127.0.0.1"}
+2026-03-21 12:01:40 [INFO]: ✅ PostgreSQL connected
+2026-03-21 12:01:41 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"329ms","ip":"127.0.0.1"}
+2026-03-21 12:01:41 [INFO]: ✅ PostgreSQL connected
+2026-03-21 12:01:41 [INFO]: ✅ PostgreSQL connected
+2026-03-21 12:01:41 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"87ms","ip":"127.0.0.1"}
+2026-03-21 12:01:41 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"10ms","ip":"127.0.0.1"}
+2026-03-21 12:01:42 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"11ms","ip":"127.0.0.1"}
+2026-03-21 12:01:42 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/messages","status":304,"duration":"56ms","ip":"127.0.0.1"}
+2026-03-21 12:01:42 [INFO]: HTTP Request {"method":"GET","path":"/stats/46","status":304,"duration":"162ms","ip":"127.0.0.1"}
+2026-03-21 12:01:42 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"30ms","ip":"127.0.0.1"}
+2026-03-21 12:01:42 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1/my-vote","status":304,"duration":"9ms","ip":"127.0.0.1"}
+2026-03-21 12:01:44 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":304,"duration":"29ms","ip":"127.0.0.1"}
+2026-03-21 12:01:53 [INFO]: HTTP Request {"method":"GET","path":"/stats/49","status":304,"duration":"9ms","ip":"127.0.0.1"}
+2026-03-21 12:01:53 [INFO]: ✅ PostgreSQL connected
+2026-03-21 12:01:53 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/49","status":304,"duration":"76ms","ip":"127.0.0.1"}
+2026-03-21 12:01:53 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/49/messages","status":304,"duration":"11ms","ip":"127.0.0.1"}
+2026-03-21 12:01:55 [INFO]: HTTP Request {"method":"GET","path":"/history/49","status":200,"duration":"56ms","ip":"127.0.0.1"}
+2026-03-21 12:21:13 [INFO]: Querying Ollama {"model":"llama3.2:1b","promptLength":183,"host":"http://127.0.0.1:11434"}
+2026-03-21 12:21:36 [INFO]: Ollama Response Received {"duration":"23102ms","model":"llama3.2:1b"}
+2026-03-21 12:21:36 [WARN]: Slow operation {"operation":"Ollama query","duration":"23102ms"}
+2026-03-21 12:21:36 [INFO]: Querying Ollama {"model":"llama3.2:1b","promptLength":671,"host":"http://127.0.0.1:11434"}
+2026-03-21 12:21:58 [INFO]: Ollama Response Received {"duration":"22044ms","model":"llama3.2:1b"}
+2026-03-21 12:21:58 [WARN]: Slow operation {"operation":"Ollama query","duration":"22044ms"}
+2026-03-21 12:25:12 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 12:25:12 [INFO]: ✅ All connections closed
+2026-03-21 12:25:26 [INFO]: ✅ PostgreSQL connected
+2026-03-21 12:25:26 [INFO]: ✅ PostgreSQL connected
+2026-03-21 12:25:26 [INFO]: ✅ Redis connected (NLP service available)
+2026-03-21 12:25:26 [INFO]: Preloading NLP models...
+2026-03-21 12:25:26 [INFO]: Preloading NLP models...
+2026-03-21 12:25:26 [INFO]: Loading sentiment analysis model...
+2026-03-21 12:25:26 [INFO]: Loading toxicity detection model...
+2026-03-21 12:25:27 [WARN]: Slow operation {"operation":"Sentiment model initialization","duration":"1236ms"}
+2026-03-21 12:25:27 [INFO]: ✅ Sentiment analysis model loaded {"duration":"1236ms"}
+2026-03-21 12:25:28 [WARN]: Slow operation {"operation":"Toxicity model initialization","duration":"2062ms"}
+2026-03-21 12:25:28 [INFO]: ✅ Toxicity detection model loaded {"duration":"2062ms"}
+2026-03-21 12:25:28 [INFO]: ✅ All NLP models preloaded
+2026-03-21 12:25:28 [INFO]: 🚀 Civix Platform running on port 3002
+2026-03-21 12:25:28 [INFO]: Environment: development
+2026-03-21 12:25:28 [INFO]: Accessible at http://localhost:3002 (local)
+2026-03-21 12:25:28 [INFO]: Socket.io enabled for real-time features
+2026-03-21 12:25:28 [INFO]: NLP ChatBot service: OPTIONAL
+2026-03-21 12:25:42 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"28ms","ip":"127.0.0.1"}
+2026-03-21 12:25:55 [INFO]: ✅ PostgreSQL connected
+2026-03-21 12:25:55 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"253ms","ip":"127.0.0.1"}
+2026-03-21 12:25:55 [INFO]: ✅ PostgreSQL connected
+2026-03-21 12:25:55 [INFO]: ✅ PostgreSQL connected
+2026-03-21 12:25:55 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"102ms","ip":"127.0.0.1"}
+2026-03-21 12:25:55 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"14ms","ip":"127.0.0.1"}
+2026-03-21 12:25:56 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"5ms","ip":"127.0.0.1"}
+2026-03-21 12:25:56 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/messages","status":304,"duration":"15ms","ip":"127.0.0.1"}
+2026-03-21 12:25:56 [INFO]: HTTP Request {"method":"GET","path":"/stats/46","status":304,"duration":"88ms","ip":"127.0.0.1"}
+2026-03-21 12:25:56 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"36ms","ip":"127.0.0.1"}
+2026-03-21 12:25:56 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1/my-vote","status":304,"duration":"4ms","ip":"127.0.0.1"}
+2026-03-21 12:25:58 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":304,"duration":"31ms","ip":"127.0.0.1"}
+2026-03-21 12:26:12 [INFO]: API Request {"method":"POST","path":"/ask","userId":15,"communityId":46,"ip":"127.0.0.1","duration":32}
+2026-03-21 12:26:12 [INFO]: HTTP Request {"method":"POST","path":"/ask","status":200,"duration":"51ms","ip":"127.0.0.1"}
+2026-03-21 12:26:12 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":200,"duration":"60ms","ip":"127.0.0.1"}
+2026-03-21 12:37:00 [INFO]: ✅ PostgreSQL connected
+2026-03-21 12:37:00 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/36","status":403,"duration":"142ms","ip":"127.0.0.1"}
+2026-03-21 12:37:00 [INFO]: HTTP Request {"method":"GET","path":"/stats/36","status":304,"duration":"155ms","ip":"127.0.0.1"}
+2026-03-21 12:37:00 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"2ms","ip":"127.0.0.1"}
+2026-03-21 12:37:22 [INFO]: ✅ PostgreSQL connected
+2026-03-21 12:37:23 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"225ms","ip":"127.0.0.1"}
+2026-03-21 12:37:23 [INFO]: ✅ PostgreSQL connected
+2026-03-21 12:37:23 [INFO]: ✅ PostgreSQL connected
+2026-03-21 12:37:23 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"98ms","ip":"127.0.0.1"}
+2026-03-21 12:37:23 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"7ms","ip":"127.0.0.1"}
+2026-03-21 12:37:24 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"9ms","ip":"127.0.0.1"}
+2026-03-21 12:37:24 [INFO]: HTTP Request {"method":"GET","path":"/stats/46","status":304,"duration":"12ms","ip":"127.0.0.1"}
+2026-03-21 12:37:24 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/messages","status":304,"duration":"18ms","ip":"127.0.0.1"}
+2026-03-21 12:37:24 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"38ms","ip":"127.0.0.1"}
+2026-03-21 12:37:24 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1/my-vote","status":304,"duration":"5ms","ip":"127.0.0.1"}
+2026-03-21 12:37:25 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":304,"duration":"14ms","ip":"127.0.0.1"}
+2026-03-21 12:39:29 [INFO]: ✅ PostgreSQL connected
+2026-03-21 12:39:29 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":304,"duration":"120ms","ip":"127.0.0.1"}
+2026-03-21 12:39:29 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/messages","status":304,"duration":"129ms","ip":"127.0.0.1"}
+2026-03-21 12:39:29 [INFO]: HTTP Request {"method":"GET","path":"/stats/46","status":304,"duration":"135ms","ip":"127.0.0.1"}
+2026-03-21 12:39:29 [INFO]: ✅ PostgreSQL connected
+2026-03-21 12:39:29 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"226ms","ip":"127.0.0.1"}
+2026-03-21 12:39:30 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"46ms","ip":"127.0.0.1"}
+2026-03-21 12:39:30 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1/my-vote","status":304,"duration":"3ms","ip":"127.0.0.1"}
+2026-03-21 12:43:02 [INFO]: HTTP Request {"method":"DELETE","path":"/history/46/111","status":200,"duration":"268ms","ip":"127.0.0.1"}
+2026-03-21 12:43:02 [INFO]: API Request {"method":"POST","path":"/ask","userId":15,"communityId":46,"ip":"127.0.0.1","duration":60}
+2026-03-21 12:43:02 [INFO]: HTTP Request {"method":"POST","path":"/ask","status":200,"duration":"109ms","ip":"127.0.0.1"}
+2026-03-21 12:43:02 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":200,"duration":"34ms","ip":"127.0.0.1"}
+2026-03-21 12:43:13 [INFO]: ✅ PostgreSQL connected
+2026-03-21 12:43:13 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"206ms","ip":"127.0.0.1"}
+2026-03-21 12:43:13 [INFO]: HTTP Request {"method":"GET","path":"/stats/46","status":304,"duration":"50ms","ip":"127.0.0.1"}
+2026-03-21 12:43:13 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/messages","status":304,"duration":"32ms","ip":"127.0.0.1"}
+2026-03-21 12:43:14 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"112ms","ip":"127.0.0.1"}
+2026-03-21 12:43:14 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1/my-vote","status":304,"duration":"9ms","ip":"127.0.0.1"}
+2026-03-21 12:43:21 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":304,"duration":"12ms","ip":"127.0.0.1"}
+2026-03-21 12:43:35 [INFO]: Detected intent {"intent":"summary","question":"Friday summarization"}
+2026-03-21 12:43:37 [INFO]: Querying LLM {"intent":"summary","promptLength":2539}
+2026-03-21 12:43:37 [INFO]: Querying Ollama {"model":"llama3.2:1b","promptLength":2539,"host":"http://127.0.0.1:11434"}
+2026-03-21 12:44:33 [INFO]: Ollama Response Received {"duration":"56739ms","model":"llama3.2:1b"}
+2026-03-21 12:44:33 [WARN]: Slow operation {"operation":"Ollama query","duration":"56739ms"}
+2026-03-21 12:44:33 [INFO]: LLM response received {"answerLength":315,"intent":"summary"}
+2026-03-21 12:44:34 [INFO]: API Request {"method":"POST","path":"/ask","userId":15,"communityId":46,"ip":"127.0.0.1","duration":58318}
+2026-03-21 12:44:34 [INFO]: HTTP Request {"method":"POST","path":"/ask","status":200,"duration":"58346ms","ip":"127.0.0.1"}
+2026-03-21 12:44:34 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":200,"duration":"24ms","ip":"127.0.0.1"}
+2026-03-21 12:55:07 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 12:55:07 [INFO]: ✅ All connections closed
+2026-03-21 12:55:12 [INFO]: ✅ PostgreSQL connected
+2026-03-21 12:55:12 [INFO]: ✅ PostgreSQL connected
+2026-03-21 12:55:12 [INFO]: ✅ Redis connected (NLP service available)
+2026-03-21 12:55:12 [INFO]: Preloading NLP models...
+2026-03-21 12:55:12 [INFO]: Preloading NLP models...
+2026-03-21 12:55:12 [INFO]: Loading sentiment analysis model...
+2026-03-21 12:55:12 [INFO]: Loading toxicity detection model...
+2026-03-21 12:55:12 [INFO]: ✅ Sentiment analysis model loaded {"duration":"465ms"}
+2026-03-21 12:55:13 [INFO]: ✅ Toxicity detection model loaded {"duration":"861ms"}
+2026-03-21 12:55:13 [INFO]: ✅ All NLP models preloaded
+2026-03-21 12:55:13 [INFO]: 🚀 Civix Platform running on port 3002
+2026-03-21 12:55:13 [INFO]: Environment: development
+2026-03-21 12:55:13 [INFO]: Accessible at http://localhost:3002 (local)
+2026-03-21 12:55:13 [INFO]: Socket.io enabled for real-time features
+2026-03-21 12:55:13 [INFO]: NLP ChatBot service: OPTIONAL
+2026-03-21 12:59:46 [INFO]: ✅ PostgreSQL connected
+2026-03-21 12:59:46 [INFO]: ✅ PostgreSQL connected
+2026-03-21 12:59:46 [INFO]: ✅ Redis connected (NLP service available)
+2026-03-21 12:59:46 [INFO]: Preloading NLP models...
+2026-03-21 12:59:46 [INFO]: Preloading NLP models...
+2026-03-21 12:59:46 [INFO]: Loading sentiment analysis model...
+2026-03-21 12:59:46 [INFO]: Loading toxicity detection model...
+2026-03-21 12:59:46 [INFO]: ✅ Sentiment analysis model loaded {"duration":"364ms"}
+2026-03-21 12:59:46 [INFO]: ✅ Toxicity detection model loaded {"duration":"775ms"}
+2026-03-21 12:59:46 [INFO]: ✅ All NLP models preloaded
+2026-03-21 12:59:46 [INFO]: 🚀 Civix Platform running on port 3002
+2026-03-21 12:59:46 [INFO]: Environment: development
+2026-03-21 12:59:46 [INFO]: Accessible at http://localhost:3002 (local)
+2026-03-21 12:59:46 [INFO]: Socket.io enabled for real-time features
+2026-03-21 12:59:46 [INFO]: NLP ChatBot service: OPTIONAL
+2026-03-21 13:02:22 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"5ms","ip":"10.86.109.136"}
+2026-03-21 13:02:41 [INFO]: ✅ PostgreSQL connected
+2026-03-21 13:02:41 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"185ms","ip":"10.86.109.136"}
+2026-03-21 13:02:43 [INFO]: ✅ PostgreSQL connected
+2026-03-21 13:02:43 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":200,"duration":"81ms","ip":"10.86.109.136"}
+2026-03-21 13:02:43 [INFO]: ✅ PostgreSQL connected
+2026-03-21 13:02:43 [INFO]: ✅ PostgreSQL connected
+2026-03-21 13:02:43 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":200,"duration":"115ms","ip":"10.86.109.136"}
+2026-03-21 13:02:49 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":200,"duration":"6ms","ip":"10.86.109.136"}
+2026-03-21 13:02:49 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/messages","status":200,"duration":"19ms","ip":"10.86.109.136"}
+2026-03-21 13:02:50 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":200,"duration":"40ms","ip":"10.86.109.136"}
+2026-03-21 13:02:50 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1/my-vote","status":200,"duration":"4ms","ip":"10.86.109.136"}
+2026-03-21 13:03:08 [INFO]: ✅ PostgreSQL connected
+2026-03-21 13:03:09 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/38","status":200,"duration":"67ms","ip":"10.86.109.136"}
+2026-03-21 13:03:09 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/38/messages","status":200,"duration":"7ms","ip":"10.86.109.136"}
+2026-03-21 13:03:12 [INFO]: HTTP Request {"method":"GET","path":"/api/complaints/38","status":200,"duration":"8ms","ip":"10.86.109.136"}
+2026-03-21 13:03:12 [INFO]: ✅ PostgreSQL connected
+2026-03-21 13:03:12 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/38","status":304,"duration":"179ms","ip":"10.86.109.136"}
+2026-03-21 13:03:16 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/38","status":304,"duration":"3ms","ip":"10.86.109.136"}
+2026-03-21 13:03:16 [INFO]: HTTP Request {"method":"GET","path":"/api/petitions/38","status":200,"duration":"7ms","ip":"10.86.109.136"}
+2026-03-21 13:03:19 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"6ms","ip":"10.86.109.136"}
+2026-03-21 13:03:19 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/messages","status":304,"duration":"15ms","ip":"10.86.109.136"}
+2026-03-21 13:03:19 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"28ms","ip":"10.86.109.136"}
+2026-03-21 13:03:19 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1/my-vote","status":304,"duration":"2ms","ip":"10.86.109.136"}
+2026-03-21 13:03:22 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"2ms","ip":"10.86.109.136"}
+2026-03-21 13:03:22 [INFO]: HTTP Request {"method":"GET","path":"/api/complaints/46","status":200,"duration":"6ms","ip":"10.86.109.136"}
+2026-03-21 13:03:29 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/events","status":200,"duration":"11ms","ip":"10.86.109.136"}
+2026-03-21 13:03:33 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/events","status":304,"duration":"4ms","ip":"10.86.109.136"}
+2026-03-21 13:03:34 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/events","status":304,"duration":"4ms","ip":"10.86.109.136"}
+2026-03-21 14:55:31 [INFO]: ✅ PostgreSQL connected
+2026-03-21 14:55:31 [INFO]: ✅ PostgreSQL connected
+2026-03-21 14:55:31 [INFO]: ✅ Redis connected (NLP service available)
+2026-03-21 14:55:31 [INFO]: Preloading NLP models...
+2026-03-21 14:55:31 [INFO]: Preloading NLP models...
+2026-03-21 14:55:31 [INFO]: Loading sentiment analysis model...
+2026-03-21 14:55:31 [INFO]: Loading toxicity detection model...
+2026-03-21 14:55:31 [INFO]: ✅ Sentiment analysis model loaded {"duration":"434ms"}
+2026-03-21 14:55:32 [INFO]: ✅ Toxicity detection model loaded {"duration":"795ms"}
+2026-03-21 14:55:32 [INFO]: ✅ All NLP models preloaded
+2026-03-21 14:55:32 [INFO]: 🚀 Civix Platform running on port 3002
+2026-03-21 14:55:32 [INFO]: Environment: development
+2026-03-21 14:55:32 [INFO]: Accessible at http://localhost:3002 (local)
+2026-03-21 14:55:32 [INFO]: Socket.io enabled for real-time features
+2026-03-21 14:55:32 [INFO]: NLP ChatBot service: OPTIONAL
+2026-03-21 14:56:07 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 14:56:07 [INFO]: ✅ All connections closed
+2026-03-21 14:56:09 [INFO]: ✅ PostgreSQL connected
+2026-03-21 14:56:09 [INFO]: ✅ PostgreSQL connected
+2026-03-21 14:56:09 [INFO]: ✅ Redis connected (NLP service available)
+2026-03-21 14:56:09 [INFO]: Preloading NLP models...
+2026-03-21 14:56:09 [INFO]: Preloading NLP models...
+2026-03-21 14:56:09 [INFO]: Loading sentiment analysis model...
+2026-03-21 14:56:09 [INFO]: Loading toxicity detection model...
+2026-03-21 14:56:09 [INFO]: ✅ Sentiment analysis model loaded {"duration":"284ms"}
+2026-03-21 14:56:10 [INFO]: ✅ Toxicity detection model loaded {"duration":"605ms"}
+2026-03-21 14:56:10 [INFO]: ✅ All NLP models preloaded
+2026-03-21 14:56:10 [INFO]: 🚀 Civix Platform running on port 3002
+2026-03-21 14:56:10 [INFO]: Environment: development
+2026-03-21 14:56:10 [INFO]: Accessible at http://localhost:3002 (local)
+2026-03-21 14:56:10 [INFO]: Socket.io enabled for real-time features
+2026-03-21 14:56:10 [INFO]: NLP ChatBot service: OPTIONAL
+2026-03-21 15:01:38 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"8ms","ip":"10.86.109.136"}
+2026-03-21 15:01:51 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:01:51 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"274ms","ip":"10.86.109.136"}
+2026-03-21 15:01:53 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:01:53 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:01:53 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"93ms","ip":"10.86.109.136"}
+2026-03-21 15:01:53 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:01:53 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"112ms","ip":"10.86.109.136"}
+2026-03-21 15:01:55 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"15ms","ip":"10.86.109.136"}
+2026-03-21 15:01:55 [INFO]: HTTP Request {"method":"GET","path":"/stats/46","status":200,"duration":"116ms","ip":"10.86.109.136"}
+2026-03-21 15:01:55 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/messages","status":304,"duration":"31ms","ip":"10.86.109.136"}
+2026-03-21 15:01:56 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"52ms","ip":"10.86.109.136"}
+2026-03-21 15:01:56 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1/my-vote","status":304,"duration":"6ms","ip":"10.86.109.136"}
+2026-03-21 15:01:58 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":200,"duration":"50ms","ip":"10.86.109.136"}
+2026-03-21 15:02:15 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:02:15 [INFO]: HTTP Request {"method":"GET","path":"/api/complaints/46","status":304,"duration":"66ms","ip":"10.86.109.136"}
+2026-03-21 15:02:15 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:02:15 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"180ms","ip":"10.86.109.136"}
+2026-03-21 15:02:17 [INFO]: HTTP Request {"method":"GET","path":"/ask/complaints/history","status":200,"duration":"95ms","ip":"10.86.109.136"}
+2026-03-21 15:02:32 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:02:32 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls","status":200,"duration":"88ms","ip":"10.86.109.136"}
+2026-03-21 15:02:32 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/3","status":200,"duration":"35ms","ip":"10.86.109.136"}
+2026-03-21 15:02:32 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/3/my-vote","status":200,"duration":"6ms","ip":"10.86.109.136"}
+2026-03-21 15:02:32 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:02:32 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:02:32 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:02:32 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/7","status":200,"duration":"121ms","ip":"10.86.109.136"}
+2026-03-21 15:02:32 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/2","status":200,"duration":"116ms","ip":"10.86.109.136"}
+2026-03-21 15:02:32 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"114ms","ip":"10.86.109.136"}
+2026-03-21 15:02:33 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1/my-vote","status":304,"duration":"8ms","ip":"10.86.109.136"}
+2026-03-21 15:02:33 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/7/my-vote","status":200,"duration":"5ms","ip":"10.86.109.136"}
+2026-03-21 15:02:33 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/2/my-vote","status":200,"duration":"4ms","ip":"10.86.109.136"}
+2026-03-21 15:08:12 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"1ms","ip":"10.86.109.136"}
+2026-03-21 15:08:22 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:08:22 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"105ms","ip":"10.86.109.136"}
+2026-03-21 15:08:24 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:08:24 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:08:24 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:08:24 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"86ms","ip":"10.86.109.136"}
+2026-03-21 15:08:24 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"76ms","ip":"10.86.109.136"}
+2026-03-21 15:08:26 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":200,"duration":"28ms","ip":"10.86.109.136"}
+2026-03-21 15:09:15 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"1ms","ip":"10.86.109.136"}
+2026-03-21 15:09:21 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:09:21 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"108ms","ip":"10.86.109.136"}
+2026-03-21 15:09:22 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/17","status":200,"duration":"9ms","ip":"10.86.109.136"}
+2026-03-21 15:09:22 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:09:22 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/17","status":200,"duration":"41ms","ip":"10.86.109.136"}
+2026-03-21 15:09:26 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":200,"duration":"3ms","ip":"10.86.109.136"}
+2026-03-21 15:09:26 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/messages","status":304,"duration":"14ms","ip":"10.86.109.136"}
+2026-03-21 15:09:26 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"24ms","ip":"10.86.109.136"}
+2026-03-21 15:09:26 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1/my-vote","status":304,"duration":"4ms","ip":"10.86.109.136"}
+2026-03-21 15:13:00 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"1ms","ip":"10.86.109.136"}
+2026-03-21 15:13:11 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:13:11 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"249ms","ip":"10.86.109.136"}
+2026-03-21 15:13:12 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:13:12 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:13:12 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/10","status":200,"duration":"122ms","ip":"10.86.109.136"}
+2026-03-21 15:13:12 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:13:12 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:13:12 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:13:12 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:13:12 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:13:12 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:13:12 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:13:13 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/10","status":200,"duration":"188ms","ip":"10.86.109.136"}
+2026-03-21 15:13:16 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":200,"duration":"5ms","ip":"10.86.109.136"}
+2026-03-21 15:13:29 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"1ms","ip":"10.86.109.136"}
+2026-03-21 15:13:39 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:13:39 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":401,"duration":"207ms","ip":"10.86.109.136"}
+2026-03-21 15:13:46 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"184ms","ip":"10.86.109.136"}
+2026-03-21 15:13:47 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/17","status":304,"duration":"10ms","ip":"10.86.109.136"}
+2026-03-21 15:13:47 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:13:47 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/17","status":304,"duration":"76ms","ip":"10.86.109.136"}
+2026-03-21 15:14:17 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"3ms","ip":"127.0.0.1"}
+2026-03-21 15:14:26 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:14:27 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"226ms","ip":"127.0.0.1"}
+2026-03-21 15:14:27 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:14:27 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:14:27 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"101ms","ip":"127.0.0.1"}
+2026-03-21 15:14:27 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"8ms","ip":"127.0.0.1"}
+2026-03-21 15:16:11 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:16:11 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:16:11 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:16:11 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:16:11 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"138ms","ip":"127.0.0.1"}
+2026-03-21 15:16:11 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"6ms","ip":"127.0.0.1"}
+2026-03-21 15:16:11 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:16:11 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"241ms","ip":"127.0.0.1"}
+2026-03-21 15:16:11 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"9ms","ip":"127.0.0.1"}
+2026-03-21 15:16:47 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"1ms","ip":"127.0.0.1"}
+2026-03-21 15:16:58 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:16:58 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"231ms","ip":"127.0.0.1"}
+2026-03-21 15:16:58 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/17","status":304,"duration":"15ms","ip":"127.0.0.1"}
+2026-03-21 15:16:58 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:16:58 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/17","status":200,"duration":"99ms","ip":"127.0.0.1"}
+2026-03-21 15:17:22 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"0ms","ip":"10.86.109.136"}
+2026-03-21 15:17:31 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:17:31 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"140ms","ip":"10.86.109.136"}
+2026-03-21 15:17:32 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/17","status":304,"duration":"12ms","ip":"10.86.109.136"}
+2026-03-21 15:17:32 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:17:32 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/17","status":304,"duration":"66ms","ip":"10.86.109.136"}
+2026-03-21 15:17:41 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/17","status":304,"duration":"5ms","ip":"127.0.0.1"}
+2026-03-21 15:17:41 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/17","status":304,"duration":"6ms","ip":"127.0.0.1"}
+2026-03-21 15:18:45 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"1ms","ip":"127.0.0.1"}
+2026-03-21 15:21:29 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"1ms","ip":"10.86.109.136"}
+2026-03-21 15:21:40 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:21:40 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"162ms","ip":"10.86.109.136"}
+2026-03-21 15:21:41 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/17","status":304,"duration":"12ms","ip":"10.86.109.136"}
+2026-03-21 15:21:41 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:21:41 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/17","status":304,"duration":"54ms","ip":"10.86.109.136"}
+2026-03-21 15:37:14 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"1ms","ip":"127.0.0.1"}
+2026-03-21 15:37:21 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"1ms","ip":"127.0.0.1"}
+2026-03-21 15:37:23 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"0ms","ip":"127.0.0.1"}
+2026-03-21 15:37:40 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"0ms","ip":"127.0.0.1"}
+2026-03-21 15:38:54 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 15:38:54 [INFO]: ✅ All connections closed
+2026-03-21 15:38:58 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:38:58 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:38:58 [INFO]: ✅ Redis connected (NLP service available)
+2026-03-21 15:38:58 [INFO]: Preloading NLP models...
+2026-03-21 15:38:58 [INFO]: Preloading NLP models...
+2026-03-21 15:38:58 [INFO]: Loading sentiment analysis model...
+2026-03-21 15:38:58 [INFO]: Loading toxicity detection model...
+2026-03-21 15:38:58 [INFO]: ✅ Sentiment analysis model loaded {"duration":"372ms"}
+2026-03-21 15:38:59 [INFO]: ✅ Toxicity detection model loaded {"duration":"730ms"}
+2026-03-21 15:38:59 [INFO]: ✅ All NLP models preloaded
+2026-03-21 15:38:59 [INFO]: 🚀 Civix Platform running on port 3002
+2026-03-21 15:38:59 [INFO]: Environment: development
+2026-03-21 15:38:59 [INFO]: Accessible at http://localhost:3002 (local)
+2026-03-21 15:38:59 [INFO]: Socket.io enabled for real-time features
+2026-03-21 15:38:59 [INFO]: NLP ChatBot service: OPTIONAL
+2026-03-21 15:39:08 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"11ms","ip":"127.0.0.1"}
+2026-03-21 15:39:18 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"2ms","ip":"127.0.0.1"}
+2026-03-21 15:39:34 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:39:34 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"288ms","ip":"127.0.0.1"}
+2026-03-21 15:39:34 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/17","status":304,"duration":"16ms","ip":"127.0.0.1"}
+2026-03-21 15:39:34 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:39:34 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/17","status":304,"duration":"75ms","ip":"127.0.0.1"}
+2026-03-21 15:39:37 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/49","status":200,"duration":"9ms","ip":"127.0.0.1"}
+2026-03-21 15:39:37 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/49/messages","status":304,"duration":"24ms","ip":"127.0.0.1"}
+2026-03-21 15:39:49 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"2ms","ip":"127.0.0.1"}
+2026-03-21 15:40:01 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:40:02 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"273ms","ip":"127.0.0.1"}
+2026-03-21 15:40:02 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:40:02 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:40:02 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"88ms","ip":"127.0.0.1"}
+2026-03-21 15:40:02 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"10ms","ip":"127.0.0.1"}
+2026-03-21 15:40:03 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"7ms","ip":"127.0.0.1"}
+2026-03-21 15:40:03 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/messages","status":304,"duration":"19ms","ip":"127.0.0.1"}
+2026-03-21 15:40:03 [INFO]: HTTP Request {"method":"GET","path":"/stats/46","status":304,"duration":"90ms","ip":"127.0.0.1"}
+2026-03-21 15:40:03 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"36ms","ip":"127.0.0.1"}
+2026-03-21 15:40:03 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1/my-vote","status":304,"duration":"4ms","ip":"127.0.0.1"}
+2026-03-21 15:40:04 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":304,"duration":"22ms","ip":"127.0.0.1"}
+2026-03-21 15:40:21 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:40:21 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:40:21 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"97ms","ip":"127.0.0.1"}
+2026-03-21 15:40:21 [INFO]: HTTP Request {"method":"GET","path":"/api/complaints/46","status":304,"duration":"99ms","ip":"127.0.0.1"}
+2026-03-21 15:40:23 [INFO]: HTTP Request {"method":"GET","path":"/ask/complaints/history","status":200,"duration":"118ms","ip":"127.0.0.1"}
+2026-03-21 15:40:34 [INFO]: HTTP Request {"method":"GET","path":"/stats/46","status":304,"duration":"10ms","ip":"127.0.0.1"}
+2026-03-21 15:40:34 [INFO]: ✅ PostgreSQL connected
+2026-03-21 15:40:34 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"105ms","ip":"127.0.0.1"}
+2026-03-21 15:40:34 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/messages","status":304,"duration":"11ms","ip":"127.0.0.1"}
+2026-03-21 15:40:34 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"28ms","ip":"127.0.0.1"}
+2026-03-21 15:40:34 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1/my-vote","status":304,"duration":"4ms","ip":"127.0.0.1"}
+2026-03-21 16:46:56 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 16:46:56 [INFO]: ✅ All connections closed
+2026-03-21 16:47:00 [INFO]: ✅ PostgreSQL connected
+2026-03-21 16:47:00 [INFO]: ✅ PostgreSQL connected
+2026-03-21 16:47:00 [INFO]: ✅ Redis connected (NLP service available)
+2026-03-21 16:47:00 [INFO]: Preloading NLP models...
+2026-03-21 16:47:00 [INFO]: Preloading NLP models...
+2026-03-21 16:47:00 [INFO]: Loading sentiment analysis model...
+2026-03-21 16:47:00 [INFO]: Loading toxicity detection model...
+2026-03-21 16:47:00 [INFO]: ✅ Sentiment analysis model loaded {"duration":"408ms"}
+2026-03-21 16:47:00 [INFO]: ✅ Toxicity detection model loaded {"duration":"780ms"}
+2026-03-21 16:47:00 [INFO]: ✅ All NLP models preloaded
+2026-03-21 16:47:00 [INFO]: 🚀 Civix Platform running on port 3002
+2026-03-21 16:47:00 [INFO]: Environment: development
+2026-03-21 16:47:00 [INFO]: Accessible at http://localhost:3002 (local)
+2026-03-21 16:47:00 [INFO]: Socket.io enabled for real-time features
+2026-03-21 16:47:00 [INFO]: NLP ChatBot service: OPTIONAL
+2026-03-21 16:47:23 [INFO]: ✅ PostgreSQL connected
+2026-03-21 16:47:23 [INFO]: HTTP Request {"method":"GET","path":"/stats/36","status":304,"duration":"197ms","ip":"127.0.0.1"}
+2026-03-21 16:47:23 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/36","status":403,"duration":"217ms","ip":"127.0.0.1"}
+2026-03-21 16:47:23 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"1ms","ip":"127.0.0.1"}
+2026-03-21 16:47:43 [INFO]: ✅ PostgreSQL connected
+2026-03-21 16:47:43 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"269ms","ip":"127.0.0.1"}
+2026-03-21 16:47:43 [INFO]: ✅ PostgreSQL connected
+2026-03-21 16:47:43 [INFO]: ✅ PostgreSQL connected
+2026-03-21 16:47:43 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"89ms","ip":"127.0.0.1"}
+2026-03-21 16:47:43 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"13ms","ip":"127.0.0.1"}
+2026-03-21 16:47:48 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"5ms","ip":"127.0.0.1"}
+2026-03-21 16:47:48 [INFO]: HTTP Request {"method":"GET","path":"/stats/46","status":304,"duration":"12ms","ip":"127.0.0.1"}
+2026-03-21 16:47:48 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/messages","status":304,"duration":"20ms","ip":"127.0.0.1"}
+2026-03-21 16:47:48 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"32ms","ip":"127.0.0.1"}
+2026-03-21 16:47:48 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1/my-vote","status":304,"duration":"6ms","ip":"127.0.0.1"}
+2026-03-21 16:47:51 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":304,"duration":"26ms","ip":"127.0.0.1"}
+2026-03-21 16:48:06 [INFO]: ✅ PostgreSQL connected
+2026-03-21 16:48:06 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/41","status":304,"duration":"70ms","ip":"127.0.0.1"}
+2026-03-21 16:48:06 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/41/messages","status":200,"duration":"24ms","ip":"127.0.0.1"}
+2026-03-21 16:48:17 [INFO]: ✅ PostgreSQL connected
+2026-03-21 16:48:17 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/41","status":304,"duration":"56ms","ip":"127.0.0.1"}
+2026-03-21 16:48:26 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/37","status":304,"duration":"5ms","ip":"127.0.0.1"}
+2026-03-21 16:48:26 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/37/messages","status":304,"duration":"19ms","ip":"127.0.0.1"}
+2026-03-21 16:57:05 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 16:57:05 [INFO]: ✅ All connections closed
+2026-03-21 16:57:09 [INFO]: ✅ PostgreSQL connected
+2026-03-21 16:57:09 [INFO]: ✅ PostgreSQL connected
+2026-03-21 16:57:09 [INFO]: ✅ Redis connected (NLP service available)
+2026-03-21 16:57:09 [INFO]: Preloading NLP models...
+2026-03-21 16:57:09 [INFO]: Preloading NLP models...
+2026-03-21 16:57:09 [INFO]: Loading sentiment analysis model...
+2026-03-21 16:57:09 [INFO]: Loading toxicity detection model...
+2026-03-21 16:57:09 [INFO]: ✅ Sentiment analysis model loaded {"duration":"447ms"}
+2026-03-21 16:57:10 [INFO]: ✅ Toxicity detection model loaded {"duration":"826ms"}
+2026-03-21 16:57:10 [INFO]: ✅ All NLP models preloaded
+2026-03-21 16:57:10 [INFO]: 🚀 Civix Platform running on port 3002
+2026-03-21 16:57:10 [INFO]: Environment: development
+2026-03-21 16:57:10 [INFO]: Accessible at http://localhost:3002 (local)
+2026-03-21 16:57:10 [INFO]: Socket.io enabled for real-time features
+2026-03-21 16:57:10 [INFO]: NLP ChatBot service: OPTIONAL
+2026-03-21 16:57:32 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"11ms","ip":"127.0.0.1"}
+2026-03-21 16:57:59 [INFO]: ✅ PostgreSQL connected
+2026-03-21 16:57:59 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"314ms","ip":"127.0.0.1"}
+2026-03-21 16:58:00 [INFO]: ✅ PostgreSQL connected
+2026-03-21 16:58:00 [INFO]: ✅ PostgreSQL connected
+2026-03-21 16:58:00 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"121ms","ip":"127.0.0.1"}
+2026-03-21 16:58:00 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"14ms","ip":"127.0.0.1"}
+2026-03-21 16:58:01 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"7ms","ip":"127.0.0.1"}
+2026-03-21 16:58:02 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/messages","status":304,"duration":"21ms","ip":"127.0.0.1"}
+2026-03-21 16:58:02 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"37ms","ip":"127.0.0.1"}
+2026-03-21 16:58:02 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1/my-vote","status":304,"duration":"7ms","ip":"127.0.0.1"}
+2026-03-21 16:58:04 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":304,"duration":"121ms","ip":"127.0.0.1"}
+2026-03-21 16:58:11 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":304,"duration":"10ms","ip":"127.0.0.1"}
+2026-03-21 16:58:34 [INFO]: ✅ PostgreSQL connected
+2026-03-21 16:58:34 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"70ms","ip":"127.0.0.1"}
+2026-03-21 16:58:34 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/messages","status":304,"duration":"33ms","ip":"127.0.0.1"}
+2026-03-21 16:58:34 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"20ms","ip":"127.0.0.1"}
+2026-03-21 16:58:34 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1/my-vote","status":304,"duration":"5ms","ip":"127.0.0.1"}
+2026-03-21 16:58:40 [INFO]: HTTP Request {"method":"GET","path":"/api/complaints/46","status":304,"duration":"32ms","ip":"127.0.0.1"}
+2026-03-21 16:58:40 [INFO]: ✅ PostgreSQL connected
+2026-03-21 16:58:40 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"98ms","ip":"127.0.0.1"}
+2026-03-21 16:58:42 [INFO]: HTTP Request {"method":"GET","path":"/ask/complaints/history","status":304,"duration":"78ms","ip":"127.0.0.1"}
+2026-03-21 16:58:47 [INFO]: HTTP Request {"method":"GET","path":"/api/complaints/46","status":304,"duration":"10ms","ip":"127.0.0.1"}
+2026-03-21 16:58:47 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"5ms","ip":"127.0.0.1"}
+2026-03-21 17:29:04 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 17:29:04 [INFO]: ✅ All connections closed
+2026-03-21 17:29:07 [INFO]: ✅ PostgreSQL connected
+2026-03-21 17:29:07 [INFO]: ✅ PostgreSQL connected
+2026-03-21 17:29:07 [INFO]: ✅ Redis connected (NLP service available)
+2026-03-21 17:29:07 [INFO]: Preloading NLP models...
+2026-03-21 17:29:07 [INFO]: Preloading NLP models...
+2026-03-21 17:29:07 [INFO]: Loading sentiment analysis model...
+2026-03-21 17:29:07 [INFO]: Loading toxicity detection model...
+2026-03-21 17:29:08 [INFO]: ✅ Sentiment analysis model loaded {"duration":"389ms"}
+2026-03-21 17:29:08 [INFO]: ✅ Toxicity detection model loaded {"duration":"838ms"}
+2026-03-21 17:29:08 [INFO]: ✅ All NLP models preloaded
+2026-03-21 17:29:08 [INFO]: 🚀 Civix Platform running on port 3002
+2026-03-21 17:29:08 [INFO]: Environment: development
+2026-03-21 17:29:08 [INFO]: Accessible at http://localhost:3002 (local)
+2026-03-21 17:29:08 [INFO]: Socket.io enabled for real-time features
+2026-03-21 17:29:08 [INFO]: NLP ChatBot service: OPTIONAL
+2026-03-21 17:29:21 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"12ms","ip":"127.0.0.1"}
+2026-03-21 17:29:30 [INFO]: ✅ PostgreSQL connected
+2026-03-21 17:29:30 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"243ms","ip":"127.0.0.1"}
+2026-03-21 17:29:30 [INFO]: ✅ PostgreSQL connected
+2026-03-21 17:29:30 [INFO]: ✅ PostgreSQL connected
+2026-03-21 17:29:30 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"90ms","ip":"127.0.0.1"}
+2026-03-21 17:29:30 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"15ms","ip":"127.0.0.1"}
+2026-03-21 17:29:33 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"8ms","ip":"127.0.0.1"}
+2026-03-21 17:29:33 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/messages","status":304,"duration":"29ms","ip":"127.0.0.1"}
+2026-03-21 17:29:33 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"22ms","ip":"127.0.0.1"}
+2026-03-21 17:29:33 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1/my-vote","status":304,"duration":"5ms","ip":"127.0.0.1"}
+2026-03-21 17:29:39 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":304,"duration":"103ms","ip":"127.0.0.1"}
+2026-03-21 17:29:55 [INFO]: ✅ PostgreSQL connected
+2026-03-21 17:29:55 [INFO]: ✅ PostgreSQL connected
+2026-03-21 17:29:55 [INFO]: HTTP Request {"method":"GET","path":"/api/complaints/46","status":304,"duration":"83ms","ip":"127.0.0.1"}
+2026-03-21 17:29:55 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"88ms","ip":"127.0.0.1"}
+2026-03-21 17:29:56 [INFO]: HTTP Request {"method":"GET","path":"/ask/complaints/history","status":304,"duration":"197ms","ip":"127.0.0.1"}
+2026-03-21 17:30:18 [INFO]: ✅ PostgreSQL connected
+2026-03-21 17:30:18 [INFO]: ✅ PostgreSQL connected
+2026-03-21 17:30:18 [INFO]: HTTP Request {"method":"GET","path":"/api/complaints/46","status":304,"duration":"136ms","ip":"127.0.0.1"}
+2026-03-21 17:30:18 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"143ms","ip":"127.0.0.1"}
+2026-03-21 17:30:25 [INFO]: HTTP Request {"method":"GET","path":"/api/petitions/46","status":304,"duration":"11ms","ip":"127.0.0.1"}
+2026-03-21 17:30:25 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"5ms","ip":"127.0.0.1"}
+2026-03-21 17:30:26 [INFO]: HTTP Request {"method":"GET","path":"/ask/petitions/history","status":304,"duration":"75ms","ip":"127.0.0.1"}
+2026-03-21 17:30:45 [INFO]: ✅ PostgreSQL connected
+2026-03-21 17:30:45 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"150ms","ip":"127.0.0.1"}
+2026-03-21 17:30:45 [INFO]: ✅ PostgreSQL connected
+2026-03-21 17:30:45 [INFO]: HTTP Request {"method":"GET","path":"/api/petitions/46","status":304,"duration":"188ms","ip":"127.0.0.1"}
+2026-03-21 17:30:52 [INFO]: HTTP Request {"method":"GET","path":"/api/complaints/46","status":304,"duration":"8ms","ip":"127.0.0.1"}
+2026-03-21 17:30:52 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"8ms","ip":"127.0.0.1"}
+2026-03-21 17:30:53 [INFO]: HTTP Request {"method":"GET","path":"/ask/complaints/history","status":304,"duration":"134ms","ip":"127.0.0.1"}
+2026-03-21 17:31:01 [INFO]: HTTP Request {"method":"GET","path":"/api/complaints/46","status":304,"duration":"10ms","ip":"127.0.0.1"}
+2026-03-21 17:31:01 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"5ms","ip":"127.0.0.1"}
+2026-03-21 17:31:06 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":304,"duration":"228ms","ip":"127.0.0.1"}
+2026-03-21 17:34:55 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":304,"duration":"57ms","ip":"127.0.0.1"}
+2026-03-21 17:36:19 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":304,"duration":"70ms","ip":"127.0.0.1"}
+2026-03-21 17:37:39 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 17:37:39 [INFO]: ✅ All connections closed
+2026-03-21 17:38:53 [INFO]: ✅ PostgreSQL connected
+2026-03-21 17:38:53 [INFO]: ✅ PostgreSQL connected
+2026-03-21 17:38:53 [INFO]: ✅ Redis connected (NLP service available)
+2026-03-21 17:38:53 [INFO]: Preloading NLP models...
+2026-03-21 17:38:53 [INFO]: Preloading NLP models...
+2026-03-21 17:38:53 [INFO]: Loading sentiment analysis model...
+2026-03-21 17:38:53 [INFO]: Loading toxicity detection model...
+2026-03-21 17:38:53 [INFO]: ✅ Sentiment analysis model loaded {"duration":"352ms"}
+2026-03-21 17:38:53 [INFO]: ✅ Toxicity detection model loaded {"duration":"679ms"}
+2026-03-21 17:38:53 [INFO]: ✅ All NLP models preloaded
+2026-03-21 17:38:53 [INFO]: 🚀 Civix Platform running on port 3002
+2026-03-21 17:38:53 [INFO]: Environment: development
+2026-03-21 17:38:53 [INFO]: Accessible at http://localhost:3002 (local)
+2026-03-21 17:38:53 [INFO]: Socket.io enabled for real-time features
+2026-03-21 17:38:53 [INFO]: NLP ChatBot service: OPTIONAL
+2026-03-21 17:39:02 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":304,"duration":"187ms","ip":"127.0.0.1"}
+2026-03-21 17:39:06 [INFO]: ✅ PostgreSQL connected
+2026-03-21 17:39:06 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/36","status":403,"duration":"57ms","ip":"127.0.0.1"}
+2026-03-21 17:39:06 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"1ms","ip":"127.0.0.1"}
+2026-03-21 17:39:53 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"2ms","ip":"127.0.0.1"}
+2026-03-21 17:40:49 [INFO]: ✅ PostgreSQL connected
+2026-03-21 17:40:50 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"305ms","ip":"127.0.0.1"}
+2026-03-21 17:40:50 [INFO]: ✅ PostgreSQL connected
+2026-03-21 17:40:50 [INFO]: ✅ PostgreSQL connected
+2026-03-21 17:40:50 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"76ms","ip":"127.0.0.1"}
+2026-03-21 17:40:50 [INFO]: ✅ PostgreSQL connected
+2026-03-21 17:40:50 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"91ms","ip":"127.0.0.1"}
+2026-03-21 17:40:51 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"5ms","ip":"127.0.0.1"}
+2026-03-21 17:40:51 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/messages","status":304,"duration":"16ms","ip":"127.0.0.1"}
+2026-03-21 17:40:51 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"34ms","ip":"127.0.0.1"}
+2026-03-21 17:40:51 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1/my-vote","status":304,"duration":"6ms","ip":"127.0.0.1"}
+2026-03-21 17:40:54 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":304,"duration":"68ms","ip":"127.0.0.1"}
+2026-03-21 17:41:11 [INFO]: ✅ PostgreSQL connected
+2026-03-21 17:41:11 [INFO]: ✅ PostgreSQL connected
+2026-03-21 17:41:11 [INFO]: HTTP Request {"method":"GET","path":"/api/complaints/46","status":304,"duration":"89ms","ip":"127.0.0.1"}
+2026-03-21 17:41:11 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"93ms","ip":"127.0.0.1"}
+2026-03-21 17:41:13 [INFO]: HTTP Request {"method":"GET","path":"/ask/complaints/history","status":304,"duration":"215ms","ip":"127.0.0.1"}
+2026-03-21 17:45:34 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 17:45:34 [INFO]: ✅ All connections closed
+2026-03-21 17:45:37 [INFO]: ✅ PostgreSQL connected
+2026-03-21 17:45:37 [INFO]: ✅ PostgreSQL connected
+2026-03-21 17:45:37 [INFO]: ✅ Redis connected (NLP service available)
+2026-03-21 17:45:37 [INFO]: Preloading NLP models...
+2026-03-21 17:45:37 [INFO]: Preloading NLP models...
+2026-03-21 17:45:37 [INFO]: Loading sentiment analysis model...
+2026-03-21 17:45:37 [INFO]: Loading toxicity detection model...
+2026-03-21 17:45:38 [INFO]: ✅ Sentiment analysis model loaded {"duration":"333ms"}
+2026-03-21 17:45:38 [INFO]: ✅ Toxicity detection model loaded {"duration":"637ms"}
+2026-03-21 17:45:38 [INFO]: ✅ All NLP models preloaded
+2026-03-21 17:45:38 [INFO]: 🚀 Civix Platform running on port 3002
+2026-03-21 17:45:38 [INFO]: Environment: development
+2026-03-21 17:45:38 [INFO]: Accessible at http://localhost:3002 (local)
+2026-03-21 17:45:38 [INFO]: Socket.io enabled for real-time features
+2026-03-21 17:45:38 [INFO]: NLP ChatBot service: OPTIONAL
+2026-03-21 17:45:49 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"12ms","ip":"127.0.0.1"}
+2026-03-21 17:45:59 [INFO]: ✅ PostgreSQL connected
+2026-03-21 17:45:59 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"227ms","ip":"127.0.0.1"}
+2026-03-21 17:45:59 [INFO]: ✅ PostgreSQL connected
+2026-03-21 17:45:59 [INFO]: ✅ PostgreSQL connected
+2026-03-21 17:45:59 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"88ms","ip":"127.0.0.1"}
+2026-03-21 17:45:59 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"9ms","ip":"127.0.0.1"}
+2026-03-21 17:46:01 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"6ms","ip":"127.0.0.1"}
+2026-03-21 17:46:01 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/messages","status":304,"duration":"16ms","ip":"127.0.0.1"}
+2026-03-21 17:46:01 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"32ms","ip":"127.0.0.1"}
+2026-03-21 17:46:01 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1/my-vote","status":304,"duration":"6ms","ip":"127.0.0.1"}
+2026-03-21 17:46:03 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":304,"duration":"97ms","ip":"127.0.0.1"}
+2026-03-21 17:46:15 [ERROR]: Bot history update endpoint error {"error":"updateBotHistoryEntry is not defined","userId":15}
+2026-03-21 17:46:15 [INFO]: HTTP Request {"method":"PUT","path":"/history/46/110","status":500,"duration":"5ms","ip":"127.0.0.1"}
+2026-03-21 17:46:25 [ERROR]: Bot history update endpoint error {"error":"updateBotHistoryEntry is not defined","userId":15}
+2026-03-21 17:46:25 [INFO]: HTTP Request {"method":"PUT","path":"/history/46/113","status":500,"duration":"7ms","ip":"127.0.0.1"}
+2026-03-21 17:49:19 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":304,"duration":"96ms","ip":"127.0.0.1"}
+2026-03-21 17:55:32 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":304,"duration":"87ms","ip":"127.0.0.1"}
+2026-03-21 17:55:45 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":304,"duration":"5ms","ip":"127.0.0.1"}
+2026-03-21 17:57:42 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 17:57:42 [INFO]: ✅ All connections closed
+2026-03-21 17:57:45 [INFO]: ✅ PostgreSQL connected
+2026-03-21 17:57:45 [INFO]: ✅ PostgreSQL connected
+2026-03-21 17:57:45 [INFO]: ✅ Redis connected (NLP service available)
+2026-03-21 17:57:45 [INFO]: Preloading NLP models...
+2026-03-21 17:57:45 [INFO]: Preloading NLP models...
+2026-03-21 17:57:45 [INFO]: Loading sentiment analysis model...
+2026-03-21 17:57:45 [INFO]: Loading toxicity detection model...
+2026-03-21 17:57:45 [INFO]: ✅ Sentiment analysis model loaded {"duration":"418ms"}
+2026-03-21 17:57:46 [INFO]: ✅ Toxicity detection model loaded {"duration":"827ms"}
+2026-03-21 17:57:46 [INFO]: ✅ All NLP models preloaded
+2026-03-21 17:57:46 [INFO]: 🚀 Civix Platform running on port 3002
+2026-03-21 17:57:46 [INFO]: Environment: development
+2026-03-21 17:57:46 [INFO]: Accessible at http://localhost:3002 (local)
+2026-03-21 17:57:46 [INFO]: Socket.io enabled for real-time features
+2026-03-21 17:57:46 [INFO]: NLP ChatBot service: OPTIONAL
+2026-03-21 17:58:01 [INFO]: HTTP Request {"method":"DELETE","path":"/history/46/113","status":200,"duration":"148ms","ip":"127.0.0.1"}
+2026-03-21 17:58:07 [INFO]: ✅ PostgreSQL connected
+2026-03-21 17:58:07 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/36","status":403,"duration":"67ms","ip":"127.0.0.1"}
+2026-03-21 17:58:07 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"2ms","ip":"127.0.0.1"}
+2026-03-21 17:58:17 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":401,"duration":"167ms","ip":"127.0.0.1"}
+2026-03-21 17:58:29 [INFO]: ✅ PostgreSQL connected
+2026-03-21 17:58:29 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"258ms","ip":"127.0.0.1"}
+2026-03-21 17:58:29 [INFO]: ✅ PostgreSQL connected
+2026-03-21 17:58:29 [INFO]: ✅ PostgreSQL connected
+2026-03-21 17:58:29 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"92ms","ip":"127.0.0.1"}
+2026-03-21 17:58:29 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"12ms","ip":"127.0.0.1"}
+2026-03-21 17:58:30 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/38","status":200,"duration":"7ms","ip":"127.0.0.1"}
+2026-03-21 17:58:30 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/38/messages","status":200,"duration":"39ms","ip":"127.0.0.1"}
+2026-03-21 17:58:33 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"7ms","ip":"127.0.0.1"}
+2026-03-21 17:58:33 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/messages","status":304,"duration":"9ms","ip":"127.0.0.1"}
+2026-03-21 17:58:33 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"31ms","ip":"127.0.0.1"}
+2026-03-21 17:58:33 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1/my-vote","status":304,"duration":"5ms","ip":"127.0.0.1"}
+2026-03-21 17:58:38 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/38","status":304,"duration":"6ms","ip":"127.0.0.1"}
+2026-03-21 17:58:38 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/38/messages","status":304,"duration":"7ms","ip":"127.0.0.1"}
+2026-03-21 17:58:41 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/49","status":200,"duration":"9ms","ip":"127.0.0.1"}
+2026-03-21 17:58:41 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/49/messages","status":304,"duration":"6ms","ip":"127.0.0.1"}
+2026-03-21 17:58:45 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"8ms","ip":"127.0.0.1"}
+2026-03-21 17:58:45 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/messages","status":304,"duration":"11ms","ip":"127.0.0.1"}
+2026-03-21 17:58:45 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"8ms","ip":"127.0.0.1"}
+2026-03-21 17:58:45 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1/my-vote","status":304,"duration":"4ms","ip":"127.0.0.1"}
+2026-03-21 17:58:46 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":200,"duration":"137ms","ip":"127.0.0.1"}
+2026-03-21 17:59:01 [INFO]: API Request {"method":"POST","path":"/ask","userId":15,"communityId":46,"ip":"127.0.0.1","duration":102}
+2026-03-21 17:59:01 [INFO]: HTTP Request {"method":"POST","path":"/ask","status":200,"duration":"152ms","ip":"127.0.0.1"}
+2026-03-21 17:59:17 [WARN]: Invalid or expired session {"sessionHash":"1d9ad7e81b4495f1","communityId":46}
+2026-03-21 17:59:17 [INFO]: Detected intent {"intent":"summary","question":"Summarize friday chat"}
+2026-03-21 17:59:17 [INFO]: Querying LLM {"intent":"summary","promptLength":2540}
+2026-03-21 17:59:17 [INFO]: Querying Ollama {"model":"llama3.2:1b","promptLength":2540,"host":"http://127.0.0.1:11434"}
+2026-03-21 17:59:42 [INFO]: Ollama Response Received {"duration":"24887ms","model":"llama3.2:1b"}
+2026-03-21 17:59:42 [WARN]: Slow operation {"operation":"Ollama query","duration":"24887ms"}
+2026-03-21 17:59:42 [INFO]: LLM response received {"answerLength":348,"intent":"summary"}
+2026-03-21 17:59:42 [INFO]: API Request {"method":"POST","path":"/ask","userId":15,"communityId":46,"ip":"127.0.0.1","duration":24982}
+2026-03-21 17:59:42 [INFO]: HTTP Request {"method":"POST","path":"/ask","status":200,"duration":"24989ms","ip":"127.0.0.1"}
+2026-03-21 18:00:41 [WARN]: Invalid or expired session {"sessionHash":"9e797d0b1b67261d","communityId":46}
+2026-03-21 18:00:41 [INFO]: API Request {"method":"POST","path":"/ask","userId":15,"communityId":46,"ip":"127.0.0.1","duration":133}
+2026-03-21 18:00:41 [INFO]: HTTP Request {"method":"POST","path":"/ask","status":200,"duration":"153ms","ip":"127.0.0.1"}
+2026-03-21 18:13:34 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":200,"duration":"202ms","ip":"127.0.0.1"}
+2026-03-21 18:14:40 [ERROR]: Bot history update endpoint error {"error":"updateBotHistoryEntry is not defined","userId":15}
+2026-03-21 18:14:40 [INFO]: HTTP Request {"method":"PUT","path":"/history/46/116","status":500,"duration":"6ms","ip":"127.0.0.1"}
+2026-03-21 18:14:49 [INFO]: API Request {"method":"POST","path":"/ask","userId":15,"communityId":46,"ip":"127.0.0.1","duration":61}
+2026-03-21 18:14:49 [INFO]: HTTP Request {"method":"POST","path":"/ask","status":200,"duration":"75ms","ip":"127.0.0.1"}
+2026-03-21 18:15:07 [WARN]: Invalid or expired session {"sessionHash":"0edf884f189e9abb","communityId":46}
+2026-03-21 18:15:07 [INFO]: Detected intent {"intent":"summary","question":"Summarize friday chat"}
+2026-03-21 18:15:07 [INFO]: Querying LLM {"intent":"summary","promptLength":2540}
+2026-03-21 18:15:07 [INFO]: Querying Ollama {"model":"llama3.2:1b","promptLength":2540,"host":"http://127.0.0.1:11434"}
+2026-03-21 18:15:25 [INFO]: Ollama Response Received {"duration":"18405ms","model":"llama3.2:1b"}
+2026-03-21 18:15:25 [WARN]: Slow operation {"operation":"Ollama query","duration":"18405ms"}
+2026-03-21 18:15:25 [INFO]: LLM response received {"answerLength":126,"intent":"summary"}
+2026-03-21 18:15:25 [INFO]: API Request {"method":"POST","path":"/ask","userId":15,"communityId":46,"ip":"127.0.0.1","duration":18419}
+2026-03-21 18:15:25 [INFO]: HTTP Request {"method":"POST","path":"/ask","status":200,"duration":"18430ms","ip":"127.0.0.1"}
+2026-03-21 18:15:59 [INFO]: ✅ PostgreSQL connected
+2026-03-21 18:15:59 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/36","status":403,"duration":"70ms","ip":"127.0.0.1"}
+2026-03-21 18:15:59 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"1ms","ip":"127.0.0.1"}
+2026-03-21 18:16:13 [INFO]: ✅ PostgreSQL connected
+2026-03-21 18:16:13 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"277ms","ip":"127.0.0.1"}
+2026-03-21 18:16:13 [INFO]: ✅ PostgreSQL connected
+2026-03-21 18:16:13 [INFO]: ✅ PostgreSQL connected
+2026-03-21 18:16:13 [INFO]: ✅ PostgreSQL connected
+2026-03-21 18:16:13 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"82ms","ip":"127.0.0.1"}
+2026-03-21 18:16:13 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"91ms","ip":"127.0.0.1"}
+2026-03-21 18:16:15 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"8ms","ip":"127.0.0.1"}
+2026-03-21 18:16:15 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/messages","status":304,"duration":"41ms","ip":"127.0.0.1"}
+2026-03-21 18:16:15 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"27ms","ip":"127.0.0.1"}
+2026-03-21 18:16:15 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1/my-vote","status":304,"duration":"5ms","ip":"127.0.0.1"}
+2026-03-21 18:16:18 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"7ms","ip":"127.0.0.1"}
+2026-03-21 18:16:18 [INFO]: HTTP Request {"method":"GET","path":"/api/complaints/46","status":304,"duration":"15ms","ip":"127.0.0.1"}
+2026-03-21 18:16:20 [INFO]: HTTP Request {"method":"GET","path":"/ask/complaints/history","status":304,"duration":"62ms","ip":"127.0.0.1"}
+2026-03-21 18:17:06 [INFO]: Querying Ollama {"model":"llama3.2:1b","promptLength":738,"host":"http://127.0.0.1:11434"}
+2026-03-21 18:17:23 [INFO]: Ollama Response Received {"duration":"17431ms","model":"llama3.2:1b"}
+2026-03-21 18:17:23 [WARN]: Slow operation {"operation":"Ollama query","duration":"17431ms"}
+2026-03-21 18:17:23 [INFO]: HTTP Request {"method":"POST","path":"/ask/complaints","status":200,"duration":"17644ms","ip":"127.0.0.1"}
+2026-03-21 18:20:47 [INFO]: ✅ PostgreSQL connected
+2026-03-21 18:20:47 [INFO]: ✅ PostgreSQL connected
+2026-03-21 18:20:47 [INFO]: HTTP Request {"method":"GET","path":"/api/complaints/46","status":304,"duration":"91ms","ip":"127.0.0.1"}
+2026-03-21 18:20:47 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"102ms","ip":"127.0.0.1"}
+2026-03-21 18:20:52 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":200,"duration":"110ms","ip":"127.0.0.1"}
+2026-03-21 18:50:33 [INFO]: SIGINT received, shutting down gracefully...
+2026-03-21 18:50:33 [INFO]: ✅ All connections closed
+2026-03-21 18:50:38 [INFO]: ✅ PostgreSQL connected
+2026-03-21 18:50:38 [INFO]: ✅ PostgreSQL connected
+2026-03-21 18:50:38 [INFO]: ✅ Redis connected (NLP service available)
+2026-03-21 18:50:38 [INFO]: Preloading NLP models...
+2026-03-21 18:50:38 [INFO]: Preloading NLP models...
+2026-03-21 18:50:38 [INFO]: Loading sentiment analysis model...
+2026-03-21 18:50:38 [INFO]: Loading toxicity detection model...
+2026-03-21 18:50:38 [INFO]: ✅ Sentiment analysis model loaded {"duration":"467ms"}
+2026-03-21 18:50:39 [INFO]: ✅ Toxicity detection model loaded {"duration":"825ms"}
+2026-03-21 18:50:39 [INFO]: ✅ All NLP models preloaded
+2026-03-21 18:50:39 [INFO]: 🚀 Civix Platform running on port 3002
+2026-03-21 18:50:39 [INFO]: Environment: development
+2026-03-21 18:50:39 [INFO]: Accessible at http://localhost:3002 (local)
+2026-03-21 18:50:39 [INFO]: Socket.io enabled for real-time features
+2026-03-21 18:50:39 [INFO]: NLP ChatBot service: OPTIONAL
+2026-03-21 18:51:16 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"16ms","ip":"127.0.0.1"}
+2026-03-21 18:51:24 [INFO]: ✅ PostgreSQL connected
+2026-03-21 18:51:24 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"251ms","ip":"127.0.0.1"}
+2026-03-21 18:51:24 [INFO]: ✅ PostgreSQL connected
+2026-03-21 18:51:24 [INFO]: ✅ PostgreSQL connected
+2026-03-21 18:51:24 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"93ms","ip":"127.0.0.1"}
+2026-03-21 18:51:24 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"10ms","ip":"127.0.0.1"}
+2026-03-21 18:51:25 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"7ms","ip":"127.0.0.1"}
+2026-03-21 18:51:25 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/messages","status":304,"duration":"29ms","ip":"127.0.0.1"}
+2026-03-21 18:51:26 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"33ms","ip":"127.0.0.1"}
+2026-03-21 18:51:26 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1/my-vote","status":304,"duration":"5ms","ip":"127.0.0.1"}
+2026-03-21 18:51:27 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":304,"duration":"101ms","ip":"127.0.0.1"}
+2026-03-21 18:51:39 [INFO]: Detected intent {"intent":"summary","question":"Summarize friday chat"}
+2026-03-21 18:51:39 [INFO]: Querying LLM {"intent":"summary","promptLength":2619}
+2026-03-21 18:51:39 [INFO]: Querying Ollama {"model":"llama3.2:1b","promptLength":2619,"host":"http://127.0.0.1:11434"}
+2026-03-21 18:52:10 [INFO]: Ollama Response Received {"duration":"30778ms","model":"llama3.2:1b"}
+2026-03-21 18:52:10 [WARN]: Slow operation {"operation":"Ollama query","duration":"30778ms"}
+2026-03-21 18:52:10 [INFO]: LLM response received {"answerLength":259,"intent":"summary"}
+2026-03-21 18:52:10 [INFO]: API Request {"method":"POST","path":"/ask","userId":15,"communityId":46,"ip":"127.0.0.1","duration":31008}
+2026-03-21 18:52:10 [INFO]: HTTP Request {"method":"POST","path":"/ask","status":200,"duration":"31038ms","ip":"127.0.0.1"}
+2026-03-21 18:52:29 [WARN]: Invalid or expired session {"sessionHash":"40a07770adcd7e10","communityId":46}
+2026-03-21 18:52:29 [INFO]: No messages found, using general LLM fallback
+2026-03-21 18:52:29 [ERROR]: Bot query error {"error":"getGeneralQuestionPrompt is not defined","question":"give the solution for water leaking often complaint","communityId":46}
+2026-03-21 18:52:29 [ERROR]: Conversation continuation error {"error":"getGeneralQuestionPrompt is not defined"}
+2026-03-21 18:52:29 [INFO]: No messages found, using general LLM fallback
+2026-03-21 18:52:29 [ERROR]: Bot query error {"error":"getGeneralQuestionPrompt is not defined","question":"give the solution for water leaking often complaint","communityId":46}
+2026-03-21 18:52:29 [ERROR]: Bot ask endpoint error {"error":"getGeneralQuestionPrompt is not defined","userId":15}
+2026-03-21 18:52:29 [INFO]: HTTP Request {"method":"POST","path":"/ask","status":500,"duration":"103ms","ip":"127.0.0.1"}
+2026-03-21 18:52:37 [WARN]: Invalid or expired session {"sessionHash":"40a07770adcd7e10","communityId":46}
+2026-03-21 18:52:37 [INFO]: No messages found, using general LLM fallback
+2026-03-21 18:52:37 [ERROR]: Bot query error {"error":"getGeneralQuestionPrompt is not defined","question":"give the solution for water leaking often complaint","communityId":46}
+2026-03-21 18:52:37 [ERROR]: Conversation continuation error {"error":"getGeneralQuestionPrompt is not defined"}
+2026-03-21 18:52:37 [INFO]: No messages found, using general LLM fallback
+2026-03-21 18:52:37 [ERROR]: Bot query error {"error":"getGeneralQuestionPrompt is not defined","question":"give the solution for water leaking often complaint","communityId":46}
+2026-03-21 18:52:37 [ERROR]: Bot ask endpoint error {"error":"getGeneralQuestionPrompt is not defined","userId":15}
+2026-03-21 18:52:37 [INFO]: HTTP Request {"method":"POST","path":"/ask","status":500,"duration":"26ms","ip":"127.0.0.1"}
+2026-03-21 18:54:51 [INFO]: ✅ PostgreSQL connected
+2026-03-21 18:54:51 [INFO]: ✅ PostgreSQL connected
+2026-03-21 18:54:51 [INFO]: ✅ Redis connected (NLP service available)
+2026-03-21 18:54:51 [INFO]: Preloading NLP models...
+2026-03-21 18:54:51 [INFO]: Preloading NLP models...
+2026-03-21 18:54:51 [INFO]: Loading sentiment analysis model...
+2026-03-21 18:54:51 [INFO]: Loading toxicity detection model...
+2026-03-21 18:54:52 [INFO]: ✅ Sentiment analysis model loaded {"duration":"706ms"}
+2026-03-21 18:54:53 [WARN]: Slow operation {"operation":"Toxicity model initialization","duration":"2120ms"}
+2026-03-21 18:54:53 [INFO]: ✅ Toxicity detection model loaded {"duration":"2120ms"}
+2026-03-21 18:54:53 [INFO]: ✅ All NLP models preloaded
+2026-03-21 18:54:53 [INFO]: 🚀 Civix Platform running on port 3002
+2026-03-21 18:54:53 [INFO]: Environment: development
+2026-03-21 18:54:53 [INFO]: Accessible at http://localhost:3002 (local)
+2026-03-21 18:54:53 [INFO]: Socket.io enabled for real-time features
+2026-03-21 18:54:53 [INFO]: NLP ChatBot service: OPTIONAL
+2026-03-21 18:55:08 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":200,"duration":"250ms","ip":"127.0.0.1"}
+2026-03-21 19:05:34 [INFO]: ✅ PostgreSQL connected
+2026-03-21 19:05:34 [INFO]: ✅ PostgreSQL connected
+2026-03-21 19:05:34 [INFO]: ✅ Redis connected (NLP service available)
+2026-03-21 19:05:34 [INFO]: Preloading NLP models...
+2026-03-21 19:05:34 [INFO]: Preloading NLP models...
+2026-03-21 19:05:34 [INFO]: Loading sentiment analysis model...
+2026-03-21 19:05:34 [INFO]: Loading toxicity detection model...
+2026-03-21 19:05:34 [INFO]: ✅ Sentiment analysis model loaded {"duration":"614ms"}
+2026-03-21 19:05:35 [WARN]: Slow operation {"operation":"Toxicity model initialization","duration":"1141ms"}
+2026-03-21 19:05:35 [INFO]: ✅ Toxicity detection model loaded {"duration":"1141ms"}
+2026-03-21 19:05:35 [INFO]: ✅ All NLP models preloaded
+2026-03-21 19:05:35 [ERROR]: Uncaught exception {"error":"listen EADDRINUSE: address already in use 0.0.0.0:3002","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:3002\n    at Server.setupListenHandle [as _listen2] (node:net:1940:16)\n    at listenInCluster (node:net:1997:12)\n    at node:net:2206:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}
+2026-03-21 19:05:35 [INFO]: UNCAUGHT_EXCEPTION received, shutting down gracefully...
+2026-03-21 19:05:35 [INFO]: ✅ All connections closed
+2026-03-21 19:11:09 [INFO]: ✅ PostgreSQL connected
+2026-03-21 19:11:09 [INFO]: ✅ PostgreSQL connected
+2026-03-21 19:11:09 [INFO]: ✅ Redis connected (NLP service available)
+2026-03-21 19:11:09 [INFO]: Preloading NLP models...
+2026-03-21 19:11:09 [INFO]: Preloading NLP models...
+2026-03-21 19:11:09 [INFO]: Loading sentiment analysis model...
+2026-03-21 19:11:09 [INFO]: Loading toxicity detection model...
+2026-03-21 19:11:09 [INFO]: ✅ Sentiment analysis model loaded {"duration":"286ms"}
+2026-03-21 19:11:09 [INFO]: ✅ Toxicity detection model loaded {"duration":"677ms"}
+2026-03-21 19:11:09 [INFO]: ✅ All NLP models preloaded
+2026-03-21 19:11:09 [ERROR]: Uncaught exception {"error":"listen EADDRINUSE: address already in use 0.0.0.0:3002","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:3002\n    at Server.setupListenHandle [as _listen2] (node:net:1940:16)\n    at listenInCluster (node:net:1997:12)\n    at node:net:2206:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}
+2026-03-21 19:11:09 [INFO]: UNCAUGHT_EXCEPTION received, shutting down gracefully...
+2026-03-21 19:11:09 [INFO]: ✅ All connections closed
+2026-03-21 19:11:42 [INFO]: ✅ PostgreSQL connected
+2026-03-21 19:11:42 [INFO]: ✅ PostgreSQL connected
+2026-03-21 19:11:42 [INFO]: ✅ Redis connected (NLP service available)
+2026-03-21 19:11:42 [INFO]: Preloading NLP models...
+2026-03-21 19:11:42 [INFO]: Preloading NLP models...
+2026-03-21 19:11:42 [INFO]: Loading sentiment analysis model...
+2026-03-21 19:11:42 [INFO]: Loading toxicity detection model...
+2026-03-21 19:11:42 [INFO]: ✅ Sentiment analysis model loaded {"duration":"367ms"}
+2026-03-21 19:11:43 [INFO]: ✅ Toxicity detection model loaded {"duration":"658ms"}
+2026-03-21 19:11:43 [INFO]: ✅ All NLP models preloaded
+2026-03-21 19:11:43 [ERROR]: Uncaught exception {"error":"listen EADDRINUSE: address already in use 0.0.0.0:3002","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:3002\n    at Server.setupListenHandle [as _listen2] (node:net:1940:16)\n    at listenInCluster (node:net:1997:12)\n    at node:net:2206:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}
+2026-03-21 19:11:43 [INFO]: UNCAUGHT_EXCEPTION received, shutting down gracefully...
+2026-03-21 19:11:43 [INFO]: ✅ All connections closed
+2026-03-21 19:29:43 [INFO]: ✅ PostgreSQL connected
+2026-03-21 19:29:43 [INFO]: ✅ PostgreSQL connected
+2026-03-21 19:29:43 [INFO]: ✅ Redis connected (NLP service available)
+2026-03-21 19:29:43 [INFO]: Preloading NLP models...
+2026-03-21 19:29:43 [INFO]: Preloading NLP models...
+2026-03-21 19:29:43 [INFO]: Loading sentiment analysis model...
+2026-03-21 19:29:43 [INFO]: Loading toxicity detection model...
+2026-03-21 19:29:44 [INFO]: ✅ Sentiment analysis model loaded {"duration":"341ms"}
+2026-03-21 19:29:44 [INFO]: ✅ Toxicity detection model loaded {"duration":"672ms"}
+2026-03-21 19:29:44 [INFO]: ✅ All NLP models preloaded
+2026-03-21 19:29:44 [INFO]: 🚀 Civix Platform running on port 3002
+2026-03-21 19:29:44 [INFO]: Environment: development
+2026-03-21 19:29:44 [INFO]: Accessible at http://localhost:3002 (local)
+2026-03-21 19:29:44 [INFO]: Socket.io enabled for real-time features
+2026-03-21 19:29:44 [INFO]: NLP ChatBot service: OPTIONAL
+2026-03-21 19:30:37 [INFO]: No messages found, using general LLM fallback
+2026-03-21 19:30:37 [INFO]: Querying Ollama {"model":"llama3.2:1b","promptLength":893,"host":"http://127.0.0.1:11434"}
+2026-03-21 19:31:10 [INFO]: Ollama Response Received {"duration":"32728ms","model":"llama3.2:1b"}
+2026-03-21 19:31:10 [WARN]: Slow operation {"operation":"Ollama query","duration":"32728ms"}
+2026-03-21 19:31:10 [INFO]: API Request {"method":"POST","path":"/ask","userId":15,"communityId":46,"ip":"127.0.0.1","duration":32989}
+2026-03-21 19:31:10 [INFO]: HTTP Request {"method":"POST","path":"/ask","status":200,"duration":"33033ms","ip":"127.0.0.1"}
+2026-03-21 19:31:39 [WARN]: Invalid or expired session {"sessionHash":"7f4280f5efd6bc62","communityId":46}
+2026-03-21 19:31:39 [INFO]: Detected intent {"intent":"summary","question":"friday chat summarization"}
+2026-03-21 19:31:39 [INFO]: Querying LLM {"intent":"summary","promptLength":2623}
+2026-03-21 19:31:39 [INFO]: Querying Ollama {"model":"llama3.2:1b","promptLength":2623,"host":"http://127.0.0.1:11434"}
+2026-03-21 19:31:56 [INFO]: Ollama Response Received {"duration":"16334ms","model":"llama3.2:1b"}
+2026-03-21 19:31:56 [WARN]: Slow operation {"operation":"Ollama query","duration":"16334ms"}
+2026-03-21 19:31:56 [INFO]: LLM response received {"answerLength":270,"intent":"summary"}
+2026-03-21 19:31:56 [INFO]: API Request {"method":"POST","path":"/ask","userId":15,"communityId":46,"ip":"127.0.0.1","duration":16702}
+2026-03-21 19:31:56 [INFO]: HTTP Request {"method":"POST","path":"/ask","status":200,"duration":"16723ms","ip":"127.0.0.1"}
+2026-03-21 19:33:40 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":200,"duration":"175ms","ip":"127.0.0.1"}
+2026-03-21 19:38:41 [INFO]: ✅ PostgreSQL connected
+2026-03-21 19:38:41 [INFO]: ✅ PostgreSQL connected
+2026-03-21 19:38:41 [INFO]: ✅ Redis connected (NLP service available)
+2026-03-21 19:38:41 [INFO]: Preloading NLP models...
+2026-03-21 19:38:41 [INFO]: Preloading NLP models...
+2026-03-21 19:38:41 [INFO]: Loading sentiment analysis model...
+2026-03-21 19:38:41 [INFO]: Loading toxicity detection model...
+2026-03-21 19:38:41 [INFO]: ✅ Sentiment analysis model loaded {"duration":"365ms"}
+2026-03-21 19:38:42 [INFO]: ✅ Toxicity detection model loaded {"duration":"793ms"}
+2026-03-21 19:38:42 [INFO]: ✅ All NLP models preloaded
+2026-03-21 19:38:42 [INFO]: 🚀 Civix Platform running on port 3002
+2026-03-21 19:38:42 [INFO]: Environment: development
+2026-03-21 19:38:42 [INFO]: Accessible at http://localhost:3002 (local)
+2026-03-21 19:38:42 [INFO]: Socket.io enabled for real-time features
+2026-03-21 19:38:42 [INFO]: NLP ChatBot service: OPTIONAL
+2026-03-21 19:39:32 [INFO]: ✅ PostgreSQL connected
+2026-03-21 19:39:32 [INFO]: ✅ PostgreSQL connected
+2026-03-21 19:39:32 [INFO]: ✅ Redis connected (NLP service available)
+2026-03-21 19:39:32 [INFO]: Preloading NLP models...
+2026-03-21 19:39:33 [INFO]: Preloading NLP models...
+2026-03-21 19:39:33 [INFO]: Loading sentiment analysis model...
+2026-03-21 19:39:33 [INFO]: Loading toxicity detection model...
+2026-03-21 19:39:33 [INFO]: ✅ Sentiment analysis model loaded {"duration":"563ms"}
+2026-03-21 19:39:34 [WARN]: Slow operation {"operation":"Toxicity model initialization","duration":"1110ms"}
+2026-03-21 19:39:34 [INFO]: ✅ Toxicity detection model loaded {"duration":"1110ms"}
+2026-03-21 19:39:34 [INFO]: ✅ All NLP models preloaded
+2026-03-21 19:39:34 [ERROR]: Uncaught exception {"error":"listen EADDRINUSE: address already in use 0.0.0.0:3002","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:3002\n    at Server.setupListenHandle [as _listen2] (node:net:1940:16)\n    at listenInCluster (node:net:1997:12)\n    at node:net:2206:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}
+2026-03-21 19:39:34 [INFO]: UNCAUGHT_EXCEPTION received, shutting down gracefully...
+2026-03-21 19:39:34 [INFO]: ✅ All connections closed
+2026-03-21 19:40:12 [INFO]: ✅ PostgreSQL connected
+2026-03-21 19:40:12 [INFO]: ✅ PostgreSQL connected
+2026-03-21 19:40:12 [INFO]: ✅ Redis connected (NLP service available)
+2026-03-21 19:40:12 [INFO]: Preloading NLP models...
+2026-03-21 19:40:12 [INFO]: Preloading NLP models...
+2026-03-21 19:40:12 [INFO]: Loading sentiment analysis model...
+2026-03-21 19:40:12 [INFO]: Loading toxicity detection model...
+2026-03-21 19:40:12 [INFO]: ✅ Sentiment analysis model loaded {"duration":"290ms"}
+2026-03-21 19:40:12 [INFO]: ✅ Toxicity detection model loaded {"duration":"574ms"}
+2026-03-21 19:40:12 [INFO]: ✅ All NLP models preloaded
+2026-03-21 19:40:12 [ERROR]: Uncaught exception {"error":"listen EADDRINUSE: address already in use 0.0.0.0:3002","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:3002\n    at Server.setupListenHandle [as _listen2] (node:net:1940:16)\n    at listenInCluster (node:net:1997:12)\n    at node:net:2206:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}
+2026-03-21 19:40:12 [INFO]: UNCAUGHT_EXCEPTION received, shutting down gracefully...
+2026-03-21 19:40:12 [INFO]: ✅ All connections closed
+2026-03-21 20:20:23 [INFO]: ✅ PostgreSQL connected
+2026-03-21 20:20:23 [INFO]: ✅ PostgreSQL connected
+2026-03-21 20:20:23 [INFO]: ✅ Redis connected (NLP service available)
+2026-03-21 20:20:23 [INFO]: Preloading NLP models...
+2026-03-21 20:20:23 [INFO]: Preloading NLP models...
+2026-03-21 20:20:23 [INFO]: Loading sentiment analysis model...
+2026-03-21 20:20:23 [INFO]: Loading toxicity detection model...
+2026-03-21 20:20:24 [INFO]: ✅ Sentiment analysis model loaded {"duration":"568ms"}
+2026-03-21 20:20:25 [WARN]: Slow operation {"operation":"Toxicity model initialization","duration":"1661ms"}
+2026-03-21 20:20:25 [INFO]: ✅ Toxicity detection model loaded {"duration":"1661ms"}
+2026-03-21 20:20:25 [INFO]: ✅ All NLP models preloaded
+2026-03-21 20:20:25 [INFO]: 🚀 Civix Platform running on port 3002
+2026-03-21 20:20:25 [INFO]: Environment: development
+2026-03-21 20:20:25 [INFO]: Accessible at http://localhost:3002 (local)
+2026-03-21 20:20:25 [INFO]: Socket.io enabled for real-time features
+2026-03-21 20:20:25 [INFO]: NLP ChatBot service: OPTIONAL
+2026-03-21 20:36:31 [INFO]: ✅ PostgreSQL connected
+2026-03-21 20:36:31 [INFO]: ✅ PostgreSQL connected
+2026-03-21 20:36:31 [INFO]: ✅ Redis connected (NLP service available)
+2026-03-21 20:36:31 [INFO]: Preloading NLP models...
+2026-03-21 20:36:31 [INFO]: Preloading NLP models...
+2026-03-21 20:36:31 [INFO]: Loading sentiment analysis model...
+2026-03-21 20:36:31 [INFO]: Loading toxicity detection model...
+2026-03-21 20:36:32 [INFO]: ✅ Sentiment analysis model loaded {"duration":"379ms"}
+2026-03-21 20:36:32 [INFO]: ✅ Toxicity detection model loaded {"duration":"750ms"}
+2026-03-21 20:36:32 [INFO]: ✅ All NLP models preloaded
+2026-03-21 20:36:32 [ERROR]: Uncaught exception {"error":"listen EADDRINUSE: address already in use 0.0.0.0:3002","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:3002\n    at Server.setupListenHandle [as _listen2] (node:net:1940:16)\n    at listenInCluster (node:net:1997:12)\n    at node:net:2206:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}
+2026-03-21 20:36:32 [INFO]: UNCAUGHT_EXCEPTION received, shutting down gracefully...
+2026-03-21 20:36:32 [INFO]: ✅ All connections closed

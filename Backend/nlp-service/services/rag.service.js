@@ -27,6 +27,7 @@ const tableExistsCache = new Map();
 
 const {
   getPrompt,
+  getGeneralQuestionPrompt,
   detectIntent,
   formatMessagesAsList,
   formatMessagesAsTranscript,
@@ -724,8 +725,11 @@ function isSummaryQuery(question) {
   const q = String(question || '').toLowerCase();
   return (
     q.includes('summary') ||
+    q.includes('summarize') ||
     q.includes('summar') ||
     q.includes('sumar') ||
+    q.includes('brief') ||
+    q.includes('overview') ||
     q.includes('important content') ||
     q.includes('key points') ||
     q.includes('highlights')
@@ -1503,27 +1507,28 @@ async function summarizeFromChatMessages(question, communityId) {
   // Fetch messages using existing function
   const messages = await fetchCommunityChatMessages(communityId, question);
 
+  // If no messages found, we still proceed to LLM for a summary + solution
   if (!messages.length) {
-    // Handle no messages case
-    const dateFilter = getDateFilterConfig(question);
-    const noDataMessage =
-      dateFilter.mode === 'calendar_date' && dateFilter.label
-        ? `No chat messages found for ${dateFilter.label} in this community.`
-        : dateFilter.mode === 'weekday' && dateFilter.label
-          ? `No chat messages found for ${dateFilter.label} in this community.`
-          : dateFilter.mode === 'rolling_period' && dateFilter.label
-            ? `No chat messages found in the last ${dateFilter.label} in this community.`
-            : dateFilter.mode === 'calendar_period' && dateFilter.label
-              ? `No chat messages found for ${dateFilter.label} in this community.`
-              : 'No chat messages found for the requested time range.';
-
-    return {
-      answer: noDataMessage,
-      sources: [],
-      confidence: 0,
-      sourceCount: 0,
-      status: 'no_chat_messages',
-    };
+    logger.info('No messages found, using general summary fallback');
+    const prompt = getSummaryPrompt('', question);
+    try {
+      const result = await queryLLM(prompt, null, 0.4);
+      return {
+        answer: result.response || 'I could not find any specific chat messages, but I am here to help with general questions.',
+        sources: [],
+        confidence: 60,
+        sourceCount: 0,
+        status: 'no_messages_llm_fallback',
+      };
+    } catch (err) {
+      return {
+        answer: 'I could not find any chat messages for that period.',
+        sources: [],
+        confidence: 0,
+        sourceCount: 0,
+        status: 'error',
+      };
+    }
   }
 
 
@@ -1632,33 +1637,56 @@ async function summarizeFromComplaints(question, communityId) {
   const messages = await fetchCommunityComplaints(communityId, question);
 
   if (!messages.length) {
-    const dateFilter = getDateFilterConfig(question);
-    const noDataMessage = `No complaints found for the requested time range (${dateFilter.label || 'recent'}).`;
+    logger.info('No complaints found, using general LLM fallback');
+    const prompt = `The user asked for a summary of community complaints: "${question}". 
+No specific complaints were found in the database for this query. 
+Please provide a helpful, general summary of how such issues are typically handled and provide specific solutions.
 
-    return {
-      answer: noDataMessage,
-      sources: [],
-      confidence: 0,
-      sourceCount: 0,
-      status: 'no_complaints',
-    };
+Output Format:
+Summary:
+- [General summary of the situation]
+(Max 5 lines)
+
+Solutions:
+- [General practical step 1]
+- [General practical step 2]`;
+    
+    try {
+      const result = await queryLLM(prompt, null, 0.4);
+      return {
+        answer: result.response,
+        sources: [],
+        confidence: 70,
+        sourceCount: 0,
+        status: 'no_complaints_llm_fallback',
+      };
+    } catch (err) {
+      return {
+        answer: 'No specific complaints found for the requested time range.',
+        sources: [],
+        confidence: 0,
+        sourceCount: 0,
+        status: 'error',
+      };
+    }
   }
 
-  const transcript = messages.map(m => `- [${m.category}] ${m.title}: ${m.description} (By: ${m.creator_name})`).join('\n');
+  const transcript = messages.map(m => `- [${m.category}] ${m.title}: ${m.description}`).join('\n');
 
-  const prompt = `You are a helpful community assistant. Provide a concise summary and analysis of the following community complaints for the requested period.
-Highlight key recurring categories, urgent issues, and provide suggested next steps for each category.
+  const prompt = `You are a helpful community assistant. Provide a SHORT summary (2-5 lines max) of the following community complaints.
+Focus ONLY on the issues and content. Do NOT include any names of people. 
+Highlight recurring categories and urgent issues, then give brief suggested next steps.
 
 Complaints:
 ${transcript}
 
 Question: ${question}
 
-Output Format MUST have exactly two sections:
-
+Output Format:
 Summary:
 - [Key point 1]
 - [Key point 2]
+(Max 5 lines total for summary)
 
 Solutions:
 - [Practical solution 1]
@@ -1700,31 +1728,56 @@ async function summarizeFromPetitions(question, communityId) {
   const messages = await fetchCommunityPetitions(communityId, question);
 
   if (!messages.length) {
-    const dateFilter = getDateFilterConfig(question);
-    return {
-      answer: `No petitions found for the requested time range (${dateFilter.label || 'recent'}).`,
-      sources: [],
-      confidence: 0,
-      sourceCount: 0,
-      status: 'no_petitions',
-    };
+    logger.info('No petitions found, using general LLM fallback');
+    const prompt = `The user asked for a summary of community petitions: "${question}". 
+No specific petitions were found in the database for this query. 
+Please provide a helpful, general summary of how petitions are typically handled and provide specific solutions.
+
+Output Format:
+Summary:
+- [General summary of the situation]
+(Max 5 lines)
+
+Solutions:
+- [General practical step 1]
+- [General practical step 2]`;
+    
+    try {
+      const result = await queryLLM(prompt, null, 0.4);
+      return {
+        answer: result.response,
+        sources: [],
+        confidence: 70,
+        sourceCount: 0,
+        status: 'no_petitions_llm_fallback',
+      };
+    } catch (err) {
+      return {
+        answer: 'No specific petitions found for the requested time range.',
+        sources: [],
+        confidence: 0,
+        sourceCount: 0,
+        status: 'error',
+      };
+    }
   }
 
-  const transcript = messages.map(m => `- ${m.title}: ${m.summary} (By: ${m.author_name})`).join('\n');
+  const transcript = messages.map(m => `- ${m.title}: ${m.summary}`).join('\n');
 
-  const prompt = `You are a helpful community assistant. Provide a concise summary of the following community petitions.
-Analyze the main concerns and suggest practical solutions or actions the community head should take.
+  const prompt = `You are a helpful community assistant. Provide a SHORT summary (2-5 lines max) of the following community petitions.
+Focus ONLY on the issues and content. Do NOT include any names of people.
+Analyze main concerns and suggest practical solutions.
 
 Petitions:
 ${transcript}
 
 Question: ${question}
 
-Output Format MUST have exactly two sections:
-
+Output Format:
 Summary:
 - [Key point 1]
 - [Key point 2]
+(Max 5 lines total for summary)
 
 Solutions:
 - [Practical solution 1]
@@ -2277,8 +2330,9 @@ function getCategoryLabel(category) {
  */
 async function buildGeneralAnswer(messages, question) {
   const transcript = formatMessagesAsTranscript(messages.slice(-60));
-  const prompt = `You are a helpful community assistant. Answer the user's question based ONLY on the provided chat transcript.
-If the information is not in the transcript, say you don't know based on the recent chat.
+  const prompt = `You are a helpful community assistant. Answer the user's question. 
+If the information is in the chat transcript below, use it. 
+If the question is about general knowledge or NOT in the transcript, answer normally as a helpful AI assistant.
 Keep the answer concise and practical.
 
 Question: ${question}
@@ -2358,10 +2412,11 @@ async function saveBotHistory({
     const tableName = await getHistoryTableName(type);
     await ensureBotHistoryTable(); // Ensures chat history table, but we assume other tables exist if type is specified
 
-    await query(
+    const result = await query(
       `INSERT INTO ${tableName}
        (user_id, community_id, question, answer, session_hash, confidence, source_count, status, error_message, created_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,NOW())`,
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,NOW())
+       RETURNING id`,
       [
         userId,
         communityId,
@@ -2374,8 +2429,10 @@ async function saveBotHistory({
         errorMessage,
       ]
     );
+    return result.rows[0]?.id;
   } catch (error) {
     logger.error(`Failed to save bot history for ${type}`, { error: error.message });
+    return null;
   }
 }
 
@@ -2935,8 +2992,10 @@ async function fetchLatestPetitionItemContext(communityId) {
 /**
  * Ask RAG chatbot with context
  */
-async function askBot(question, communityId, userId, previousContext = null, itemContext = null) {
+async function askBot(rawQuestion, communityId, userId, previousContext = null, itemContext = null) {
   const startTime = Date.now();
+  const question = String(rawQuestion || '').trim();
+  const questionLower = question.toLowerCase();
 
   try {
     // If itemContext wasn't provided by the client, try to infer from question (e.g. "complaint ID 22")
@@ -3159,6 +3218,30 @@ Answer:`;
       };
     }
 
+    // Proactively detect intent
+    const intent = detectIntent(question);
+    if (intent === 'summary') {
+      logger.info('Proactive summary intent detected', { communityId, userId });
+      const fallbackSessionHash = generateSessionHash(userId, communityId);
+      const chatSummary = await summarizeFromChatMessages(question, communityId);
+      await saveBotHistory({
+        userId,
+        communityId,
+        question,
+        answer: chatSummary.answer,
+        sessionHash: fallbackSessionHash,
+        confidence: chatSummary.confidence,
+        sourceCount: chatSummary.sourceCount,
+        status: 'proactive_summary',
+      });
+      return {
+        answer: chatSummary.answer,
+        sources: chatSummary.sources,
+        confidence: chatSummary.confidence,
+        sessionHash: fallbackSessionHash,
+      };
+    }
+
     // Search for relevant documents
     const relevantDocs = await searchDocuments(question, communityId);
 
@@ -3218,7 +3301,7 @@ Provide a helpful, accurate response based on the ${itemContext.type} details ab
           communityId,
         });
       }
-      await saveBotHistory({
+      const historyId = await saveBotHistory({
         userId,
         communityId,
         question,
@@ -3233,6 +3316,7 @@ Provide a helpful, accurate response based on the ${itemContext.type} details ab
         sources: [],
         confidence: 0,
         sessionHash: noInfoSessionHash,
+        historyId,
       };
     }
 
@@ -3309,7 +3393,7 @@ Answer:`;
       duration: `${duration}ms`,
     });
 
-    await saveBotHistory({
+    const historyId = await saveBotHistory({
       userId,
       communityId,
       question,
@@ -3329,6 +3413,7 @@ Answer:`;
       })),
       confidence,
       sessionHash,
+      historyId,
     };
   } catch (error) {
     if (isMissingRelation(error, 'community_docs')) {
@@ -3377,18 +3462,29 @@ Answer:`;
         sessionHash: fallbackSessionHash,
       };
     }
-    await saveBotHistory({
-      userId,
-      communityId,
-      question,
-      answer: 'Failed to process question',
-      sessionHash: generateSessionHash(userId, communityId),
-      confidence: 0,
-      sourceCount: 0,
-      status: 'error',
-      errorMessage: error.message,
-    });
     logger.error('Bot query error', { error: error.message, question, communityId });
+    throw error;
+  }
+}
+
+async function updateBotHistoryEntry(communityId, userId, historyId, question, type = 'chat') {
+  try {
+    const tableName = await getHistoryTableName(type);
+    const result = await query(
+      `UPDATE ${tableName}
+       SET question = $1
+       WHERE id = $2 AND community_id = $3 AND user_id = $4
+       RETURNING id`,
+      [question, historyId, communityId, userId]
+    );
+    return result.rowCount > 0;
+  } catch (error) {
+    logger.error(`Failed to update bot history entry for ${type}`, {
+      error: error.message,
+      communityId,
+      userId,
+      historyId,
+    });
     throw error;
   }
 }
@@ -3595,6 +3691,7 @@ module.exports = {
   queryLLM,
   queryOllama,
   getBotHistory,
+  updateBotHistoryEntry,
   deleteBotHistoryEntry,
   clearBotHistory,
   summarizeFromChatMessages,

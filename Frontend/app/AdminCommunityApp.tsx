@@ -500,15 +500,7 @@ const AdminCommunityApp: React.FC = () => {
   const [isValidatingAccess, setIsValidatingAccess] = useState(true);
   const [hasAccess, setHasAccess] = useState(false);
 
-  // Chatbot state
-  const [showAssistant, setShowAssistant] = useState(false);
-  const [chatbotMessages, setChatbotMessages] = useState<ChatbotMessage[]>([]);
-  const [question, setQuestion] = useState('');
-  const [isLoadingChatbot, setIsLoadingChatbot] = useState(false);
-  const [editingBotHistoryId, setEditingBotHistoryId] = useState<number | null>(null);
-  const [sessionHash, setSessionHash] = useState<string | null>(null);
-  const [stats, setStats] = useState<any>(null);
-  const [hasLoadedBotHistory, setHasLoadedBotHistory] = useState(false);
+
   const [pollModalVisible, setPollModalVisible] = useState(false);
 
 
@@ -613,164 +605,9 @@ const AdminCommunityApp: React.FC = () => {
     }
   }, [messages.length, hasAccess]);
 
-  // Load moderation stats (must be before any early return to keep hook order consistent)
-  const loadModerationStats = useCallback(async () => {
-    try {
-      const response = await nlpService.getModerationStats(communityId, 7);
-      setStats(response.data.statistics);
-    } catch (error) {
-      console.error('Failed to load stats:', error);
-    }
-  }, [communityId]);
 
-  useEffect(() => {
-    loadModerationStats();
-  }, [loadModerationStats]);
 
-  useEffect(() => {
-    setHasLoadedBotHistory(false);
-    setChatbotMessages([]);
-  }, [communityId]);
 
-  useEffect(() => {
-    const cacheKey = `botMessageCache:${communityId}`;
-    const payload: CachedChatbotMessage[] = chatbotMessages.map((m) => ({
-      id: m.id,
-      text: m.text,
-      isBot: m.isBot,
-      historyId: m.historyId,
-      confidence: m.confidence,
-      timestamp: m.timestamp instanceof Date ? m.timestamp.toISOString() : new Date().toISOString(),
-    }));
-    AsyncStorage.setItem(cacheKey, JSON.stringify(payload)).catch(() => { });
-  }, [chatbotMessages, communityId]);
-
-  const loadBotHistory = useCallback(async () => {
-    if (!hasAccess || !currentUserId) return;
-    try {
-      const cacheKey = `botHistoryCache:${communityId}`;
-      const messageCacheKey = `botMessageCache:${communityId}`;
-
-      const cachedMessagesRaw = await AsyncStorage.getItem(messageCacheKey);
-      if (cachedMessagesRaw) {
-        const cachedMessages: CachedChatbotMessage[] = JSON.parse(cachedMessagesRaw);
-        if (Array.isArray(cachedMessages) && cachedMessages.length > 0) {
-          const restored: ChatbotMessage[] = cachedMessages.map((m) => ({
-            id: m.id,
-            text: m.text,
-            isBot: m.isBot,
-            historyId: m.historyId,
-            confidence: m.confidence,
-            timestamp: m.timestamp ? new Date(m.timestamp) : new Date(),
-          }));
-          setChatbotMessages(restored);
-        }
-      }
-
-      const response = await nlpService.getBotHistory(communityId, 50);
-      if (!response?.success) {
-        const cached = await AsyncStorage.getItem(cacheKey);
-        if (cached) {
-          const history: BotHistoryItem[] = JSON.parse(cached);
-          if (history.length) {
-            const loaded: ChatbotMessage[] = [];
-            history.forEach((item) => {
-              const ts = item.created_at ? new Date(item.created_at) : new Date();
-              loaded.push({
-                id: `q-${item.id}`,
-                text: item.question,
-                isBot: false,
-                historyId: item.id,
-                timestamp: ts,
-              });
-              if (!isLimitMessage(item.answer)) {
-                loaded.push({
-                  id: `a-${item.id}`,
-                  text: item.answer,
-                  isBot: true,
-                  historyId: item.id,
-                  confidence: item.confidence,
-                  timestamp: ts,
-                });
-              }
-            });
-            setChatbotMessages(loaded);
-          }
-        }
-        return;
-      }
-
-      const history: BotHistoryItem[] = Array.isArray(response?.data?.history)
-        ? response.data.history
-        : Array.isArray(response?.history)
-          ? response.history
-          : [];
-      if (!history.length) {
-        const cached = await AsyncStorage.getItem(cacheKey);
-        if (cached) {
-          const cachedHistory: BotHistoryItem[] = JSON.parse(cached);
-          if (cachedHistory.length) {
-            const loaded: ChatbotMessage[] = [];
-            cachedHistory.forEach((item) => {
-              const ts = item.created_at ? new Date(item.created_at) : new Date();
-              loaded.push({
-                id: `q-${item.id}`,
-                text: item.question,
-                isBot: false,
-                historyId: item.id,
-                timestamp: ts,
-              });
-              if (!isLimitMessage(item.answer)) {
-                loaded.push({
-                  id: `a-${item.id}`,
-                  text: item.answer,
-                  isBot: true,
-                  historyId: item.id,
-                  confidence: item.confidence,
-                  timestamp: ts,
-                });
-              }
-            });
-            setChatbotMessages(loaded);
-          }
-        }
-        return;
-      }
-
-      const loaded: ChatbotMessage[] = [];
-      history.forEach((item) => {
-        const ts = item.created_at ? new Date(item.created_at) : new Date();
-        loaded.push({
-          id: `q-${item.id}`,
-          text: item.question,
-          isBot: false,
-          historyId: item.id,
-          timestamp: ts,
-        });
-        if (!isLimitMessage(item.answer)) {
-          loaded.push({
-            id: `a-${item.id}`,
-            text: item.answer,
-            isBot: true,
-            historyId: item.id,
-            confidence: item.confidence,
-            timestamp: ts,
-          });
-        }
-      });
-
-      await AsyncStorage.setItem(cacheKey, JSON.stringify(history));
-      setChatbotMessages(loaded);
-    } catch (error) {
-      console.error('Failed to load bot history:', error);
-    }
-  }, [communityId, currentUserId, hasAccess]);
-
-  useEffect(() => {
-    if (!showAssistant || !hasAccess || !currentUserId) return;
-    setHasLoadedBotHistory(false);
-    loadBotHistory().finally(() => setHasLoadedBotHistory(true));
-  }, [showAssistant, loadBotHistory, currentUserId, hasAccess]);
 
   // Show loading screen while validating access
   if (isValidatingAccess) {
@@ -992,302 +829,6 @@ const AdminCommunityApp: React.FC = () => {
     }
   };
 
-  // Chatbot functions
-  const removeBotHistoryPair = (historyId: number) => {
-    setChatbotMessages((prev) => prev.filter((m) => m.historyId !== historyId));
-  };
-
-  const handleClearBotChat = async () => {
-    Alert.alert(
-      'Clear AI chat',
-      'Delete all previous AI chat messages in this community?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Clear',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await nlpService.clearBotHistory(communityId);
-              setChatbotMessages([]);
-              setQuestion('');
-              setEditingBotHistoryId(null);
-              setSessionHash(null);
-            } catch (error) {
-              console.error('Failed to clear bot history:', error);
-              Alert.alert('Error', 'Failed to clear AI chat history');
-            }
-          },
-        },
-      ]
-    );
-  };
-
-  const handleBotMessageActions = (message: ChatbotMessage) => {
-    if (message.isBot || !message.historyId) return;
-
-    Alert.alert(
-      'AI Chat Message',
-      'Choose an action',
-      [
-        {
-          text: 'Edit',
-          onPress: () => {
-            setQuestion(message.text);
-            setEditingBotHistoryId(message.historyId || null);
-          },
-        },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await nlpService.deleteBotHistoryItem(communityId, message.historyId as number);
-              removeBotHistoryPair(message.historyId as number);
-              if (editingBotHistoryId === message.historyId) {
-                setEditingBotHistoryId(null);
-                setQuestion('');
-              }
-            } catch (error) {
-              console.error('Failed to delete bot history item:', error);
-              Alert.alert('Error', 'Failed to delete AI chat message');
-            }
-          },
-        },
-        { text: 'Cancel', style: 'cancel' },
-      ]
-    );
-  };
-
-  const handleAskBot = async () => {
-    const prompt = question.trim();
-    if (!prompt) return;
-
-    const replacingHistoryId = editingBotHistoryId;
-    const requestSessionHash = replacingHistoryId ? undefined : sessionHash || undefined;
-
-    if (replacingHistoryId) {
-      try {
-        await nlpService.deleteBotHistoryItem(communityId, replacingHistoryId);
-        removeBotHistoryPair(replacingHistoryId);
-      } catch (error) {
-        console.error('Failed to delete old bot history before edit:', error);
-      }
-    }
-
-    const userMessage: ChatbotMessage = {
-      id: Date.now().toString(),
-      text: prompt,
-      isBot: false,
-      timestamp: new Date(),
-    };
-
-    setChatbotMessages((prev) => [...prev, userMessage]);
-    setQuestion('');
-    setEditingBotHistoryId(null);
-    setIsLoadingChatbot(true);
-
-    try {
-      const response = await nlpService.askBot(
-        prompt,
-        communityId,
-        requestSessionHash
-      );
-
-      if (response.success) {
-        const answerText = response.data.answer || 'No response from AI.';
-        if (!isLimitMessage(answerText)) {
-          const botMessage: ChatbotMessage = {
-            id: (Date.now() + 1).toString(),
-            text: answerText,
-            isBot: true,
-            sources: response.data.sources,
-            confidence: response.data.confidence,
-            timestamp: new Date(),
-          };
-
-          setChatbotMessages((prev) => [...prev, botMessage]);
-        } else {
-          const fallbackText = 'Summary is being generated. Please try again in a moment.';
-          const botMessage: ChatbotMessage = {
-            id: (Date.now() + 2).toString(),
-            text: fallbackText,
-            isBot: true,
-            timestamp: new Date(),
-          };
-          setChatbotMessages((prev) => [...prev, botMessage]);
-        }
-        setSessionHash(response.data.sessionHash || null);
-        await loadBotHistory();
-      } else {
-        const fallbackText = response?.error || 'Failed to process question';
-        const botMessage: ChatbotMessage = {
-          id: (Date.now() + 3).toString(),
-          text: fallbackText,
-          isBot: true,
-          timestamp: new Date(),
-        };
-        setChatbotMessages((prev) => [...prev, botMessage]);
-      }
-    } catch (error) {
-      console.error('Bot query failed:', error);
-      const backendMessage =
-        (error as any)?.response?.data?.error ||
-        (error as any)?.message ||
-        'Sorry, I encountered an error. Please try again.';
-
-      const errorMessage: ChatbotMessage = {
-        id: (Date.now() + 1).toString(),
-        text: backendMessage,
-        isBot: true,
-        timestamp: new Date(),
-      };
-
-      if (!isLimitMessage(backendMessage)) {
-        setChatbotMessages((prev) => [...prev, errorMessage]);
-      } else {
-        const fallbackText = 'Summary is being generated. Please try again in a moment.';
-        const fallbackMessage: ChatbotMessage = {
-          id: (Date.now() + 2).toString(),
-          text: fallbackText,
-          isBot: true,
-          timestamp: new Date(),
-        };
-        setChatbotMessages((prev) => [...prev, fallbackMessage]);
-      }
-    } finally {
-      setIsLoadingChatbot(false);
-    }
-  };
-
-  const handleCopyBotReply = async (text: string) => {
-    try {
-      if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.clipboard) {
-        await navigator.clipboard.writeText(text);
-        Alert.alert('Copied', 'Reply copied to clipboard');
-        return;
-      }
-      Alert.alert('Copy text', text);
-    } catch (error) {
-      console.error('Failed to copy reply text:', error);
-      Alert.alert('Error', 'Unable to copy reply');
-    }
-  };
-
-  const isLimitMessage = (text: string) => {
-    const t = String(text || '').toLowerCase();
-    return (
-      t.includes('limit') &&
-      (t.includes('exceeded') || t.includes('quota') || t.includes('too many requests') || t.includes('daily request'))
-    );
-  };
-
-  const splitBotSections = (text: string) => {
-    const raw = String(text || '');
-    const match = raw.split(/Recommendations:\s*/i);
-    if (match.length < 2) {
-      return { summary: raw.trim(), recommendations: '' };
-    }
-    const summary = match[0].trim();
-    const recommendations = match.slice(1).join('Recommendations: ').trim();
-    return { summary, recommendations };
-  };
-
-  const renderChatbotMessage = (message: ChatbotMessage) => {
-    if (message.isBot && isLimitMessage(message.text)) {
-      return null;
-    }
-    return (
-      <TouchableOpacity
-        key={message.id}
-        style={[
-          styles.chatbotMessageTouchableArea,
-          styles.chatbotMessageBubble,
-          message.isBot ? styles.chatbotBotBubble : styles.chatbotUserBubble,
-        ]}
-        activeOpacity={0.9}
-        onLongPress={() => handleBotMessageActions(message)}
-        delayLongPress={350}
-      >
-        {message.isBot ? (
-          (() => {
-            const { summary, recommendations } = splitBotSections(message.text);
-            return (
-              <View>
-                {summary ? (
-                  <View style={styles.chatbotSectionBlock}>
-                    <Text style={styles.chatbotSectionTitle}>Summary</Text>
-                    <Text style={styles.chatbotMessageText} selectable>
-                      {summary}
-                    </Text>
-                  </View>
-                ) : null}
-                {recommendations ? (
-                  <View style={styles.chatbotSectionBlock}>
-                    <Text style={styles.chatbotSectionTitle}>Recommendations</Text>
-                    <Text style={styles.chatbotMessageText} selectable>
-                      {recommendations}
-                    </Text>
-                  </View>
-                ) : null}
-              </View>
-            );
-          })()
-        ) : (
-          <Text style={styles.chatbotMessageText} selectable>
-            {message.text}
-          </Text>
-        )}
-
-        {message.isBot && message.sources && message.sources.length > 0 && (
-          <View style={styles.chatbotSourcesContainer}>
-            <Text style={styles.chatbotSourcesTitle}>Sources:</Text>
-            {message.sources.map((source, idx) => (
-              <Text key={idx} style={styles.chatbotSourceText}>
-                - {source.title}
-              </Text>
-            ))}
-          </View>
-        )}
-
-        {message.isBot && !splitBotSections(message.text).recommendations ? null : null}
-
-        {!message.isBot && message.historyId && (
-          <View style={styles.chatbotActionsRow}>
-            <TouchableOpacity
-              style={styles.chatbotActionButton}
-              onPress={() => {
-                setQuestion(message.text);
-                setEditingBotHistoryId(message.historyId || null);
-              }}
-            >
-              <Text style={styles.chatbotActionText}>Edit</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.chatbotActionButton, styles.chatbotDeleteActionButton]}
-              onPress={async () => {
-                try {
-                  await nlpService.deleteBotHistoryItem(communityId, message.historyId as number);
-                  removeBotHistoryPair(message.historyId as number);
-                  if (editingBotHistoryId === message.historyId) {
-                    setEditingBotHistoryId(null);
-                    setQuestion('');
-                  }
-                } catch (error) {
-                  console.error('Failed to delete bot history item:', error);
-                  Alert.alert('Error', 'Failed to delete AI chat message');
-                }
-              }}
-            >
-              <Text style={styles.chatbotDeleteActionText}>Delete</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-        {null}
-      </TouchableOpacity>
-    );
-  };
-
   const formatDateHeader = (dateString: string) => {
     if (dateString === 'Unknown Date') return dateString;
 
@@ -1487,10 +1028,12 @@ const AdminCommunityApp: React.FC = () => {
         <PlusIcon />
       </TouchableOpacity>
 
-      {/* Chatbot Floating Button */}
       <TouchableOpacity
         style={styles.chatbotFloatingButton}
-        onPress={() => setShowAssistant(true)}
+        onPress={() => navigation.navigate('AIChatScreen', {
+          communityId: communityId,
+          communityName: community?.name || 'Community'
+        })}
       >
         <Text style={styles.chatbotButtonText}>🤖</Text>
       </TouchableOpacity>
@@ -1680,92 +1223,7 @@ const AdminCommunityApp: React.FC = () => {
         </View>
       </Modal>
 
-      {/* Chatbot Modal */}
-      <Modal
-        visible={showAssistant}
-        animationType="slide"
-        presentationStyle="pageSheet"
-      >
-        <View style={styles.chatbotModal}>
-          <View style={styles.chatbotHeader}>
-            <Text style={styles.chatbotTitle}>AI Community Assistant</Text>
-            <View style={styles.chatbotHeaderActions}>
-              <TouchableOpacity onPress={handleClearBotChat}>
-                <Text style={styles.chatbotClearButton}>Clear</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => setShowAssistant(false)}>
-                <Text style={styles.chatbotCloseButton}>×</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
 
-          <ScrollView style={styles.chatbotMessagesContainer}>
-            {chatbotMessages.length === 0 && (
-              <View style={styles.chatbotEmptyState}>
-                <Text style={styles.chatbotEmptyStateText}>
-                  Hi! I am your AI assistant. I can help you with:
-                </Text>
-                <Text style={styles.chatbotSuggestionText}>
-                  - Community policies and bylaws
-                </Text>
-                <Text style={styles.chatbotSuggestionText}>
-                  - Parking and facility rules
-                </Text>
-                <Text style={styles.chatbotSuggestionText}>
-                  - Message analysis and suggestions
-                </Text>
-                <Text style={styles.chatbotSuggestionText}>
-                  - Maintenance procedures
-                </Text>
-              </View>
-            )}
-
-            {chatbotMessages.map(renderChatbotMessage)}
-
-            {isLoadingChatbot && (
-              <View style={styles.chatbotLoadingBubble}>
-                <ActivityIndicator size="small" />
-                <Text style={styles.chatbotLoadingText}>Thinking...</Text>
-              </View>
-            )}
-          </ScrollView>
-
-          <View style={styles.chatbotInputContainer}>
-            {editingBotHistoryId && (
-              <View style={styles.chatbotEditBanner}>
-                <Text style={styles.chatbotEditBannerText}>Editing previous prompt</Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    setEditingBotHistoryId(null);
-                    setQuestion('');
-                  }}
-                >
-                  <Text style={styles.chatbotEditCancelText}>Cancel</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-            <TextInput
-              style={styles.chatbotInput}
-              value={question}
-              onChangeText={setQuestion}
-              placeholder="Ask me anything about your community..."
-              multiline
-              maxLength={500}
-              editable={!isLoadingChatbot}
-            />
-            <TouchableOpacity
-              style={[
-                styles.chatbotAskButton,
-                (!question.trim() || isLoadingChatbot) && styles.chatbotAskButtonDisabled,
-              ]}
-              onPress={handleAskBot}
-              disabled={!question.trim() || isLoadingChatbot}
-            >
-              <Text style={styles.chatbotAskButtonText}>{editingBotHistoryId ? 'Update' : 'Ask'}</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
         </SafeAreaView>
       </LinearGradient>
     </View>
@@ -2384,13 +1842,21 @@ const styles = StyleSheet.create({
   },
   chatbotBotBubble: {
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: '#ffffff',
+    borderColor: '#e2e8f0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   chatbotMessageText: {
     fontSize: 15,
     lineHeight: 22,
-    color: '#f8fafc',
+    color: '#334155', // Dark slate color for readability
+  },
+  chatbotUserBubbleText: {
+    color: '#ffffff', // White text for user messages which have #6366f1 background
   },
   chatbotSectionBlock: {
     marginBottom: 8,

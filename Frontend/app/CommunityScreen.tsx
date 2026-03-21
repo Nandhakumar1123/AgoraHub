@@ -341,19 +341,19 @@ export default function CommunityScreen() {
         >
         <View style={styles.header}>
           <Text style={styles.headerIcon}>👥</Text>
-          <Text style={styles.headerTitle}>Community Manager</Text>
+          <Text style={styles.headerTitle}>Communities</Text>
           <View style={styles.headerRight}>
             <TouchableOpacity 
               onPress={() => router.push('/ProfileScreen')} 
               style={styles.headerButton}
             >
-              <Icon name="user" size={20} color="#cbd5e1" />
+              <Icon name="user" size={18} color="#cbd5e1" />
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setView('joinCommunity')} style={styles.headerButton}>
               <Text style={styles.headerButtonText}>Join</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setView('create')} style={[styles.headerButton, styles.createHeaderButton]}>
-              <Text style={styles.createButtonText}>+ Create</Text>
+              <Text style={styles.createButtonText}>Create</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -706,8 +706,8 @@ export default function CommunityScreen() {
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: 'transparent' },
   header: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -717,16 +717,20 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.05)',
   },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexShrink: 0,
+  },
   background: { flex: 1 },
-  headerIcon: { fontSize: 24 },
-  headerTitle: { fontSize: 20, fontWeight: '800', color: '#f8fafc' },
-  headerRight: { flexDirection: 'row' },
+  headerIcon: { fontSize: 20, marginRight: 6 },
+  headerTitle: { fontSize: 16, fontWeight: '800', color: '#f8fafc', flexShrink: 1 },
   headerButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
     backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: 12,
-    marginLeft: 10,
+    borderRadius: 10,
+    marginLeft: 6,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
   },

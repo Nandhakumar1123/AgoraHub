@@ -4,8 +4,8 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { createContext, useState, useCallback, useEffect } from 'react';
-import { WallpaperProvider } from './WallpaperContext';
-import { GlobalBackground } from './GlobalBackground';
+import { WallpaperProvider } from '../context/WallpaperContext';
+import { GlobalBackground } from '../components/GlobalBackground';
 
 export const AppContext = createContext({ theme: 'light', toggleTheme: () => { } });
 
@@ -47,8 +47,12 @@ export default function RootLayout() {
               <Stack.Screen name="ViewPetitionsScreen" options={{ title: 'View Petitions' }} />
               <Stack.Screen name="AnonymousMessageScreen" options={{ title: 'Anonymous Message' }} />
               <Stack.Screen name="AnonymousMessagesAdminScreen" options={{ title: 'Admin - Anonymous Messages' }} />
-              <Stack.Screen name="AnonymousThreadScreen" options={{ title: 'Chat' }} />
-              <Stack.Screen name="EventsScreen" options={{ title: 'Events' }} />
+               <Stack.Screen name="AnonymousThreadScreen" options={{ title: 'Chat' }} />
+               <Stack.Screen name="ChatWithModeration" options={{ title: 'AI Assistant', headerShown: false }} />
+               <Stack.Screen name="AIChatScreen" options={{ title: 'AI Chat', headerShown: false }} />
+               <Stack.Screen name="ComplaintAIChatScreen" options={{ title: 'Complaint AI', headerShown: false }} />
+               <Stack.Screen name="PetitionAIChatScreen" options={{ title: 'Petition AI', headerShown: false }} />
+               <Stack.Screen name="EventsScreen" options={{ title: 'Events' }} />
               <Stack.Screen name="EventsScreenMember" options={{ title: 'Events' }} />
               <Stack.Screen name="PollsListScreen" options={{ title: 'Polling', headerShown: false }} />
               <Stack.Screen name="+not-found" />

@@ -1,8 +1,9 @@
 // lib/nlpService.ts - NLP API client (moved from app/ to avoid route pickup)
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_ROOT } from './api';
 
-const NLP_SERVICE_URL = process.env.EXPO_PUBLIC_NLP_SERVICE_URL || process.env.NLP_SERVICE_URL || 'http://localhost:3002';
+const NLP_SERVICE_URL = process.env.EXPO_PUBLIC_NLP_SERVICE_URL || process.env.NLP_SERVICE_URL || API_ROOT;
 const BOT_REQUEST_TIMEOUT_MS = 60000;
 
 class NLPService {
@@ -124,6 +125,16 @@ class NLPService {
     const headers = await this.getHeaders();
     const response = await axios.get(
       `${this.baseURL}/api/bot/history/${communityId}?limit=${limit}&type=${type}`,
+      { headers, timeout: BOT_REQUEST_TIMEOUT_MS }
+    );
+    return response.data;
+  }
+
+  async updateBotHistoryItem(communityId: number, historyId: number, question: string, type: string = 'chat') {
+    const headers = await this.getHeaders();
+    const response = await axios.put(
+      `${this.baseURL}/api/bot/history/${communityId}/${historyId}?type=${type}`,
+      { question },
       { headers, timeout: BOT_REQUEST_TIMEOUT_MS }
     );
     return response.data;

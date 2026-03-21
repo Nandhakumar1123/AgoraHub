@@ -1,8 +1,9 @@
 // lib/nlpSocketService.ts - Socket.io moderation client (moved from app/ to avoid route pickup)
 import { io, Socket } from 'socket.io-client';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_ROOT } from './api';
 
-const NLP_SERVICE_URL = process.env.EXPO_PUBLIC_NLP_SERVICE_URL || process.env.NLP_SERVICE_URL || 'http://localhost:3002';
+const NLP_SERVICE_URL = process.env.EXPO_PUBLIC_NLP_SERVICE_URL || process.env.NLP_SERVICE_URL || API_ROOT;
 
 class NLPSocketService {
   private socket: Socket | null = null;

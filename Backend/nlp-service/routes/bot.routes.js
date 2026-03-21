@@ -19,6 +19,7 @@ const {
   deleteDocument,
   checkOllamaHealth,
   getBotHistory,
+  updateBotHistoryEntry,
   deleteBotHistoryEntry,
   clearBotHistory,
 } = require('../services/rag.service');
@@ -32,10 +33,11 @@ const { logger, logRequest } = require('../config/logger');
 // NEVER writes to complaints or petitions tables
 async function saveToBotHistoryTable(tableName, { userId, communityId, question, answer, confidence, sourceCount, status, errorMessage }) {
   try {
-    await pool.query(
+    const result = await pool.query(
       `INSERT INTO ${tableName} 
         (user_id, community_id, question, answer, confidence, source_count, status, error_message, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+       RETURNING id`,
       [
         userId || null,
         communityId,
@@ -47,8 +49,10 @@ async function saveToBotHistoryTable(tableName, { userId, communityId, question,
         errorMessage || null,
       ]
     );
+    return result.rows[0]?.id;
   } catch (err) {
     logger.warn('Failed to save bot history', { table: tableName, error: err.message });
+    return null;
   }
 }
 
@@ -104,6 +108,7 @@ router.post(
           sources: result.sources,
           confidence: result.confidence,
           sessionHash: result.sessionHash,
+          historyId: result.historyId,
         },
         metadata: {
           processingTime: duration,
@@ -190,8 +195,7 @@ router.post(
 
       const result = await summarizeFromComplaints(question, community_id);
 
-      // Save ALL chat details to complaint_bot_history ONLY — never the complaints table
-      await saveToBotHistoryTable('complaint_bot_history', {
+      const historyId = await saveToBotHistoryTable('complaint_bot_history', {
         userId,
         communityId: community_id,
         question,
@@ -205,7 +209,10 @@ router.post(
       const duration = Date.now() - startTime;
       res.json({
         success: true,
-        data: result,
+        data: {
+          ...result,
+          historyId,
+        },
         metadata: { processingTime: duration },
       });
     } catch (error) {
@@ -271,8 +278,7 @@ router.post(
 
       const result = await summarizeFromPetitions(question, community_id);
 
-      // Save ALL chat details to petition_bot_history ONLY — never the petitions table
-      await saveToBotHistoryTable('petition_bot_history', {
+      const historyId = await saveToBotHistoryTable('petition_bot_history', {
         userId,
         communityId: community_id,
         question,
@@ -286,7 +292,10 @@ router.post(
       const duration = Date.now() - startTime;
       res.json({
         success: true,
-        data: result,
+        data: {
+          ...result,
+          historyId,
+        },
         metadata: { processingTime: duration },
       });
     } catch (error) {
@@ -511,6 +520,48 @@ router.get(
         error: 'Failed to fetch bot history',
         code: 'BOT_HISTORY_ERROR',
       });
+    }
+  }
+);
+
+/**
+ * PUT /api/bot/history/:community_id/:history_id
+ * Update a specific AI chat history item (question)
+ */
+router.put(
+  '/history/:community_id/:history_id',
+  verifyToken,
+  verifyCommunityAccess,
+  async (req, res) => {
+    try {
+      const { community_id, history_id } = req.params;
+      const { question } = req.body;
+      const type = req.query.type || 'chat';
+      const userId = getRequestUserId(req);
+
+      if (!userId) {
+        return res.status(401).json({ success: false, error: 'Invalid user token' });
+      }
+      if (!question) {
+        return res.status(400).json({ success: false, error: 'question is required' });
+      }
+
+      const updated = await updateBotHistoryEntry(
+        Number(community_id),
+        userId,
+        Number(history_id),
+        question,
+        type
+      );
+
+      if (!updated) {
+        return res.status(404).json({ success: false, error: 'History item not found or unauthorized' });
+      }
+
+      res.json({ success: true, message: 'History item updated' });
+    } catch (error) {
+      logger.error('Bot history update endpoint error', { error: error.message, userId: getRequestUserId(req) });
+      res.status(500).json({ success: false, error: 'Failed to update bot history' });
     }
   }
 );
