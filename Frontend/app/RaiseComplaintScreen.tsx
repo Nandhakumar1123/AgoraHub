@@ -733,10 +733,10 @@ const RaiseComplaintScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: '#f8fafc',
   },
   header: {
-    backgroundColor: 'rgba(59, 130, 246, 0.4)',
+    backgroundColor: '#1e3a8a',
     padding: 20,
     paddingTop: 40,
   },
@@ -783,9 +783,11 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    backgroundColor: '#f8fafc',
   },
   form: {
     padding: 20,
+    backgroundColor: '#f8fafc',
   },
   inputGroup: {
     marginBottom: 20,

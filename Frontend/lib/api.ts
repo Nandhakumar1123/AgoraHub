@@ -7,11 +7,18 @@ function getApiUrl(): string {
       typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_API_URL
         ? process.env.EXPO_PUBLIC_API_URL
         : null;
-    if (envUrl && typeof envUrl === 'string') return envUrl.replace(/\/$/, '');
+    // Follow project convention:
+    // - Web should hit `localhost`.
+    // - Mobile (Android/iOS) should hit the LAN IP provided via `.env`.
+    if (envUrl && typeof envUrl === 'string') {
+      if (Platform.OS === 'android' || Platform.OS === 'ios') {
+        return envUrl.replace(/\/$/, '');
+      }
+    }
   } catch (_) { }
   // Backend/.env uses PORT=3002 by default; use 3000 only if you run backend without .env
   if (Platform.OS === 'android' || Platform.OS === 'ios') {
-    return 'http://10.86.109.57:3002/api';
+    return 'http://10.195.46.57:3002/api';
   }
   return 'http://localhost:3002/api';
 }

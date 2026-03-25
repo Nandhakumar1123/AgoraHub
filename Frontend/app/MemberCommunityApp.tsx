@@ -1401,15 +1401,15 @@ const styles = StyleSheet.create({
   featureTitle: {
     flex: 1,
     fontSize: 16,
-    color: '#333',
+    color: '#f8fafc',
     fontWeight: '500',
   },
   featureArrow: {
     fontSize: 24,
-    color: '#CCC',
+    color: '#94a3b8',
   },
   mediaModalContent: {
-    backgroundColor: 'white',
+    backgroundColor: 'rgba(30, 41, 59, 0.95)',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingBottom: 20,
@@ -1438,7 +1438,7 @@ const styles = StyleSheet.create({
   },
   mediaTitle: {
     fontSize: 13,
-    color: '#333',
+    color: '#f8fafc',
     textAlign: 'center',
   },
   centered: {

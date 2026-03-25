@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+﻿import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigation, useRoute, RouteProp, NavigationProp } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -1646,7 +1646,7 @@ const styles = StyleSheet.create({
     color: '#A0AEC0',
   },
   announcementModalContent: {
-    backgroundColor: 'white',
+    backgroundColor: 'rgba(30, 41, 59, 0.95)',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     maxHeight: '80%',
@@ -1655,15 +1655,15 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   announcementInput: {
-    backgroundColor: '#F7FAFC',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: 12,
     padding: 16,
     fontSize: 15,
     minHeight: 150,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     marginTop: 16,
-    color: '#000',
+    color: '#f8fafc',
   },
   announcementActions: {
     flexDirection: 'row',
@@ -1675,13 +1675,13 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 14,
     borderRadius: 8,
-    backgroundColor: '#F7FAFC',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     alignItems: 'center',
   },
   cancelButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#4A5568',
+    color: '#e2e8f0',
   },
   sendAnnouncementButton: {
     flex: 1,
@@ -1699,7 +1699,7 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   mediaModalContent: {
-    backgroundColor: 'white',
+    backgroundColor: 'rgba(30, 41, 59, 0.95)',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingBottom: 20,
@@ -1729,7 +1729,7 @@ const styles = StyleSheet.create({
   mediaTitle: {
     fontSize: 13,
     fontWeight: '500',
-    color: '#4A5568',
+    color: '#f8fafc',
     textAlign: 'center',
   },
   centered: {

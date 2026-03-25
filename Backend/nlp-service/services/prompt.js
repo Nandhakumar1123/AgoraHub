@@ -582,6 +582,46 @@ Question: ${question}
 
 Answer (in ${targetLang}):`;
 
+// Analyse a multilingual user message
+const PROMPT_MULTILINGUAL_ANALYSIS = (message) => `You are an intelligent AI assistant.
+
+Your task is to analyze the given user message, which may be written in any language.
+
+Instructions:
+1. Detect the language of the input automatically.
+2. Translate the content into English (if not already in English).
+3. Understand the intent of the message (chat / complaint / petition / general query).
+4. Generate a clear and concise summary in English.
+5. Provide a practical, helpful solution or response based on the content.
+
+Important Rules:
+- Do NOT mention the user name or any personal identifiers.
+- Do NOT repeat the original text.
+- Do NOT say "the user said".
+- Keep the summary short (2–4 lines).
+- Keep the solution clear, actionable, and relevant.
+- If the message is unclear, still try to infer and provide the best possible response.
+
+Output Format:
+
+Summary:
+<Write a clear English summary>
+
+Solution:
+<Provide a meaningful solution or response>
+
+Message:
+${message}`;
+
+const PROMPT_NOTIFICATION_SUMMARY = (postContent) => `You are a notification summarization system.
+Your task is to summarize the following post content in maximum 12 words (clear English).
+Output ONLY the summary text, nothing else. No quotes, no preamble.
+
+Post Content:
+${postContent}
+
+Summary:`;
+
 module.exports = {
   getPrompt,
   detectIntent,
@@ -602,4 +642,6 @@ module.exports = {
   PROMPT_TRANSLATE,
   PROMPT_TRANSLATE_AND_ANALYSE,
   PROMPT_SUMMARISE_IN_LANGUAGE,
+  PROMPT_MULTILINGUAL_ANALYSIS,
+  PROMPT_NOTIFICATION_SUMMARY,
 };

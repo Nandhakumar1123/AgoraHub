@@ -205,9 +205,9 @@ export default function LoginScreen({ navigation: propNavigation }: { navigation
         error?.message?.includes("network") ||
         error?.message?.includes("Failed to fetch");
       const msg = isTimeout
-        ? "Request timed out. Is the backend running?"
+        ? `Connection timed out. Is the backend running? Current API: ${loginUrl}. If you're on mobile, ensure your phone is on the same Wi-Fi and the IP in .env is correct.`
         : isNetwork
-          ? `Cannot reach backend at ${loginUrl}. Start the backend and set EXPO_PUBLIC_API_URL in .env if needed.`
+          ? `Cannot reach backend at ${loginUrl}. Start the backend and check your EXPO_PUBLIC_API_URL in .env.`
           : (error?.message || "Connection error.");
       setConnectionError(msg);
       Alert.alert("Login Failed", msg);

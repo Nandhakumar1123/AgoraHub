@@ -16,7 +16,7 @@ const { redis } = require('./nlp-service/config/redis');
 const { preloadModels } = require('./nlp-service/services/nlp.service');
 const { moderateContent: nlpModerateContent } = require('./nlp-service/services/moderation.service');
 const { analyzeContentWithLLM } = require('./nlp-service/services/content-analysis.service');
-const { queryOllama } = require('./nlp-service/services/rag.service');
+const { queryOllama, generateNotificationSummary } = require('./nlp-service/services/rag.service');
 console.log('moderateContent is:', nlpModerateContent);
 
 // Import NLP routes
@@ -128,6 +128,18 @@ function generateToken(user) {
     JWT_SECRET,
     { expiresIn: JWT_EXPIRES_IN }
   );
+}
+
+function summarizeNotificationBody(postContent, maxWords = 12) {
+  const normalized = String(postContent || "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!normalized) return "A new post was shared in your community.";
+
+  const words = normalized.split(" ");
+  const clipped = words.slice(0, maxWords).join(" ");
+  return words.length > maxWords ? `${clipped}...` : clipped;
 }
 
 async function registerUser(
@@ -519,6 +531,50 @@ app.post("/api/change-password", authenticateToken, async (req, res) => {
   } catch (error) {
     console.error("Error changing password:", error);
     res.status(500).json({ error: "Failed to change password" });
+  }
+});
+
+// Update notification preference + build notification decision payload
+app.post("/api/notifications/decision", authenticateToken, async (req, res) => {
+  try {
+    const { user_id, notification_enabled, event_type, post_content } = req.body || {};
+
+    if (!Number.isInteger(user_id)) {
+      return res.status(400).json({ error: "user_id must be an integer" });
+    }
+
+    if (typeof notification_enabled !== "boolean") {
+      return res.status(400).json({ error: "notification_enabled must be a boolean" });
+    }
+
+    if (typeof event_type !== "string" || !event_type.trim()) {
+      return res.status(400).json({ error: "event_type must be a non-empty string" });
+    }
+
+    await pool.query(
+      `UPDATE users
+       SET notification_enabled = $1
+       WHERE user_id = $2`,
+      [notification_enabled, user_id]
+    );
+
+    if (!notification_enabled) {
+      return res.json({ send: false });
+    }
+
+    if (event_type === "new_post") {
+      const summary = await generateNotificationSummary(post_content);
+      return res.json({
+        send: true,
+        title: "New Update 📢",
+        body: summary,
+      });
+    }
+
+    return res.json({ send: false });
+  } catch (error) {
+    console.error("Error handling notification decision:", error);
+    return res.status(500).json({ error: "Failed to process notification decision" });
   }
 });
 
@@ -3478,6 +3534,12 @@ async function startServer() {
     // Test database connection
     await pool.query('SELECT NOW()');
     logger.info('✅ PostgreSQL connected');
+
+    // Ensure notification preference column exists for notification control flow.
+    await pool.query(`
+      ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS notification_enabled BOOLEAN DEFAULT TRUE
+    `);
 
     // Test Redis connection (if NLP service enabled)
     try {

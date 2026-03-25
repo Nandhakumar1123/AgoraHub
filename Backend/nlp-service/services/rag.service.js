@@ -28,6 +28,8 @@ const tableExistsCache = new Map();
 const {
   getPrompt,
   getGeneralQuestionPrompt,
+  getSummaryPrompt,
+  getSolutionsPrompt,
   detectIntent,
   formatMessagesAsList,
   formatMessagesAsTranscript,
@@ -35,6 +37,8 @@ const {
   PROMPT_TRANSLATE,
   PROMPT_TRANSLATE_AND_ANALYSE,
   PROMPT_SUMMARISE_IN_LANGUAGE,
+  PROMPT_MULTILINGUAL_ANALYSIS,
+  PROMPT_NOTIFICATION_SUMMARY,
 } = require('./prompt');
 
 function isMissingRelation(error, relationName) {
@@ -927,17 +931,15 @@ Thanks for your question, we are checking and will update you soon.`;
 }
 
 async function generateGeneralAssistantAnswer(question) {
-  const generalPrompt = `You are a high-quality AI assistant.
-Give a direct, clear, practical answer to the user's question.
-If the question is ambiguous, make the best reasonable assumption and continue.
-Keep the answer natural and useful.
+  const prompt = PROMPT_MULTILINGUAL_ANALYSIS(question);
 
-Question: ${question}
-
-Answer:`;
-
-  const llmResponse = await queryLLM(generalPrompt, null, 0.35);
-  return String(llmResponse?.response || '').trim();
+  try {
+    const llmResponse = await queryLLM(prompt, null, 0.3);
+    return String(llmResponse?.response || '').trim();
+  } catch (error) {
+    logger.error('General assistant multilingual analysis failed', { error: error.message });
+    return '';
+  }
 }
 
 function messageRelevanceScore(question, content) {
@@ -1507,14 +1509,13 @@ async function summarizeFromChatMessages(question, communityId) {
   // Fetch messages using existing function
   const messages = await fetchCommunityChatMessages(communityId, question);
 
-  // If no messages found, we still proceed to LLM for a summary + solution
+  // If no messages found, we still proceed to LLM using the general assistant answer
   if (!messages.length) {
-    logger.info('No messages found, using general summary fallback');
-    const prompt = getSummaryPrompt('', question);
+    logger.info('No messages found, using general assistant fallback');
     try {
-      const result = await queryLLM(prompt, null, 0.4);
+      const generalAnswer = await generateGeneralAssistantAnswer(question);
       return {
-        answer: result.response || 'I could not find any specific chat messages, but I am here to help with general questions.',
+        answer: generalAnswer || 'I could not find any specific chat messages, but I am here to help with general questions.',
         sources: [],
         confidence: 60,
         sourceCount: 0,
@@ -3293,7 +3294,7 @@ Provide a helpful, accurate response based on the ${itemContext.type} details ab
       try {
         const general = await generateGeneralAssistantAnswer(question);
         if (general) {
-          noInfoAnswer = `${general}\n\nNote: This answer is general because no related community documents were found.`;
+          noInfoAnswer = general;
         }
       } catch (error) {
         logger.warn('General answer fallback failed for no-relevant-docs path', {
@@ -3679,6 +3680,25 @@ async function suggestAction(itemId, itemType, communityId) {
   }
 }
 
+/**
+ * Generate AI summary for notification
+ */
+async function generateNotificationSummary(postContent) {
+  try {
+    if (!postContent || !postContent.trim()) {
+      return "A new post was shared in your community.";
+    }
+    const prompt = PROMPT_NOTIFICATION_SUMMARY(postContent);
+    const result = await queryLLM(prompt, null, 0.3);
+    return result.response || "New community update available.";
+  } catch (error) {
+    logger.error('Notification summary generation error', { error: error.message });
+    // Fallback to basic truncation if AI fails
+    const words = postContent.split(" ");
+    return words.slice(0, 12).join(" ") + (words.length > 12 ? "..." : "");
+  }
+}
+
 module.exports = {
   generateEmbedding,
   addDocument,
@@ -3701,5 +3721,6 @@ module.exports = {
   detectLanguageOfText,
   detectLanguageOfMessages,
   suggestAction,
+  generateNotificationSummary,
 };
 
