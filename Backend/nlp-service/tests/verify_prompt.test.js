@@ -1,15 +1,32 @@
-const { PROMPT_MULTILINGUAL_ANALYSIS } = require('../services/prompt');
+const { 
+  PROMPT_MULTILINGUAL_ANALYSIS, 
+  getSummaryPrompt, 
+  getGeneralQuestionPrompt 
+} = require('../services/prompt');
 
-const testMessage = "வணக்கம், தண்ணீர் பிரச்சனை உள்ளது"; // Tamil: "Hello, there is a water problem"
-const prompt = PROMPT_MULTILINGUAL_ANALYSIS(testMessage);
-
-console.log("--- PROMPT START ---");
-console.log(prompt);
-console.log("--- PROMPT END ---");
-
-if (prompt.includes("Summary:") && prompt.includes("Solution:") && prompt.includes(testMessage)) {
-  console.log("✅ Prompt structure is correct.");
-} else {
-  console.log("❌ Prompt structure is incorrect.");
-  process.exit(1);
+function verify(name, prompt) {
+  console.log(`\nTesting: ${name}`);
+  const hasItem = prompt.includes("Item");
+  const hasSummary = prompt.includes("Summary:");
+  const hasSolution = prompt.includes("Solution:");
+  const hasEnglishOnly = prompt.toLowerCase().includes("only in english");
+  
+  if (hasItem && hasSummary && hasSolution && hasEnglishOnly) {
+    console.log(`✅ ${name} structure is correct.`);
+  } else {
+    console.log(`❌ ${name} structure is incorrect.`);
+    if (!hasItem) console.log("   - Missing 'Item'");
+    if (!hasSummary) console.log("   - Missing 'Summary:'");
+    if (!hasSolution) console.log("   - Missing 'Solution:'");
+    if (!hasEnglishOnly) console.log("   - Missing 'English ONLY' instruction");
+    process.exit(1);
+  }
 }
+
+const testMsg = "தண்ணீர் பிரச்சனை"; // Water problem
+
+verify("PROMPT_MULTILINGUAL_ANALYSIS", PROMPT_MULTILINGUAL_ANALYSIS(testMsg));
+verify("getSummaryPrompt", getSummaryPrompt(testMsg, "summarize this"));
+verify("getGeneralQuestionPrompt", getGeneralQuestionPrompt(testMsg, "what is this?"));
+
+console.log("\nAll prompts verified successfully! ✅");

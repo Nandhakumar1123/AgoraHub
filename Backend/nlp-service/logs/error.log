@@ -444,3 +444,15 @@
 2026-03-24 17:15:51 [ERROR]: Bot query error {"error":"getSummaryPrompt is not defined","question":"I need help with a leaking tap in my apartment.","communityId":1}
 2026-03-24 17:15:51 [ERROR]: Bot query error {"error":"getSummaryPrompt is not defined","question":"எனது அடுக்குமாடி குடியிருப்பில் குழாய் கசிவு உள்ளது, உதவி தேவை.","communityId":1}
 2026-03-24 17:15:51 [ERROR]: Bot query error {"error":"getSummaryPrompt is not defined","question":"मेरे अपार्टमेंट में नल टपक रहा है, मुझे मदद चाहिए।","communityId":1}
+2026-03-26 18:18:16 [ERROR]: Complaint summarization failed {"error":"Ollama model \"llama3.2:1b\" not found. Pull it: docker exec ollama-local ollama pull llama3.2:1b"}
+2026-03-26 18:18:57 [ERROR]: Complaint summarization failed {"error":"Ollama model \"llama3.2:1b\" not found. Pull it: docker exec ollama-local ollama pull llama3.2:1b"}
+2026-03-26 19:45:20 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-03-26 19:45:20 [ERROR]: LLM query failed {"error":"timeout of 60000ms exceeded","intent":"summary"}
+2026-03-26 19:46:28 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-03-26 19:46:28 [ERROR]: LLM query failed {"error":"timeout of 60000ms exceeded","intent":"summary"}
+2026-03-26 19:47:40 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-03-26 19:47:40 [ERROR]: LLM per-message solutions failed {"error":"timeout of 60000ms exceeded"}
+2026-03-26 19:48:52 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-03-26 19:48:52 [ERROR]: LLM per-message solutions failed {"error":"timeout of 60000ms exceeded"}
+2026-03-26 21:22:09 [ERROR]: Uncaught exception {"error":"listen EADDRINUSE: address already in use 0.0.0.0:3002","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:3002\n    at Server.setupListenHandle [as _listen2] (node:net:1940:16)\n    at listenInCluster (node:net:1997:12)\n    at node:net:2206:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}
+2026-03-26 21:49:27 [ERROR]: Uncaught exception {"error":"listen EADDRINUSE: address already in use 0.0.0.0:3002","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:3002\n    at Server.setupListenHandle [as _listen2] (node:net:1940:16)\n    at listenInCluster (node:net:1997:12)\n    at node:net:2206:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}

@@ -4,16 +4,14 @@
  * Handles ALL community types and all NLP tasks
  */
 
-const SYSTEM_CONTEXT = `You are a concise community AI assistant helping communities with complaints, petitions, and queries.
-
-Your responses MUST be:
-- SHORT and to the point (maximum 4-5 sentences)
-- Plain text only - NO markdown asterisks (* or **) ever
-- Use dashes (-) or numbers (1. 2. 3.) for lists only when needed
-- Conversational and professional
-- Focus only on what was asked - no unnecessary explanation
-- Never repeat the question back
-- CRITICAL: Keep every reply under 100 words when possible`;
+const SYSTEM_CONTEXT = `You are a concise community AI assistant.
+Rules:
+- Response ONLY in English.
+- Identify all distinct issues separately.
+- Summary: 2 lines max per point. Use Numbers (1. 2. 3.).
+- Solutions: Actionable steps for each point. Use Numbers (1. 2. 3.).
+- NO BOLDING. Plain text only. No asterisks (**).
+- Maximum 200 words.`;
 
 /**
  * SOLUTIONS PROMPT - Provides actionable, specific fixes
@@ -107,52 +105,61 @@ Answer with ONLY the recommendations in the format above:`;
  * SUMMARY PROMPT - Clean overview
  */
 function getSummaryPrompt(transcript, question, includeRecommendations = false) {
-  return `${SYSTEM_CONTEXT}
+  return `You are an intelligent multilingual AI assistant for analyzing chats, complaints, and petitions.
 
-**User's Request:** ${question}
+User's Request: ${question}
 
-**Community Chat Transcript:**
+Transcript to analyze:
 ${transcript}
 
-**Your Task:** Provide a SHORT summary (2-5 lines max) of the discussion.
+Task: Provide clear summary points and solutions in English.
 
-**Instructions:**
-1. Extract ONLY important content (skip greetings)
-2. Group related topics together
-3. Remove ALL sender names or mentions of people
-4. Focus only on issues/content
-5. Keep it very brief: 2 to 5 lines maximum for the summary section
+Instructions:
+1. List each distinct issue separately as a numbered Item.
+2. For each Item, provide a brief Summary and a practical Solution.
+3. No names. Respond ONLY in English.
+4. Translate internally if needed, but do not show translations.
+5. NO BOLDING. Use plain text only.
 
-**Output Format MUST have exactly these two sections. Even if you have very little information, PROVIDE BOTH SECTIONS:**
+Output Format:
 
+Item <number>:
 Summary:
-- [Key point 1]
-- [Key point 2]
+<Short and clear summary>
 
-Solutions:
-- [Practical step 1]
-- [Practical step 2]
+Solution:
+<Practical and actionable solution>
 
-IMPORTANT: Do NOT output any other text or headers. Just the two sections above. Use ONLY plain text. NO asterisks (**) for bolding.
-Answer with exactly this format:`;
+Answer using ONLY this format:`;
 }
 
 /**
  * GENERAL QUESTION PROMPT - ChatGPT-style responses
  */
 function getGeneralQuestionPrompt(transcript, question) {
-  return `${SYSTEM_CONTEXT}
+  return `You are an intelligent multilingual AI assistant for analyzing chats, complaints, and petitions.
 
-**User's Question:** ${question}
+User's Question: ${question}
 
-**Community Chat Context:**
+Context to analyze:
 ${transcript}
 
-**Your Task:** Answer the question naturally like ChatGPT would.
+Task: Answer accurately in English.
 
-**The user is asking for HELP. If the community context (transcript) is missing or insufficient, DO NOT say "no messages found". Instead, answer from your own AI knowledge to provide the most helpful, detailed advice possible.**
+Instructions:
+1. Provide a concise summary and practical solutions as a numbered Item.
+2. Respond ONLY in English.
+3. Translate internally if needed, but do not show translations.
+4. NO BOLDING. Use plain text only.
 
-Answer:`;
+Output Format:
+
+Item 1:
+Summary:
+<Concise answer summary in English>
+
+Solution:
+<Practical solutions or actionable suggestions in English>`;
 }
 
 /**
@@ -583,34 +590,54 @@ Question: ${question}
 Answer (in ${targetLang}):`;
 
 // Analyse a multilingual user message
-const PROMPT_MULTILINGUAL_ANALYSIS = (message) => `You are an intelligent AI assistant.
+const PROMPT_MULTILINGUAL_ANALYSIS = (message) => `You are an intelligent multilingual AI assistant for analyzing chats, complaints, and petitions.
 
-Your task is to analyze the given user message, which may be written in any language.
+Your tasks:
 
-Instructions:
-1. Detect the language of the input automatically.
-2. Translate the content into English (if not already in English).
-3. Understand the intent of the message (chat / complaint / petition / general query).
-4. Generate a clear and concise summary in English.
-5. Provide a practical, helpful solution or response based on the content.
+1. Input Handling:
+- The input may contain multiple messages from a specific day or based on a user request.
+- The content may be in any language (English, Tamil, Tanglish, Hindi, etc.).
+- You must understand all languages correctly.
 
-Important Rules:
-- Do NOT mention the user name or any personal identifiers.
-- Do NOT repeat the original text.
-- Do NOT say "the user said".
-- Keep the summary short (2–4 lines).
-- Keep the solution clear, actionable, and relevant.
-- If the message is unclear, still try to infer and provide the best possible response.
+2. Filtering:
+- If a date or specific request is mentioned, process ONLY the provided relevant messages.
+- Treat each message/complaint/petition as a separate item.
 
-Output Format:
+3. Processing:
+For EACH item:
+- Understand the issue clearly.
+- Translate internally if needed.
+- Do NOT show translation in output.
 
+4. Output Requirements:
+- ALWAYS respond in English only.
+- For EACH item, provide it in the format:
+
+Item <number>:
 Summary:
-<Write a clear English summary>
+<Short and clear summary>
 
 Solution:
-<Provide a meaningful solution or response>
+<Practical and actionable solution>
 
-Message:
+5. Rules:
+- Do NOT provide any overall summary.
+- Do NOT combine items.
+- Do NOT skip any item.
+- Always include both Summary and Solution.
+- Keep responses clear and structured.
+- Avoid unnecessary details.
+- Do not mention names unless required.
+
+6. If input is a general question:
+- Answer clearly in English.
+
+Important:
+- Output must be ONLY in English.
+- Must handle mixed-language input correctly.
+- Must work for chat, complaint, and petition data.
+
+Input to analyze:
 ${message}`;
 
 const PROMPT_NOTIFICATION_SUMMARY = (postContent) => `You are a notification summarization system.

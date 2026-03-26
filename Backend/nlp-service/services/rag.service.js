@@ -13,7 +13,7 @@ const OLLAMA_HOST =
 
 const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'llama3.2:1b';
 const EMBEDDING_MODEL = process.env.EMBEDDING_MODEL || 'Xenova/all-MiniLM-L6-v2';
-const OLLAMA_TIMEOUT_MS = parseInt(process.env.OLLAMA_TIMEOUT_MS || '12000', 10);
+const OLLAMA_TIMEOUT_MS = parseInt(process.env.OLLAMA_TIMEOUT_MS || '120000', 10);
 const AI_PROVIDER = (process.env.AI_PROVIDER || 'ollama').toLowerCase();
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
 const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4.1-mini';
@@ -1132,13 +1132,23 @@ async function buildAnnouncementAnswer(messages, question) {
   }
 
   const transcript = formatMessagesAsTranscript(announcements.slice(-10));
-  const prompt = `Based on the following messages, identify the most recent and important announcements.
-Summarize them clearly for the community members.
+  const prompt = `You are an intelligent multilingual AI assistant for analyzing chats, complaints, and petitions.
 
-Transcript:
+Based on the following messages, identify the most recent and important announcements.
+
+Transcript to analyze:
 ${transcript}
 
-Announcements:`;
+Task: List each announcement as a numbered Item in English.
+
+Output Format:
+
+Item <number>:
+Summary:
+<Clear summary of the announcement>
+
+Solution:
+<Action required or next steps for members, if any>`;
 
   try {
     const result = await queryLLM(prompt, null, 0.3);
@@ -1451,37 +1461,45 @@ async function generateLLMSolutions(issues, mode = 'solutions') {
   const issuesList = issues.map((issue, i) => `${i + 1}. ${issue}`).join('\n');
 
   const prompt = mode === 'recommendations'
-    ? `You are a practical community manager assistant helping resolve real community issues.
+    ? `You are an intelligent multilingual AI assistant for analyzing chats, complaints, and petitions.
 
-Below is a list of issues reported in a community (could be apartment, hostel, club, institution, company, or any group).
+Below is a list of items for analysis.
+For each item, provide:
 
-For each issue, provide structured recommendations in this format:
-**[Issue title]**
+Item <number>:
+Summary:
+[Brief assessment of the issue]
+
+Solution:
 - Immediate Action (next 24-48 hrs): [specific action]
 - Short-term (1-4 weeks): [specific improvement]
 - Long-term (1-6 months): [strategic fix]
 - Prevention: [how to avoid recurrence]
 
-Be specific, practical, and relevant to the actual issue. Do NOT give generic answers.
+Be specific, practical, and respond ONLY in English. NO BOLDING.
 
-Issues:
+Items:
 ${issuesList}
 
 Recommendations:`
-    : `You are a practical community manager assistant helping resolve real community issues.
+    : `You are an intelligent multilingual AI assistant for analyzing chats, complaints, and petitions.
 
-Below is a list of issues reported in a community (could be apartment, hostel, club, institution, company, or any group).
+Below is a list of items for analysis.
+For each item, provide:
 
-For each issue, provide a clear and specific solution in this format:
-**[Issue title]**
-- Immediate Action: [what to do right now, specific to this issue]
-- How to Implement: [step-by-step practical steps]
-- Timeline: [realistic time estimate]
-- Priority: [HIGH / MEDIUM / LOW with one line reason]
+Item <number>:
+Summary:
+[Brief assessment of the issue]
 
-Be specific and practical. Tailor each solution to the actual issue described. Do NOT give the same generic answer for all issues.
+Solution:
+- Immediate Action: [what to do right now]
+- How to Implement: [practical steps]
+- Timeline: [time estimate]
+- Priority: [HIGH / MEDIUM / LOW]
 
-Issues:
+Be specific, practical, and respond ONLY in English. NO BOLDING.
+
+Items:
 ${issuesList}
 
 Solutions:`;
@@ -1639,18 +1657,25 @@ async function summarizeFromComplaints(question, communityId) {
 
   if (!messages.length) {
     logger.info('No complaints found, using general LLM fallback');
-    const prompt = `The user asked for a summary of community complaints: "${question}". 
-No specific complaints were found in the database for this query. 
-Please provide a helpful, general summary of how such issues are typically handled and provide specific solutions.
+    const prompt = `You are an intelligent multilingual AI assistant for analyzing chats, complaints, and petitions.
+
+User's Request: "${question}"
+
+Task: Provide a helpful summary explaining that no specific complaints were found, and offer general solutions.
+
+Rules:
+1. Respond ONLY in English.
+2. NO BOLDING.
+3. Use the format below.
 
 Output Format:
-Summary:
-- [General summary of the situation]
-(Max 5 lines)
 
-Solutions:
-- [General practical step 1]
-- [General practical step 2]`;
+Item 1:
+Summary:
+[General summary explaining no complaints were found and giving context on complaint management]
+
+Solution:
+[Practical general advice for community management]`;
     
     try {
       const result = await queryLLM(prompt, null, 0.4);
@@ -1672,28 +1697,9 @@ Solutions:
     }
   }
 
-  const transcript = messages.map(m => `- [${m.category}] ${m.title}: ${m.description}`).join('\n');
+  const transcript = messages.map(m => `[Complaint] Category: ${m.category}, Title: ${m.title}, Description: ${m.description}`).join('\n');
 
-  const prompt = `You are a helpful community assistant. Provide a SHORT summary (2-5 lines max) of the following community complaints.
-Focus ONLY on the issues and content. Do NOT include any names of people. 
-Highlight recurring categories and urgent issues, then give brief suggested next steps.
-
-Complaints:
-${transcript}
-
-Question: ${question}
-
-Output Format:
-Summary:
-- [Key point 1]
-- [Key point 2]
-(Max 5 lines total for summary)
-
-Solutions:
-- [Practical solution 1]
-- [Practical solution 2]
-
-Result:`;
+  const prompt = PROMPT_MULTILINGUAL_ANALYSIS(transcript);
 
   try {
     const result = await queryLLM(prompt, null, 0.3);
@@ -1730,18 +1736,25 @@ async function summarizeFromPetitions(question, communityId) {
 
   if (!messages.length) {
     logger.info('No petitions found, using general LLM fallback');
-    const prompt = `The user asked for a summary of community petitions: "${question}". 
-No specific petitions were found in the database for this query. 
-Please provide a helpful, general summary of how petitions are typically handled and provide specific solutions.
+    const prompt = `You are an intelligent multilingual AI assistant for analyzing chats, complaints, and petitions.
+
+User's Request: "${question}"
+
+Task: Provide a helpful summary explaining that no specific petitions were found, and offer general solutions.
+
+Rules:
+1. Respond ONLY in English.
+2. NO BOLDING.
+3. Use the format below.
 
 Output Format:
-Summary:
-- [General summary of the situation]
-(Max 5 lines)
 
-Solutions:
-- [General practical step 1]
-- [General practical step 2]`;
+Item 1:
+Summary:
+[General summary explaining no petitions were found and how petitions are typicaly handled]
+
+Solution:
+[Practical general advice for petition handling]`;
     
     try {
       const result = await queryLLM(prompt, null, 0.4);
@@ -1763,28 +1776,9 @@ Solutions:
     }
   }
 
-  const transcript = messages.map(m => `- ${m.title}: ${m.summary}`).join('\n');
+  const transcript = messages.map(m => `[Petition] Title: ${m.title}, Summary: ${m.summary}`).join('\n');
 
-  const prompt = `You are a helpful community assistant. Provide a SHORT summary (2-5 lines max) of the following community petitions.
-Focus ONLY on the issues and content. Do NOT include any names of people.
-Analyze main concerns and suggest practical solutions.
-
-Petitions:
-${transcript}
-
-Question: ${question}
-
-Output Format:
-Summary:
-- [Key point 1]
-- [Key point 2]
-(Max 5 lines total for summary)
-
-Solutions:
-- [Practical solution 1]
-- [Practical solution 2]
-
-Result:`;
+  const prompt = PROMPT_MULTILINGUAL_ANALYSIS(transcript);
 
   try {
     const result = await queryLLM(prompt, null, 0.3);
@@ -2649,6 +2643,16 @@ async function queryOllama(prompt, context = '', temperature = 0.7) {
       duration: `${duration}ms`,
       model: OLLAMA_MODEL
     });
+    
+    // DEBUG LOGGING
+    console.log('================ LLM DEBUG ================');
+    console.log('PROMPT SENT:');
+    console.log(sanitizedPrompt);
+    console.log('------------------------------------------');
+    console.log('RESPONSE RECEIVED:');
+    console.log(response.data.response);
+    console.log('===========================================');
+    
     logPerformance('Ollama query', duration);
 
     return {
@@ -3072,7 +3076,7 @@ async function askBot(rawQuestion, communityId, userId, previousContext = null, 
       const smallTalkAnswer = await generateGeneralAssistantAnswer(question);
       const answer =
         smallTalkAnswer ||
-        "Hello! I'm here to help. You can ask me anything about your community or general questions.";
+        "Summary:\nI am your community AI assistant, here to help with your questions and concerns.\n\nSolutions:\nYou can ask me about community issues, complaints, petitions, or for a summary of recent discussions. I will always respond in English.";
 
       await saveBotHistory({
         userId,
@@ -3166,13 +3170,21 @@ async function askBot(rawQuestion, communityId, userId, previousContext = null, 
       // If itemContext provided, try answering from petition/complaint details
       if (itemContext && itemContext.type && itemContext.data) {
         const itemContextBlock = formatItemContext(itemContext);
-        const itemPrompt = `You are a helpful assistant for petitions and complaints across ALL community types (hostels, societies, clubs, institutions, neighborhoods, etc.). Use the details below to answer. Correct errors, suggest solutions, or summarize as requested. Adapt solutions to the community context.
-
-${itemContextBlock}
-
-Question: ${question}
-
-Answer:`;
+        const itemPrompt = `You are a helpful assistant for petitions and complaints across ALL community types. 
+        
+        Analyze the details below and respond ONLY in English.
+        
+        ${itemContextBlock}
+        
+        Question: ${question}
+        
+        Output Format:
+        
+        Summary:
+        <Brief English summary of the item and the question. CRITICAL: NO BOLDING. No asterisks (**)>
+        
+        Solutions:
+        <Clear, actionable solutions or guidance in English. CRITICAL: NO BOLDING. No asterisks (**)>`;
         try {
           const llmResponse = await queryLLM(itemPrompt, null, 0.3);
           const answer = String(llmResponse?.response || '').trim();
@@ -3249,16 +3261,21 @@ Answer:`;
     // When itemContext (petition/complaint) is provided, answer using it even without docs
     if (relevantDocs.length === 0 && itemContext && itemContext.type && itemContext.data) {
       const itemContextBlock = formatItemContext(itemContext);
-      const itemPrompt = `You are a helpful assistant for community petitions and complaints across ALL types of communities: hostels, residential societies, clubs, political groups, companies, educational institutions, neighborhoods, NGOs, and informal friend groups. The user is asking about a specific ${itemContext.type}. Use the details below to answer. Correct any errors in wording or structure, suggest improvements, summarize, or provide solution recommendations as requested.
-
-${itemContextBlock}
-
-Question: ${question}
-
-Provide a helpful, accurate response based on the ${itemContext.type} details above. When suggesting solutions:
-- For petitions: consider policy change, community action steps, stakeholder engagement, and implementation feasibility for the specific community type.
-- For complaints: consider resolution steps, escalation paths, preventive measures, and follow-up actions appropriate to the community context.
-- Adapt your language and recommendations to the community type (formal for institutions, practical for neighborhoods, etc.).`;
+      const itemPrompt = `You are a helpful assistant for community petitions and complaints.
+      
+      Respond ONLY in English regardless of input language.
+      
+      ${itemContextBlock}
+      
+      Question: ${question}
+      
+      Output Format:
+      
+      Summary:
+      <Clear English summary of the petition/complaint and user query. CRITICAL: NO BOLDING. No asterisks (**)>
+      
+      Solutions:
+      <Practical, meaningful solutions or next steps in English. CRITICAL: NO BOLDING. No asterisks (**)>`;
       try {
         const llmResponse = await queryLLM(itemPrompt, null, 0.3);
         const answer = String(llmResponse?.response || '').trim();
@@ -3329,8 +3346,7 @@ Provide a helpful, accurate response based on the ${itemContext.type} details ab
     const itemContextBlock = formatItemContext(itemContext);
 
     // Build prompt - include petition/complaint details when provided for correction, summarization, solution suggestions
-    const prompt = `You are a helpful assistant for ALL types of communities: hostels, residential societies, clubs, political groups, companies, educational institutions, neighborhoods, NGOs, and informal friend groups. Answer the following question based on the provided context.
-${itemContextBlock ? `\nIMPORTANT: The user is asking about a specific ${itemContext.type}. Use the details below to correct, improve, summarize, or suggest solutions. Adapt recommendations to the community type. For solution generation, consider best practices across formal and informal communities.` : ''}
+    const prompt = `You are an intelligent multilingual AI assistant for analyzing chats, complaints, and petitions.
 
 Community Documents:
 ${documentContext}
@@ -3338,7 +3354,22 @@ ${itemContextBlock}
 
 Question: ${question}
 
-Answer:`;
+Task: Answer accurately in English based on the provided context.
+
+Instructions:
+1. Provide the information as a numbered Item.
+2. Respond ONLY in English.
+3. Translate internally if needed, but do not show translations.
+4. NO BOLDING. Use plain text only.
+
+Output Format:
+
+Item 1:
+Summary:
+<Concise answer summary in English>
+
+Solution:
+<Meaningful and practical solution in English>`;
 
     // Query Ollama
     const llmResponse = await queryLLM(prompt, previousContext, 0.25);
