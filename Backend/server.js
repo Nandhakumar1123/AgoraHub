@@ -743,7 +743,7 @@ app.post("/api/join_community", authenticateToken, async (req, res) => {
 
     await pool.query(
       `INSERT INTO memberships (user_id, community_id, role, status)
-       VALUES ($1, $2, 'MEMBER', 'ACTIVE')`,
+       VALUES ($1, $2, 'MEMBER', 'PENDING')`,
       [user_id, community_id]
     );
 
@@ -762,12 +762,100 @@ app.post("/api/join_community", authenticateToken, async (req, res) => {
     );
 
     res.status(201).json({
-      message: "✅ Joined community successfully",
+      message: "✅ Join request sent. Waiting for admin approval.",
       community: joinedCommunity.rows[0],
     });
   } catch (error) {
     console.error("❌ Error joining community:", error);
     res.status(500).json({ error: "Error joining community" });
+  }
+});
+
+// Get pending join requests
+app.get("/api/community/:community_id/join_requests", authenticateToken, async (req, res) => {
+  try {
+    const { community_id } = req.params;
+    const admin_id = req.user.user_id;
+
+    const adminCheck = await pool.query(
+      "SELECT * FROM memberships WHERE user_id = $1 AND community_id = $2 AND role = 'HEAD' AND status = 'ACTIVE'",
+      [admin_id, community_id]
+    );
+    if (adminCheck.rows.length === 0) return res.status(403).json({ error: "Unauthorized" });
+
+    const requests = await pool.query(
+      `SELECT m.user_id, u.full_name as name, u.email, u.mobile_number as mobile, u.profile_type,
+              up.bio as profile_details, up.description as location, m.joined_at as request_date
+       FROM memberships m
+       JOIN users u ON m.user_id = u.user_id
+       LEFT JOIN user_profiles up ON u.user_id = up.user_id
+       WHERE m.community_id = $1 AND m.status = 'PENDING'
+       ORDER BY m.joined_at ASC`,
+      [community_id]
+    );
+
+    res.json(requests.rows);
+  } catch (error) {
+    console.error("❌ Error fetching join requests:", error);
+    res.status(500).json({ error: "Failed to fetch join requests" });
+  }
+});
+
+// Approve join requests (Bulk or Single)
+app.post("/api/community/:community_id/approve_requests", authenticateToken, async (req, res) => {
+  try {
+    const { community_id } = req.params;
+    const { user_ids } = req.body;
+    const admin_id = req.user.user_id;
+
+    const adminCheck = await pool.query(
+      "SELECT * FROM memberships WHERE user_id = $1 AND community_id = $2 AND role = 'HEAD' AND status = 'ACTIVE'",
+      [admin_id, community_id]
+    );
+    if (adminCheck.rows.length === 0) return res.status(403).json({ error: "Unauthorized" });
+
+    if (!Array.isArray(user_ids) || user_ids.length === 0) {
+      return res.status(400).json({ error: "No users provided for approval" });
+    }
+
+    await pool.query(
+      "UPDATE memberships SET status = 'ACTIVE', joined_at = CURRENT_TIMESTAMP WHERE community_id = $1 AND user_id = ANY($2::int[]) AND status = 'PENDING'",
+      [community_id, user_ids]
+    );
+
+    res.json({ message: "Users approved successfully" });
+  } catch (error) {
+    console.error("❌ Error approving join requests:", error);
+    res.status(500).json({ error: "Failed to approve join requests" });
+  }
+});
+
+// Reject join requests
+app.post("/api/community/:community_id/reject_requests", authenticateToken, async (req, res) => {
+  try {
+    const { community_id } = req.params;
+    const { user_ids } = req.body;
+    const admin_id = req.user.user_id;
+
+    const adminCheck = await pool.query(
+      "SELECT * FROM memberships WHERE user_id = $1 AND community_id = $2 AND role = 'HEAD' AND status = 'ACTIVE'",
+      [admin_id, community_id]
+    );
+    if (adminCheck.rows.length === 0) return res.status(403).json({ error: "Unauthorized" });
+
+    if (!Array.isArray(user_ids) || user_ids.length === 0) {
+      return res.status(400).json({ error: "No users provided for rejection" });
+    }
+
+    await pool.query(
+      "DELETE FROM memberships WHERE community_id = $1 AND user_id = ANY($2::int[]) AND status = 'PENDING'",
+      [community_id, user_ids]
+    );
+
+    res.json({ message: "Users rejected successfully" });
+  } catch (error) {
+    console.error("❌ Error rejecting join requests:", error);
+    res.status(500).json({ error: "Failed to reject join requests" });
   }
 });
 
@@ -940,6 +1028,42 @@ app.get("/api/community_members/:community_id", authenticateToken, async (req, r
   } catch (error) {
     console.error("❌ Error fetching community members:", error);
     res.status(500).json({ error: "Error fetching community members" });
+  }
+});
+
+// Remove member from community (Admin only)
+app.delete("/api/community_members/:community_id/:user_id", authenticateToken, async (req, res) => {
+  try {
+    const { community_id, user_id } = req.params;
+    const requestingUserId = req.user.user_id;
+
+    const adminCheck = await pool.query(
+      "SELECT role FROM memberships WHERE user_id = $1 AND community_id = $2 AND role = 'HEAD' AND status = 'ACTIVE'",
+      [requestingUserId, community_id]
+    );
+
+    if (adminCheck.rows.length === 0) {
+      return res.status(403).json({ error: "Only community HEAD can remove members" });
+    }
+
+    // Cannot remove yourself if you are the only head (just basic check)
+    if (parseInt(user_id) === requestingUserId) {
+      return res.status(400).json({ error: "You cannot remove yourself from the community via this menu." });
+    }
+
+    const result = await pool.query(
+      "DELETE FROM memberships WHERE community_id = $1 AND user_id = $2",
+      [community_id, user_id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "Member not found in this community" });
+    }
+
+    res.json({ message: "Member successfully removed" });
+  } catch (error) {
+    console.error("❌ Error removing member:", error);
+    res.status(500).json({ error: "Failed to remove member" });
   }
 });
 

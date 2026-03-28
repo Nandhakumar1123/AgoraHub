@@ -1,5 +1,5 @@
-﻿import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigation, useRoute, RouteProp, NavigationProp } from '@react-navigation/native';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigation, useRoute, useFocusEffect, RouteProp, NavigationProp } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -30,6 +30,8 @@ import PollMessageCard from './PollMessageCard';
 
 // Chatbot imports
 import nlpService from '../lib/nlpService';
+
+import JoinRequestsModal from './JoinRequestsModal';
 
 // Type definitions
 interface Community {
@@ -443,6 +445,23 @@ const HomeIcon = () => (
   </View>
 );
 
+const JoinRequestsIcon = ({ badgeCount }: { badgeCount: number }) => (
+  <View style={styles.iconPlaceholder}>
+    <Text style={[styles.iconText, { fontSize: 24 }]}>📥</Text>
+    {badgeCount > 0 && (
+      <View style={styles.badgeContainer}>
+        <Text style={styles.badgeText}>{badgeCount > 99 ? '99+' : badgeCount}</Text>
+      </View>
+    )}
+  </View>
+);
+
+const RemoveMemberIcon = () => (
+  <View style={styles.iconPlaceholder}>
+    <Text style={[styles.iconText, { fontSize: 24 }]}>🗑️</Text>
+  </View>
+);
+
 const MenuIcon = () => (
   <View style={styles.iconPlaceholder}>
     <Text style={styles.iconText}>...</Text>
@@ -502,11 +521,42 @@ const AdminCommunityApp: React.FC = () => {
 
 
   const [pollModalVisible, setPollModalVisible] = useState(false);
+  const [joinRequestsModalVisible, setJoinRequestsModalVisible] = useState(false);
+  const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
 
 
   const navigation = useNavigation<AdminCommunityNavigationProp>();
-  const community = route.params?.community;
+  const [community, setCommunity] = useState<Community | null>(route.params?.community || null);
   const scrollViewRef = useRef<ScrollView>(null);
+
+  const fetchCommunityDetails = useCallback(async () => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      if (!token) return;
+      
+      const response = await fetch(`${API_BASE_URL}/created_communities/${currentUserId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        const currentComm = data.find((c: any) => Number(c.id) === communityId);
+        if (currentComm) {
+          setCommunity(currentComm);
+        }
+      }
+    } catch (error) {
+      console.error('Error refreshing community:', error);
+    }
+  }, [communityId, currentUserId]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (currentUserId) {
+        fetchCommunityDetails();
+      }
+    }, [fetchCommunityDetails, currentUserId])
+  );
 
   // Extract current user ID from token and validate role
   useEffect(() => {
@@ -875,9 +925,20 @@ const AdminCommunityApp: React.FC = () => {
           </View>
         </View>
 
-        <TouchableOpacity onPress={handleLogout} style={styles.headerButton}>
-          <MenuIcon />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <TouchableOpacity 
+            onPress={() => router.push({
+              pathname: "/MemberManagementScreen", 
+              params: { communityId: community?.id || community?.community_id || 36 }
+            } as any)} 
+            style={styles.headerButton}
+          >
+            <RemoveMemberIcon />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setJoinRequestsModalVisible(true)} style={styles.headerButton}>
+            <JoinRequestsIcon badgeCount={pendingRequestsCount} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Messages with Date Headers */}
@@ -1077,6 +1138,16 @@ const AdminCommunityApp: React.FC = () => {
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
+
+      <JoinRequestsModal
+        communityId={communityId}
+        visible={joinRequestsModalVisible}
+        onClose={() => {
+          setJoinRequestsModalVisible(false);
+          fetchCommunityDetails();
+        }}
+        onCountUpdate={setPendingRequestsCount}
+      />
 
       {/* Admin Features Modal */}
       <Modal
@@ -1303,6 +1374,26 @@ const styles = StyleSheet.create({
   },
   headerButton: {
     padding: 8,
+    position: 'relative',
+  },
+  badgeContainer: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    backgroundColor: '#ef4444',
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+    borderWidth: 1,
+    borderColor: '#1e293b',
+  },
+  badgeText: {
+    color: 'white',
+    fontSize: 10,
+    fontWeight: 'bold',
   },
   messagesWrapper: {
     flex: 1,

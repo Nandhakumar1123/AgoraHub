@@ -18,7 +18,7 @@ function getApiUrl(): string {
   } catch (_) { }
   // Backend/.env uses PORT=3002 by default; use 3000 only if you run backend without .env
   if (Platform.OS === 'android' || Platform.OS === 'ios') {
-    return 'http://10.195.46.57:3002/api';
+    return 'http://10.251.153.57:3002/api';
   }
   return 'http://localhost:3002/api';
 }

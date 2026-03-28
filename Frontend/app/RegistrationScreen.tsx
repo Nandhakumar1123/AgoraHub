@@ -254,25 +254,38 @@ export default function RegistrationScreen({ navigation: propNavigation }: { nav
         if (text && text.trim()) data = JSON.parse(text);
       } catch (_) {
         if (!response.ok) {
-          Alert.alert("Registration Failed", `Server error (${response.status}). Check API URL.`);
+          if (Platform.OS === 'web') {
+             window.alert(`Registration Failed: Server error (${response.status}). Check API URL.`);
+          } else {
+             Alert.alert("Registration Failed", `Server error (${response.status}). Check API URL.`);
+          }
           return;
         }
       }
 
       if (response.ok && data.token && data.user) {
         await AsyncStorage.setItem("authToken", data.token);
-        Alert.alert(
-          "Account Created!",
-          `Account created for ${data.user.full_name || "you"}! You can sign in now.`,
-          [
-            {
-              text: "OK",
-              onPress: () => router.replace({ pathname: "/LoginScreen", params: { registered: "success" } } as any),
-            },
-          ]
-        );
+        if (Platform.OS === 'web') {
+          window.alert(`Account created for ${data.user.full_name || "you"}! You can sign in now.`);
+          router.replace({ pathname: "/LoginScreen", params: { registered: "success" } } as any);
+        } else {
+          Alert.alert(
+            "Account Created!",
+            `Account created for ${data.user.full_name || "you"}! You can sign in now.`,
+            [
+              {
+                text: "OK",
+                onPress: () => router.replace({ pathname: "/LoginScreen", params: { registered: "success" } } as any),
+              },
+            ]
+          );
+        }
       } else {
-        Alert.alert("Registration Failed", data.error || "Unknown error");
+        if (Platform.OS === 'web') {
+          window.alert(`Registration Failed: ${data.error || "Unknown error"}`);
+        } else {
+          Alert.alert("Registration Failed", data.error || "Unknown error");
+        }
       }
     } catch (error: any) {
       console.error("Registration error:", error);
@@ -280,7 +293,12 @@ export default function RegistrationScreen({ navigation: propNavigation }: { nav
         error?.message?.includes("fetch") || error?.message?.includes("network")
           ? "Could not reach server. Ensure backend is running and API URL is correct (check .env EXPO_PUBLIC_API_URL)."
           : "Could not connect to server";
-      Alert.alert("Registration Error", msg);
+      
+      if (Platform.OS === 'web') {
+        window.alert(`Registration Error: ${msg}`);
+      } else {
+        Alert.alert("Registration Error", msg);
+      }
     } finally {
       setIsLoading(false);
     }
