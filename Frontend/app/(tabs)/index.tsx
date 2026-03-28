@@ -16,11 +16,11 @@ const Openpage = () => {
 
   const handleJoinNow = () => router.push("/LoginScreen");
 
-  const cards = [
+  const cards: { id: number; title: string; icon: any; desc: string; route?: any }[] = [
     { id: 1, title: "Collaborate", icon: <Users color="#6366f1" size={24} />, desc: "Connect with like-minded individuals in your community." },
     { id: 2, title: "Communicate", icon: <MessageSquare color="#f43f5e" size={24} />, desc: "Share ideas and engage in meaningful discussions." },
     { id: 3, title: "Celebrate", icon: <Calendar color="#10b981" size={24} />, desc: "Participate in local events and hackathons." },
-    { id: 4, title: "AI Assistant", icon: <Bot color="#a855f7" size={24} />, desc: "Get answers, raise complaints, or draft petitions with AI.", route: "/ChatWithModeration" },
+    { id: 4, title: "AI Assistant", icon: <Bot color="#a855f7" size={24} />, desc: "Get answers, raise complaints, or draft petitions with AI." },
   ];
 
   return (
@@ -29,8 +29,8 @@ const Openpage = () => {
         colors={['#4f46e5', '#818cf8', '#f3f4f6']}
         style={[styles.backgroundGradient, { paddingTop: insets.top }]}
       >
-        <ScrollView 
-          style={styles.scrollView} 
+        <ScrollView
+          style={styles.scrollView}
           contentContainerStyle={[styles.scrollContent, { paddingBottom: tabBarHeight + 40 }]}
           showsVerticalScrollIndicator={false}
         >
@@ -52,17 +52,17 @@ const Openpage = () => {
             <Text style={styles.heroSubtitle}>
               The ultimate platform to exchange ideas, collaborate on projects, and participate in impactful events.
             </Text>
-            
+
             <TouchableOpacity style={styles.joinButton} onPress={handleJoinNow} activeOpacity={0.8}>
-                <LinearGradient
-                    colors={['#4f46e5', '#6366f1']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={styles.joinButtonGradient}
-                >
-                    <Text style={styles.joinButtonText}>Get Started Now</Text>
-                    <ArrowRight width={20} height={20} color="white" style={{ marginLeft: 8 }} />
-                </LinearGradient>
+              <LinearGradient
+                colors={['#4f46e5', '#6366f1']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.joinButtonGradient}
+              >
+                <Text style={styles.joinButtonText}>Get Started Now</Text>
+                <ArrowRight width={20} height={20} color="white" style={{ marginLeft: 8 }} />
+              </LinearGradient>
             </TouchableOpacity>
           </View>
 
@@ -75,7 +75,7 @@ const Openpage = () => {
                   <View style={styles.cardIconWrapper}>{card.icon}</View>
                   <Text style={styles.cardTitle}>{card.title}</Text>
                   <Text style={styles.cardDesc}>{card.desc}</Text>
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     style={styles.cardLink}
                     onPress={() => card.route ? router.push(card.route) : null}
                   >
@@ -105,7 +105,7 @@ const Openpage = () => {
 
           {/* Footer */}
           <View style={styles.footer}>
-            <Text style={styles.footerText}>© 2025 CommunityHub</Text>
+            <Text style={styles.footerText}>© 2025 AgoraHub</Text>
             <View style={styles.footerLinks}>
               <Text style={styles.footerLink}>Privacy</Text>
               <Text style={styles.footerDot}>•</Text>
@@ -123,10 +123,10 @@ const styles = StyleSheet.create({
   backgroundGradient: { flex: 1 },
   scrollView: { flex: 1 },
   scrollContent: { paddingHorizontal: 20 },
-  
-  header: { 
-    flexDirection: "row", 
-    justifyContent: "space-between", 
+
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
     height: 60,
     marginBottom: 20,
@@ -143,8 +143,8 @@ const styles = StyleSheet.create({
   },
   loginBtnTextSmall: { color: "white", fontWeight: "600", fontSize: 14 },
 
-  hero: { 
-    paddingVertical: 30, 
+  hero: {
+    paddingVertical: 30,
     alignItems: "center",
   },
   heroBadge: {
@@ -163,19 +163,19 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   heroBadgeText: { fontSize: 12, color: "#4f46e5", fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.5 },
-  heroTitle: { 
-    fontSize: isSmallScreen ? 34 : 42, 
-    fontWeight: "800", 
-    color: "white", 
-    textAlign: "center", 
+  heroTitle: {
+    fontSize: isSmallScreen ? 34 : 42,
+    fontWeight: "800",
+    color: "white",
+    textAlign: "center",
     lineHeight: isSmallScreen ? 42 : 50,
     marginBottom: 16,
   },
   heroHighlight: { color: "#312e81" },
-  heroSubtitle: { 
-    fontSize: 16, 
-    color: "#e0e7ff", 
-    textAlign: "center", 
+  heroSubtitle: {
+    fontSize: 16,
+    color: "#e0e7ff",
+    textAlign: "center",
     lineHeight: 24,
     marginBottom: 32,
     paddingHorizontal: 10,
@@ -203,13 +203,13 @@ const styles = StyleSheet.create({
   featuresSection: { marginTop: 40 },
   sectionHeading: { fontSize: 24, fontWeight: "800", color: "#1f2937", marginBottom: 24, textAlign: "left" },
   cardsContainer: { gap: 16 },
-  card: { 
-    backgroundColor: "white", 
-    borderRadius: 24, 
-    padding: 24, 
-    shadowColor: "#000", 
-    shadowOpacity: 0.05, 
-    shadowRadius: 10, 
+  card: {
+    backgroundColor: "white",
+    borderRadius: 24,
+    padding: 24,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
     elevation: 4,
     borderWidth: 1,
     borderColor: "#f3f4f6",
@@ -242,10 +242,10 @@ const styles = StyleSheet.create({
   statNumber: { fontSize: 20, fontWeight: "800", color: "#4f46e5" },
   statLabel: { fontSize: 12, color: "#6b7280", marginTop: 4, fontWeight: "600" },
 
-  footer: { 
-    marginTop: 60, 
-    paddingVertical: 24, 
-    borderTopWidth: 1, 
+  footer: {
+    marginTop: 60,
+    paddingVertical: 24,
+    borderTopWidth: 1,
     borderTopColor: "rgba(0,0,0,0.05)",
     flexDirection: "row",
     justifyContent: "space-between",

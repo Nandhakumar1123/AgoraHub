@@ -368,7 +368,6 @@ const SendIcon = () => (
 const memberFeatures = [
   { id: 1, title: 'Raise Complaint', icon: '⚠️', color: '#FF6B6B' },
   { id: 2, title: 'Raise Petition', icon: '📝', color: '#4ECDC4' },
-  { id: 3, title: 'AI Assistant', icon: '🤖', color: '#8E44AD' },
   { id: 4, title: 'Anonymous Chat', icon: '💬', color: '#45B7D1' },
   { id: 5, title: 'Community Events', icon: '📅', color: '#96CEB4' },
   { id: 6, title: 'Resources', icon: '📚', color: '#FECA57' },
@@ -605,11 +604,6 @@ const MemberCommunityApp: React.FC = () => {
             throw error;
           }
         }
-      });
-    } else    if (feature.title === 'AI Assistant') {
-      navigation.navigate('AIChatScreen' as any, {
-        communityId: communityId,
-        communityName: community?.name || 'Community'
       });
     } else if (feature.title === 'Polling') {
       navigation.navigate('PollsListScreen' as any, {

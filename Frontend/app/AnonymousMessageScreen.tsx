@@ -657,16 +657,33 @@ export default function AnonymousMessageScreen({
             </View>
           )}
 
-          {chatData.messages.map((item) => {
+          {chatData.messages.map((item, index) => {
             const isMe = !item.is_from_head;
+            
+            const messageDate = new Date(item.created_at);
+            const currentDateStr = messageDate.toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' });
+            
+            let showDateHeader = false;
+            if (index === 0) {
+              showDateHeader = true;
+            } else {
+              const previousDateStr = new Date(chatData.messages[index - 1].created_at).toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' });
+              showDateHeader = currentDateStr !== previousDateStr;
+            }
+
             return (
-              <View
-                key={item.message_id}
-                style={[
-                  styles.chatBubbleWrapper,
-                  isMe ? styles.myChatWrapper : styles.headChatWrapper
-                ]}
-              >
+              <React.Fragment key={item.message_id}>
+                {showDateHeader && (
+                  <View style={styles.dateHeaderContainer}>
+                    <Text style={styles.dateHeaderText}>{currentDateStr}</Text>
+                  </View>
+                )}
+                <View
+                  style={[
+                    styles.chatBubbleWrapper,
+                    isMe ? styles.myChatWrapper : styles.headChatWrapper
+                  ]}
+                >
                 {!isMe && (
                   <Text style={styles.chatSenderName}>
                     {item.head_name || 'Community Head'}
@@ -686,10 +703,11 @@ export default function AnonymousMessageScreen({
                     styles.chatTime,
                     isMe ? styles.myChatTime : styles.headChatTime
                   ]}>
-                    {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </Text>
                 </View>
               </View>
+              </React.Fragment>
             );
           })}
         </ScrollView>
@@ -1923,5 +1941,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#374151',
+  },
+  dateHeaderContainer: {
+    alignItems: 'center',
+    marginVertical: 16,
+  },
+  dateHeaderText: {
+    backgroundColor: '#E5E7EB',
+    color: '#4B5563',
+    paddingVertical: 4,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    fontSize: 12,
+    fontWeight: 'bold',
+    overflow: 'hidden',
   },
 });

@@ -85,7 +85,7 @@ export default function AnonymousMessagesAdminScreen() {
                 <View style={[styles.statusBadge, item.status === 'replied' ? styles.repliedBadge : (item.status === 'unread' ? styles.unreadBadge : styles.readBadge)]}>
                     <Text style={styles.statusText}>{item.status.toUpperCase()}</Text>
                 </View>
-                <Text style={styles.dateText}>{new Date(item.created_at).toLocaleDateString()}</Text>
+                <Text style={styles.dateText}>{new Date(item.created_at).toLocaleString([], { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</Text>
             </View>
 
             <Text style={styles.messagePreview} numberOfLines={2}>

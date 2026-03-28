@@ -452,28 +452,19 @@ export default function ViewPetitionsScreen() {
     );
   };
 
-  return (
-    <View style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
-      <LinearGradient
-        colors={['#0f172a', '#1e293b', '#0f172a']}
-        style={styles.background}
-      >
-        <View style={styles.container}>
-      {/* Header */}
+  const renderListHeader = () => (
+    <>
       <View style={styles.header}>
         <Text style={styles.title}>🗳️ Petitions Dashboard</Text>
         <Text style={styles.subtitle}>Track all community petitions</Text>
       </View>
 
-      {/* Statistics */}
       <View style={styles.statsContainer}>
         <View style={styles.statCard}><Text style={styles.statNumber}>{totalPetitions}</Text><Text style={styles.statLabel}>Total</Text></View>
         <View style={styles.statCard}><Text style={styles.statNumber}>{approvedPetitionsCount || 0}</Text><Text style={styles.statLabel}>Approved</Text></View>
         <View style={styles.statCard}><Text style={styles.statNumber}>{pendingPetitionsCount || 0}</Text><Text style={styles.statLabel}>Pending</Text></View>
       </View>
 
-      {/* AI Banner */}
       {(userRole === 'HEAD' || userRole === 'ADMIN') && (
         <TouchableOpacity style={styles.aiBanner} onPress={openMainAiChat}>
           <Text style={styles.aiBannerIcon}>🤖</Text>
@@ -485,7 +476,6 @@ export default function ViewPetitionsScreen() {
         </TouchableOpacity>
       )}
 
-      {/* Search bar */}
       <View style={styles.searchContainer}>
         <Text style={styles.searchIcon}>🔍</Text>
         <TextInput
@@ -497,7 +487,6 @@ export default function ViewPetitionsScreen() {
         />
       </View>
 
-      {/* Date Filters */}
       <View style={styles.filterBar}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 15 }}>
           {(['all', 'today', 'yesterday', 'week', 'month', 'particular_day', 'particular_month', 'range'] as const).map(f => (
@@ -514,7 +503,6 @@ export default function ViewPetitionsScreen() {
         </ScrollView>
       </View>
 
-      {/* Status Filters */}
       <View style={styles.filterBar}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 15 }}>
           {(['all', 'pending', 'approved', 'rejected'] as const).map(s => (
@@ -531,9 +519,7 @@ export default function ViewPetitionsScreen() {
         </ScrollView>
       </View>
 
-
       {(dateFilter === 'particular_day' || dateFilter === 'particular_month') && (
-
         <View style={styles.dateInputContainer}>
           <TextInput
             style={styles.dateInput}
@@ -567,7 +553,6 @@ export default function ViewPetitionsScreen() {
         </View>
       )}
 
-      {/* Batch Actions */}
       {(userRole === 'HEAD' || userRole === 'ADMIN') && filteredPetitions.length > 0 && (
         <View style={styles.batchContainer}>
           <TouchableOpacity style={[styles.batchBtn, styles.approveBatchBtn, { paddingVertical: 10 }]} onPress={() => handleBatchUpdate('Approved')}>
@@ -578,10 +563,17 @@ export default function ViewPetitionsScreen() {
           </TouchableOpacity>
         </View>
       )}
+    </>
+  );
 
-
-
-
+  return (
+    <View style={styles.safeArea}>
+      <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
+      <LinearGradient
+        colors={['#0f172a', '#1e293b', '#0f172a']}
+        style={styles.background}
+      >
+        <View style={styles.container}>
       {loading ? (
         <View style={styles.loaderContainer}>
           <ActivityIndicator size="large" color="#3b82f6" />
@@ -598,6 +590,7 @@ export default function ViewPetitionsScreen() {
           data={filteredPetitions}
           keyExtractor={item => item.petition_id.toString()}
           renderItem={renderPetition}
+          ListHeaderComponent={renderListHeader}
           ListEmptyComponent={
             <View style={styles.emptyBox}>
               <Text style={styles.emptyIcon}>📭</Text>

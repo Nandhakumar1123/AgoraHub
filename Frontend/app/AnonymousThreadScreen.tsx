@@ -97,24 +97,41 @@ export default function AnonymousThreadScreen() {
         }
     };
 
-    const renderMessage = ({ item }: { item: Message }) => {
+    const renderMessage = ({ item, index }: { item: Message; index: number }) => {
         const isMe = isAdmin ? item.is_from_head : !item.is_from_head;
+        const messageDate = new Date(item.created_at);
+        const currentDateStr = messageDate.toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' });
+
+        let showDateHeader = false;
+        if (index === 0) {
+            showDateHeader = true;
+        } else {
+            const previousDateStr = new Date(messages[index - 1].created_at).toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' });
+            showDateHeader = currentDateStr !== previousDateStr;
+        }
 
         return (
-            <View style={[styles.messageWrapper, isMe ? styles.myMessageWrapper : styles.otherMessageWrapper]}>
-                <View style={[styles.messageBubble, isMe ? styles.myBubble : styles.otherBubble]}>
-                    {!isMe && item.is_from_head && (
-                        <Text style={styles.senderName}>{item.head_name || 'Community Head'}</Text>
-                    )}
-                    {!isMe && !item.is_from_head && isAdmin && (
-                        <Text style={styles.senderName}>Anonymous Member</Text>
-                    )}
-                    <Text style={[styles.messageText, isMe ? styles.myMessageText : styles.otherMessageText]}>
-                        {item.text}
-                    </Text>
-                    <Text style={[styles.messageTime, isMe ? styles.myTime : styles.otherTime]}>
-                        {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </Text>
+            <View>
+                {showDateHeader && (
+                    <View style={styles.dateHeaderContainer}>
+                        <Text style={styles.dateHeaderText}>{currentDateStr}</Text>
+                    </View>
+                )}
+                <View style={[styles.messageWrapper, isMe ? styles.myMessageWrapper : styles.otherMessageWrapper]}>
+                    <View style={[styles.messageBubble, isMe ? styles.myBubble : styles.otherBubble]}>
+                        {!isMe && item.is_from_head && (
+                            <Text style={styles.senderName}>{item.head_name || 'Community Head'}</Text>
+                        )}
+                        {!isMe && !item.is_from_head && isAdmin && (
+                            <Text style={styles.senderName}>Anonymous Member</Text>
+                        )}
+                        <Text style={[styles.messageText, isMe ? styles.myMessageText : styles.otherMessageText]}>
+                            {item.text}
+                        </Text>
+                        <Text style={[styles.messageTime, isMe ? styles.myTime : styles.otherTime]}>
+                            {messageDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </Text>
+                    </View>
                 </View>
             </View>
         );
@@ -307,5 +324,19 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         fontWeight: 'bold',
         fontSize: 14,
+    },
+    dateHeaderContainer: {
+        alignItems: 'center',
+        marginVertical: 16,
+    },
+    dateHeaderText: {
+        backgroundColor: '#E5E7EB',
+        color: '#4B5563',
+        paddingVertical: 4,
+        paddingHorizontal: 12,
+        borderRadius: 12,
+        fontSize: 12,
+        fontWeight: 'bold',
+        overflow: 'hidden',
     },
 });

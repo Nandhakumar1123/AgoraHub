@@ -438,28 +438,19 @@ export default function ViewComplaintsScreen() {
     </View>
   );
 
-  return (
-    <View style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
-      <LinearGradient
-        colors={['#0f172a', '#1e293b', '#0f172a']}
-        style={styles.background}
-      >
-        <View style={styles.container}>
-      {/* Header */}
+  const renderListHeader = () => (
+    <>
       <View style={styles.header}>
         <Text style={styles.title}>Complaints Dashboard</Text>
         <Text style={styles.subtitle}>Overview of all community complaints</Text>
       </View>
 
-      {/* Statistics */}
       <View style={styles.statsContainer}>
         <View style={styles.statCard}><Text style={styles.statNumber}>{totalComplaints}</Text><Text style={styles.statLabel}>Total</Text></View>
         <View style={styles.statCard}><Text style={styles.statNumber}>{approvedComplaintsCount}</Text><Text style={styles.statLabel}>Approved</Text></View>
         <View style={styles.statCard}><Text style={styles.statNumber}>{pendingComplaintsCount}</Text><Text style={styles.statLabel}>Pending</Text></View>
       </View>
 
-      {/* AI Banner */}
       {(userRole === 'HEAD' || userRole === 'ADMIN') && (
         <TouchableOpacity style={styles.aiBanner} onPress={openMainAiChat}>
           <Text style={styles.aiBannerIcon}>🤖</Text>
@@ -471,7 +462,6 @@ export default function ViewComplaintsScreen() {
         </TouchableOpacity>
       )}
 
-      {/* Search */}
       <View style={styles.searchContainer}>
         <Text style={styles.searchIcon}>🔍</Text>
         <TextInput
@@ -483,7 +473,6 @@ export default function ViewComplaintsScreen() {
         />
       </View>
 
-      {/* Date Filters */}
       <View style={styles.filterBar}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 15 }}>
           {(['all', 'today', 'yesterday', 'week', 'month', 'particular_day', 'particular_month', 'range'] as const).map(f => (
@@ -500,7 +489,6 @@ export default function ViewComplaintsScreen() {
         </ScrollView>
       </View>
 
-      {/* Status Filters */}
       <View style={styles.filterBar}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 15 }}>
           {(['all', 'pending', 'approved', 'rejected'] as const).map(s => (
@@ -517,9 +505,7 @@ export default function ViewComplaintsScreen() {
         </ScrollView>
       </View>
 
-
       {(dateFilter === 'particular_day' || dateFilter === 'particular_month') && (
-
         <View style={styles.dateInputContainer}>
           <TextInput
             style={styles.dateInput}
@@ -553,7 +539,6 @@ export default function ViewComplaintsScreen() {
         </View>
       )}
 
-      {/* Batch Actions */}
       {(userRole === 'HEAD' || userRole === 'ADMIN') && filteredComplaints.length > 0 && (
         <View style={styles.batchContainer}>
           <TouchableOpacity style={[styles.batchBtn, styles.approveBatchBtn, { paddingVertical: 10 }]} onPress={() => handleBatchUpdate('Approved')}>
@@ -564,139 +549,147 @@ export default function ViewComplaintsScreen() {
           </TouchableOpacity>
         </View>
       )}
+    </>
+  );
 
-
-
-      {/* Complaints List */}
-      {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#3b82f6" />
-          <Text style={styles.loadingText}>Loading complaints...</Text>
-        </View>
-      ) : error ? (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyIcon}>⚠️</Text>
-          <Text style={styles.emptyText}>Error loading complaints</Text>
-          <Text style={styles.emptySubtext}>{error}</Text>
-        </View>
-      ) : (
-        <FlatList
-          data={filteredComplaints}
-          keyExtractor={item => item.complaint_id.toString()}
-          renderItem={renderComplaint}
-          ListEmptyComponent={
+  return (
+    <View style={styles.safeArea}>
+      <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
+      <LinearGradient
+        colors={['#0f172a', '#1e293b', '#0f172a']}
+        style={styles.background}
+      >
+        <View style={styles.container}>
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#3b82f6" />
+              <Text style={styles.loadingText}>Loading complaints...</Text>
+            </View>
+          ) : error ? (
             <View style={styles.emptyContainer}>
-              <Text style={styles.emptyIcon}>📭</Text>
-              <Text style={styles.emptyText}>No complaints found</Text>
+              <Text style={styles.emptyIcon}>⚠️</Text>
+              <Text style={styles.emptyText}>Error loading complaints</Text>
+              <Text style={styles.emptySubtext}>{error}</Text>
             </View>
-          }
-          contentContainerStyle={styles.listContainer}
-          showsVerticalScrollIndicator={false}
-        />
-      )}
-
-
-
-      {/* ======= Per-Card AI Chat Modal ======= */}
-      <Modal visible={cardAiVisible} animationType="slide" onRequestClose={() => setCardAiVisible(false)}>
-        <KeyboardAvoidingView style={{ flex: 1, backgroundColor: '#f0f4ff' }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <View style={[styles.chatHeader, { backgroundColor: '#7c3aed' }]}>
-            <TouchableOpacity onPress={() => setCardAiVisible(false)} style={styles.chatBackBtn}>
-              <Text style={styles.chatBackText}>✕</Text>
-            </TouchableOpacity>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.chatHeaderTitle}>🤖 Complaint AI Analysis</Text>
-              <Text style={styles.chatHeaderSub} numberOfLines={1}>{cardAiComplaint?.title}</Text>
-            </View>
-          </View>
-
-          <ScrollView
-            ref={cardScrollRef}
-            style={styles.chatScroll}
-            contentContainerStyle={{ padding: 16, paddingBottom: 10 }}
-            onContentSizeChange={() => cardScrollRef.current?.scrollToEnd({ animated: true })}
-          >
-            {cardAiMessages.map((msg, i) => (
-              <View key={i} style={[styles.msgRow, msg.role === 'user' ? styles.msgRowUser : styles.msgRowAi]}>
-                <View style={[styles.msgBubble, msg.role === 'user' ? styles.userBubble : styles.aiBubble]}>
-                  <Text style={msg.role === 'user' ? styles.userMsgText : styles.aiMsgText}>{msg.text}</Text>
+          ) : (
+            <FlatList
+              data={filteredComplaints}
+              keyExtractor={item => item.complaint_id.toString()}
+              renderItem={renderComplaint}
+              ListHeaderComponent={renderListHeader}
+              ListEmptyComponent={
+                <View style={styles.emptyContainer}>
+                  <Text style={styles.emptyIcon}>📭</Text>
+                  <Text style={styles.emptyText}>No complaints found</Text>
                 </View>
-                <View style={[styles.msgActions, msg.role === 'user' ? styles.msgActionsUser : styles.msgActionsAi]}>
-                  {msg.role === 'user' && (
-                    <TouchableOpacity style={styles.msgActionBtn} onPress={() => { setCardAiInput(msg.text); }}>
-                      <Text style={styles.msgActionBtnText}>✏️</Text>
-                    </TouchableOpacity>
-                  )}
-                  <TouchableOpacity style={[styles.msgActionBtn, styles.msgDeleteBtn]} onPress={() => {
-                    setCardAiMessages(prev => prev.filter((_, idx) => idx !== i));
-                  }}>
-                    <Text style={styles.msgActionBtnText}>🗑️</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            ))}
-            {cardAiLoading && (
-              <View style={styles.aiBubble}>
-                <ActivityIndicator size="small" color="#6366f1" />
-                <Text style={styles.aiMsgText}> AI is thinking...</Text>
-              </View>
-            )}
-          </ScrollView>
-
-          <View style={styles.chatInputRow}>
-            <TextInput
-              style={styles.chatTextInput}
-              placeholder="Ask about this complaint..."
-              placeholderTextColor="#9ca3af"
-              value={cardAiInput}
-              onChangeText={setCardAiInput}
-              onSubmitEditing={sendCardAiMessage}
-              returnKeyType="send"
+              }
+              contentContainerStyle={styles.listContainer}
+              showsVerticalScrollIndicator={false}
             />
-            <TouchableOpacity style={[styles.sendBtn, { backgroundColor: '#7c3aed' }, (!cardAiInput.trim() || cardAiLoading) && styles.sendBtnDisabled]} onPress={sendCardAiMessage} disabled={!cardAiInput.trim() || cardAiLoading}>
-              <Text style={styles.sendBtnText}>➤</Text>
-            </TouchableOpacity>
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
+          )}
 
-      {/* Options Modal */}
-      <Modal visible={optionsModalVisible} transparent animationType="fade" onRequestClose={() => setOptionsModalVisible(false)}>
-        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setOptionsModalVisible(false)}>
-          <TouchableOpacity style={styles.optionsModalContent} activeOpacity={1} onPress={() => { }}>
-            <TouchableOpacity style={styles.optionItem} onPress={() => { setOptionsModalVisible(false); handleClearComplaint(); }} disabled={isClearing}>
-              <Text style={[styles.optionText, styles.clearOptionText]}>{isClearing ? 'Clearing...' : 'Clear'}</Text>
-            </TouchableOpacity>
-          </TouchableOpacity>
-        </TouchableOpacity>
-      </Modal>
 
-      {/* Message Action Menu */}
-      <Modal visible={msgActionVisible} transparent animationType="fade" onRequestClose={() => setMsgActionVisible(false)}>
-        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setMsgActionVisible(false)}>
-          <View style={styles.msgActionSheet}>
-            <Text style={styles.msgActionTitle} numberOfLines={2}>{selectedMsg?.text}</Text>
-            <View style={styles.msgActionDivider} />
-            <TouchableOpacity style={styles.msgActionItem} onPress={handleCopyMsg}>
-              <Text style={styles.msgActionIcon}>📋</Text>
-              <Text style={styles.msgActionText}>Copy</Text>
-            </TouchableOpacity>
-            {selectedMsg?.role === 'user' && (
-              <TouchableOpacity style={styles.msgActionItem} onPress={handleEditMsg}>
-                <Text style={styles.msgActionIcon}>✏️</Text>
-                <Text style={styles.msgActionText}>Edit</Text>
+
+          {/* ======= Per-Card AI Chat Modal ======= */}
+          <Modal visible={cardAiVisible} animationType="slide" onRequestClose={() => setCardAiVisible(false)}>
+            <KeyboardAvoidingView style={{ flex: 1, backgroundColor: '#f0f4ff' }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+              <View style={[styles.chatHeader, { backgroundColor: '#7c3aed' }]}>
+                <TouchableOpacity onPress={() => setCardAiVisible(false)} style={styles.chatBackBtn}>
+                  <Text style={styles.chatBackText}>✕</Text>
+                </TouchableOpacity>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.chatHeaderTitle}>🤖 Complaint AI Analysis</Text>
+                  <Text style={styles.chatHeaderSub} numberOfLines={1}>{cardAiComplaint?.title}</Text>
+                </View>
+              </View>
+
+              <ScrollView
+                ref={cardScrollRef}
+                style={styles.chatScroll}
+                contentContainerStyle={{ padding: 16, paddingBottom: 10 }}
+                onContentSizeChange={() => cardScrollRef.current?.scrollToEnd({ animated: true })}
+              >
+                {cardAiMessages.map((msg, i) => (
+                  <View key={i} style={[styles.msgRow, msg.role === 'user' ? styles.msgRowUser : styles.msgRowAi]}>
+                    <View style={[styles.msgBubble, msg.role === 'user' ? styles.userBubble : styles.aiBubble]}>
+                      <Text style={msg.role === 'user' ? styles.userMsgText : styles.aiMsgText}>{msg.text}</Text>
+                    </View>
+                    <View style={[styles.msgActions, msg.role === 'user' ? styles.msgActionsUser : styles.msgActionsAi]}>
+                      {msg.role === 'user' && (
+                        <TouchableOpacity style={styles.msgActionBtn} onPress={() => { setCardAiInput(msg.text); }}>
+                          <Text style={styles.msgActionBtnText}>✏️</Text>
+                        </TouchableOpacity>
+                      )}
+                      <TouchableOpacity style={[styles.msgActionBtn, styles.msgDeleteBtn]} onPress={() => {
+                        setCardAiMessages(prev => prev.filter((_, idx) => idx !== i));
+                      }}>
+                        <Text style={styles.msgActionBtnText}>🗑️</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                ))}
+                {cardAiLoading && (
+                  <View style={styles.aiBubble}>
+                    <ActivityIndicator size="small" color="#6366f1" />
+                    <Text style={styles.aiMsgText}> AI is thinking...</Text>
+                  </View>
+                )}
+              </ScrollView>
+
+              <View style={styles.chatInputRow}>
+                <TextInput
+                  style={styles.chatTextInput}
+                  placeholder="Ask about this complaint..."
+                  placeholderTextColor="#9ca3af"
+                  value={cardAiInput}
+                  onChangeText={setCardAiInput}
+                  onSubmitEditing={sendCardAiMessage}
+                  returnKeyType="send"
+                />
+                <TouchableOpacity style={[styles.sendBtn, { backgroundColor: '#7c3aed' }, (!cardAiInput.trim() || cardAiLoading) && styles.sendBtnDisabled]} onPress={sendCardAiMessage} disabled={!cardAiInput.trim() || cardAiLoading}>
+                  <Text style={styles.sendBtnText}>➤</Text>
+                </TouchableOpacity>
+              </View>
+            </KeyboardAvoidingView>
+          </Modal>
+
+          {/* Options Modal */}
+          <Modal visible={optionsModalVisible} transparent animationType="fade" onRequestClose={() => setOptionsModalVisible(false)}>
+            <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setOptionsModalVisible(false)}>
+              <TouchableOpacity style={styles.optionsModalContent} activeOpacity={1} onPress={() => { }}>
+                <TouchableOpacity style={styles.optionItem} onPress={() => { setOptionsModalVisible(false); handleClearComplaint(); }} disabled={isClearing}>
+                  <Text style={[styles.optionText, styles.clearOptionText]}>{isClearing ? 'Clearing...' : 'Clear'}</Text>
+                </TouchableOpacity>
               </TouchableOpacity>
-            )}
-            <TouchableOpacity style={[styles.msgActionItem, styles.msgActionDelete]} onPress={handleDeleteMsg}>
-              <Text style={styles.msgActionIcon}>🗑️</Text>
-              <Text style={[styles.msgActionText, { color: '#ef4444' }]}>Delete</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.msgActionItem, { borderTopWidth: 1, borderTopColor: '#f3f4f6' }]} onPress={() => setMsgActionVisible(false)}>
-              <Text style={[styles.msgActionText, { color: '#6b7280', textAlign: 'center', width: '100%' }]}>Cancel</Text>
+          </Modal>
+
+          {/* Message Action Menu */}
+          <Modal visible={msgActionVisible} transparent animationType="fade" onRequestClose={() => setMsgActionVisible(false)}>
+            <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setMsgActionVisible(false)}>
+              <View style={styles.msgActionSheet}>
+                <Text style={styles.msgActionTitle} numberOfLines={2}>{selectedMsg?.text}</Text>
+                <View style={styles.msgActionDivider} />
+                <TouchableOpacity style={styles.msgActionItem} onPress={handleCopyMsg}>
+                  <Text style={styles.msgActionIcon}>📋</Text>
+                  <Text style={styles.msgActionText}>Copy</Text>
+                </TouchableOpacity>
+                {selectedMsg?.role === 'user' && (
+                  <TouchableOpacity style={styles.msgActionItem} onPress={handleEditMsg}>
+                    <Text style={styles.msgActionIcon}>✏️</Text>
+                    <Text style={styles.msgActionText}>Edit</Text>
+                  </TouchableOpacity>
+                )}
+                <TouchableOpacity style={[styles.msgActionItem, styles.msgActionDelete]} onPress={handleDeleteMsg}>
+                  <Text style={styles.msgActionIcon}>🗑️</Text>
+                  <Text style={[styles.msgActionText, { color: '#ef4444' }]}>Delete</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.msgActionItem, { borderTopWidth: 1, borderTopColor: '#f3f4f6' }]} onPress={() => setMsgActionVisible(false)}>
+                  <Text style={[styles.msgActionText, { color: '#6b7280', textAlign: 'center', width: '100%' }]}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
             </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
-      </Modal>
+          </Modal>
         </View>
       </LinearGradient>
     </View>
