@@ -322,7 +322,18 @@ export default function CommunityScreen() {
                       key={community.id}
                       style={[styles.communityCard, index > 0 && styles.communityCardMargin]}>
                       <Text style={styles.communityName}>{community.name}</Text>
-                      <Text style={styles.headInfo}>Head: {community.head_name}</Text>
+                      <Text style={{ color: '#6B7280', marginBottom: 6 }}>
+                        {community.description || 'No description'}
+                      </Text>
+                      <View style={styles.badgeRow}>
+                        <Text style={styles.codeText}>Code: {community.code}</Text>
+                        <Text style={styles.headInfo}>Head: {community.head_name}</Text>
+                      </View>
+                      {community.member_count != null && (
+                        <Text style={{ color: '#6B7280', marginTop: 6 }}>
+                          Members: {Number(community.member_count)}
+                        </Text>
+                      )}
                     </View>
                   ))}
           </View>

@@ -23,6 +23,8 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE_URL } from '../lib/api';
 import { jwtDecode } from 'jwt-decode';
+import { AppContext } from './_layout';
+import { useContext } from 'react';
 
 const BASE_URL = API_BASE_URL;
 const { width, height } = Dimensions.get('window');
@@ -47,6 +49,10 @@ interface ChatMessage {
 }
 
 export default function ViewComplaintsScreen() {
+  const { theme } = useContext(AppContext);
+  const isDark = theme === 'dark';
+  const themeStyles = isDark ? darkTheme : lightTheme;
+
   const insets = useSafeAreaInsets();
   const route = useRoute<any>();
   const navigation = useNavigation<any>();
@@ -354,13 +360,13 @@ export default function ViewComplaintsScreen() {
   const pendingComplaintsCount = complaints.filter(c => ['OPEN', 'PENDING', 'REVIEW', 'IN_PROGRESS', 'INPROGRESS'].includes(c.status?.toUpperCase().replace(/\s/g, '_'))).length;
 
   const renderComplaint = ({ item }: { item: Complaint }) => (
-    <View style={styles.card}>
+    <View style={[styles.card, themeStyles.card]}>
       <View style={styles.cardHeader}>
         <View style={styles.avatarContainer}>
           <Text style={styles.avatarText}>{item.created_by_name.charAt(0)}</Text>
         </View>
         <View style={styles.headerInfo}>
-          <Text style={styles.memberName}>{item.created_by_name}</Text>
+          <Text style={[styles.memberName, themeStyles.text]}>{item.created_by_name}</Text>
           <View style={styles.dateRow}>
             <Text style={styles.dateText}>
               {new Date(item.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
@@ -402,10 +408,10 @@ export default function ViewComplaintsScreen() {
         </View>
       </View>
       <View style={styles.cardBody}>
-        <Text style={styles.subjectText}>{item.title}</Text>
+        <Text style={[styles.subjectText, themeStyles.text]}>{item.title}</Text>
 
-        <Text style={styles.descriptionText} numberOfLines={3}>{item.description}</Text>
-        <Text style={styles.categoryText}>Category: {item.category}</Text>
+        <Text style={[styles.descriptionText, themeStyles.subText]} numberOfLines={3}>{item.description}</Text>
+        <Text style={[styles.categoryText, themeStyles.subText]}>Category: {item.category}</Text>
       </View>
 
       {(userRole === 'HEAD' || userRole === 'ADMIN') && (!['APPROVED', 'REJECTED'].includes(item.status.toUpperCase().replace(/\s/g, '_'))) && (
@@ -440,15 +446,15 @@ export default function ViewComplaintsScreen() {
 
   const renderListHeader = () => (
     <>
-      <View style={styles.header}>
-        <Text style={styles.title}>Complaints Dashboard</Text>
-        <Text style={styles.subtitle}>Overview of all community complaints</Text>
+      <View style={[styles.header, themeStyles.header]}>
+        <Text style={[styles.title, themeStyles.headerText]}>Complaints Dashboard</Text>
+        <Text style={[styles.subtitle, themeStyles.headerText]}>Overview of all community complaints</Text>
       </View>
 
-      <View style={styles.statsContainer}>
-        <View style={styles.statCard}><Text style={styles.statNumber}>{totalComplaints}</Text><Text style={styles.statLabel}>Total</Text></View>
-        <View style={styles.statCard}><Text style={styles.statNumber}>{approvedComplaintsCount}</Text><Text style={styles.statLabel}>Approved</Text></View>
-        <View style={styles.statCard}><Text style={styles.statNumber}>{pendingComplaintsCount}</Text><Text style={styles.statLabel}>Pending</Text></View>
+      <View style={[styles.statsContainer, themeStyles.card]}>
+        <View style={styles.statCard}><Text style={[styles.statNumber, themeStyles.text]}>{totalComplaints}</Text><Text style={styles.statLabel}>Total</Text></View>
+        <View style={styles.statCard}><Text style={[styles.statNumber, themeStyles.text]}>{approvedComplaintsCount}</Text><Text style={styles.statLabel}>Approved</Text></View>
+        <View style={styles.statCard}><Text style={[styles.statNumber, themeStyles.text]}>{pendingComplaintsCount}</Text><Text style={styles.statLabel}>Pending</Text></View>
       </View>
 
       {(userRole === 'HEAD' || userRole === 'ADMIN') && (
@@ -462,12 +468,12 @@ export default function ViewComplaintsScreen() {
         </TouchableOpacity>
       )}
 
-      <View style={styles.searchContainer}>
+      <View style={[styles.searchContainer, themeStyles.card]}>
         <Text style={styles.searchIcon}>🔍</Text>
         <TextInput
-          style={styles.searchInput}
+          style={[styles.searchInput, themeStyles.text]}
           placeholder="Search complaints..."
-          placeholderTextColor="#9ca3af"
+          placeholderTextColor={isDark ? "#9ca3af" : "#64748b"}
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
@@ -554,12 +560,8 @@ export default function ViewComplaintsScreen() {
 
   return (
     <View style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
-      <LinearGradient
-        colors={['#0f172a', '#1e293b', '#0f172a']}
-        style={styles.background}
-      >
-        <View style={styles.container}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+      <View style={styles.container}>
           {loading ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color="#3b82f6" />
@@ -691,8 +693,7 @@ export default function ViewComplaintsScreen() {
             </TouchableOpacity>
           </Modal>
         </View>
-      </LinearGradient>
-    </View>
+      </View>
   );
 }
 
@@ -979,4 +980,21 @@ const styles = StyleSheet.create({
   },
   msgDeleteBtn: { backgroundColor: 'rgba(239, 68, 68, 0.2)' },
   msgActionBtnText: { fontSize: 14 },
+});
+const lightTheme = StyleSheet.create({
+    root: { backgroundColor: 'transparent' },
+    header: { backgroundColor: 'rgba(255, 255, 255, 0.8)', borderBottomColor: 'rgba(0,0,0,0.1)' },
+    headerText: { color: '#1e293b' },
+    card: { backgroundColor: 'rgba(255, 255, 255, 0.9)', borderColor: 'rgba(0,0,0,0.1)' },
+    text: { color: '#1e293b' },
+    subText: { color: '#475569' },
+});
+
+const darkTheme = StyleSheet.create({
+    root: { backgroundColor: 'transparent' },
+    header: { backgroundColor: 'rgba(15, 23, 42, 0.8)', borderBottomColor: 'rgba(255,255,255,0.05)' },
+    headerText: { color: '#f8fafc' },
+    card: { backgroundColor: 'rgba(30, 41, 59, 0.7)', borderColor: 'rgba(255,255,255,0.08)' },
+    text: { color: '#f8fafc' },
+    subText: { color: '#cbd5e1' },
 });

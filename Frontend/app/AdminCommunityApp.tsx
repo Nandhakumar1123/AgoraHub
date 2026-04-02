@@ -18,20 +18,25 @@ import {
   View,
   StyleSheet,
   KeyboardAvoidingView,
+  ImageBackground,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import io, { Socket } from 'socket.io-client';
 import { API_BASE_URL, SOCKET_BASE_URL } from '../lib/api';
+import { AppContext } from './_layout';
+import { useContext } from 'react';
 
 // Poll imports
 import PollCreateScreen from './PollCreateScreen';
-import PollMessageCard from './PollMessageCard';
+import PollChatIntimation from './PollChatIntimation';
 
 
 // Chatbot imports
 import nlpService from '../lib/nlpService';
 
 import JoinRequestsModal from './JoinRequestsModal';
+import { Bot, UserMinus, UserPlus, Bell, Trash2, Sparkles, MoreVertical } from 'lucide-react-native';
+
 
 // Type definitions
 interface Community {
@@ -137,7 +142,7 @@ const useCommunityMessages = (communityId: number, currentUserId: number | null)
       });
       setMessages(sortedMessages);
     } catch (error) {
-      console.error('âŒ Error fetching messages:', error);
+      console.error('Ã¢ÂÅ’ Error fetching messages:', error);
     } finally {
       setLoading(false);
     }
@@ -164,7 +169,7 @@ const useCommunityMessages = (communityId: number, currentUserId: number | null)
       socket.emit('join_community', communityId);
     });
 
-    // âœ… FIXED: Handle incoming messages with proper sender_id validation
+    // Ã¢Å“â€¦ FIXED: Handle incoming messages with proper sender_id validation
     socket.on('new_message', (message: Message) => {
       // Ensure sender_id is a number or undefined (never null)
       const normalizedMessage: Message = {
@@ -289,13 +294,9 @@ const useCommunityMessages = (communityId: number, currentUserId: number | null)
       });
     });
 
-    // Listen for message deletions
-    socket.on('message_deleted', (deletedMessageId: number) => {
-      setMessages(prev => {
-        return prev.filter(msg =>
-          msg.message_id !== deletedMessageId && msg.id !== deletedMessageId
-        );
-      });
+    // Listen for chat clearing
+    socket.on('chat_cleared', () => {
+      setMessages([]);
     });
 
     return () => {
@@ -308,12 +309,12 @@ const useCommunityMessages = (communityId: number, currentUserId: number | null)
     try {
       const token = await AsyncStorage.getItem('authToken');
 
-      // âœ… Validate token and current user before sending
+      // Ã¢Å“â€¦ Validate token and current user before sending
       if (!token || !currentUserId) {
         throw new Error('Authentication required');
       }
 
-      // âœ… Verify token contains correct user_id
+      // Ã¢Å“â€¦ Verify token contains correct user_id
       const tokenPayload = JSON.parse(atob(token.split('.')[1]));
       if (tokenPayload.user_id !== currentUserId) {
         throw new Error('Token mismatch - please log out and log back in');
@@ -361,7 +362,7 @@ const useCommunityMessages = (communityId: number, currentUserId: number | null)
 
       return newMessage;
     } catch (error) {
-      console.error('âŒ Error sending message:', error);
+      console.error('Ã¢ÂÅ’ Error sending message:', error);
       Alert.alert('Error', 'Failed to send message');
       // Remove the optimistic message on error
       if (tempId) {
@@ -447,7 +448,8 @@ const HomeIcon = () => (
 
 const JoinRequestsIcon = ({ badgeCount }: { badgeCount: number }) => (
   <View style={styles.iconPlaceholder}>
-    <Text style={[styles.iconText, { fontSize: 24 }]}>📥</Text>
+    <Bell size={24} color="#f8fafc" />
+
     {badgeCount > 0 && (
       <View style={styles.badgeContainer}>
         <Text style={styles.badgeText}>{badgeCount > 99 ? '99+' : badgeCount}</Text>
@@ -458,15 +460,11 @@ const JoinRequestsIcon = ({ badgeCount }: { badgeCount: number }) => (
 
 const RemoveMemberIcon = () => (
   <View style={styles.iconPlaceholder}>
-    <Text style={[styles.iconText, { fontSize: 24 }]}>🗑️</Text>
+    <Trash2 size={24} color="#f8fafc" />
   </View>
 );
 
-const MenuIcon = () => (
-  <View style={styles.iconPlaceholder}>
-    <Text style={styles.iconText}>...</Text>
-  </View>
-);
+// Redundant MenuIcon removed in favor of Lucide icon used inline
 
 const PlusIcon = () => (
   <View style={styles.iconPlaceholder}>
@@ -487,9 +485,8 @@ const adminFeatures = [
   { id: 3, title: 'View Petitions', icon: 'PT', color: '#4ECDC4' },
   { id: 4, title: 'Manage Events', icon: 'EV', color: '#96CEB4' },
   { id: 5, title: 'View Anonymous', icon: '💬', color: '#45B7D1' },
-  { id: 6, title: 'Member Management', icon: 'MM', color: '#45B7D1' },
   { id: 7, title: 'Analytics', icon: 'ST', color: '#9B59B6' },
-  { id: 8, title: 'Polling', icon: '🗳️', color: '#667eea' },
+  { id: 8, title: 'Poll', icon: '🗳️', color: '#667eea' },
 ];
 
 
@@ -504,6 +501,25 @@ const mediaOptions = [
 ];
 
 const AdminCommunityApp: React.FC = () => {
+  const { theme } = useContext(AppContext);
+  const isDark = theme === 'dark';
+  const themeStyles = isDark ? darkTheme : lightTheme;
+
+  const [optionsMenuVisible, setOptionsMenuVisible] = useState(false);
+  const [isSearchActive, setIsSearchActive] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [wallpaperModalVisible, setWallpaperModalVisible] = useState(false);
+  const [selectedWallpaper, setSelectedWallpaper] = useState<string | null>(null);
+  const [notificationsMuted, setNotificationsMuted] = useState(false);
+
+  const PRESET_WALLPAPERS = [
+    'https://images.unsplash.com/photo-1506744038136-46273834b3fb',
+    'https://images.unsplash.com/photo-1534067783941-51c9c23ecefd',
+    'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05',
+    'https://images.unsplash.com/photo-1441974231531-c6227db76b6e',
+    'https://images.unsplash.com/photo-1501854140801-50d01698950b',
+  ];
+
   const insets = useSafeAreaInsets();
   const route = useRoute<AdminCommunityRouteProp>();
   const communityId = Number(route.params?.community?.id || route.params?.community?.community_id || 36);
@@ -523,6 +539,7 @@ const AdminCommunityApp: React.FC = () => {
   const [pollModalVisible, setPollModalVisible] = useState(false);
   const [joinRequestsModalVisible, setJoinRequestsModalVisible] = useState(false);
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
+  const [communityCreatorId, setCommunityCreatorId] = useState<number | null>(null);
 
 
   const navigation = useNavigation<AdminCommunityNavigationProp>();
@@ -618,6 +635,9 @@ const AdminCommunityApp: React.FC = () => {
           // User has valid HEAD access
           setCurrentUserId(tokenPayload.user_id);
           setCurrentUserName(tokenPayload.full_name || 'You');
+          if (membershipData.creator_user_id) {
+            setCommunityCreatorId(membershipData.creator_user_id);
+          }
           setHasAccess(true);
         } else {
           // Failed to verify membership
@@ -718,16 +738,64 @@ const AdminCommunityApp: React.FC = () => {
       navigation.navigate('AnalyticsScreen' as any, {
         communityId: community?.id || community?.community_id || 36,
       });
-    } else if (feature.title === 'Polling') {
+    } else if (feature.title === 'Poll') {
       navigation.navigate('PollsListScreen' as any, {
         communityId: community?.id || community?.community_id || 36,
         community: community,
         isAdmin: true
       });
+    } else if (feature.title === 'Delete Community') {
+      handleDeleteCommunity();
     }
 
 
     closeModal();
+  };
+
+  const handleDeleteCommunity = () => {
+    Alert.alert(
+      'Delete Community',
+      'Are you absolutely sure you want to delete this community? This action is permanent and cannot be undone. All data will be lost.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Delete Permanently', 
+          style: 'destructive',
+          onPress: deleteCurrentCommunity
+        }
+      ]
+    );
+  };
+
+  const deleteCurrentCommunity = async () => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      if (!token) return;
+
+      const response = await fetch(`${API_BASE_URL}/communities/${communityId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        Alert.alert('Success', 'Community deleted successfully');
+        // Clear locally stored data for this community if any
+        if (currentUserId) {
+          await AsyncStorage.removeItem(`wallpaper_${communityId}_user_${currentUserId}`);
+        }
+        
+        // Navigate back to the home screen
+        router.replace('/(tabs)');
+      } else {
+        const errorData = await response.json();
+        Alert.alert('Error', errorData.error || 'Failed to delete community');
+      }
+    } catch (error) {
+      console.error('Error deleting community:', error);
+      Alert.alert('Error', 'An unexpected error occurred');
+    }
   };
 
   const handleMediaOptionPress = (option: any) => {
@@ -833,6 +901,89 @@ const AdminCommunityApp: React.FC = () => {
     }
   };
 
+  const archiveCurrentCommunity = async () => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      if (!token) return;
+      console.log(`Archiving community: ${communityId}`);
+      const response = await fetch(`${API_BASE_URL}/communities/archive`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ communityIds: [communityId] }),
+      });
+      const data = await response.json();
+      console.log('Archive response:', data);
+      
+      if (response.ok) {
+        Alert.alert('Archived', 'Community moved to archived section.');
+        navigation.goBack();
+      } else {
+        throw new Error(data.error || 'Failed to archive');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to archive community');
+    }
+  };
+
+  const clearCommunityChat = async () => {
+    Alert.alert(
+      'Clear chat?',
+      'This will permanently delete all community chat messages for everyone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Clear',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const token = await AsyncStorage.getItem('authToken');
+              if (!token) return;
+              const response = await fetch(`${API_BASE_URL}/communities/${communityId}/messages`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` },
+              });
+              if (!response.ok) {
+                const err = await response.json().catch(() => ({}));
+                throw new Error(err.error || 'Failed to clear chat');
+              }
+              setMessages([]);
+            } catch (error: any) {
+              Alert.alert('Error', error?.message || 'Failed to clear chat');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const pickImage = async () => {
+    const ImagePicker = require('expo-image-picker');
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const uri = result.assets[0].uri;
+      setSelectedWallpaper(uri);
+
+      try {
+        if (currentUserId) {
+          const privateKey = `wallpaper_${communityId}_user_${currentUserId}`;
+          await AsyncStorage.setItem(privateKey, uri);
+        }
+      } catch (e) {
+        console.error('Failed to save wallpaper', e);
+      }
+
+      setWallpaperModalVisible(false);
+    }
+  };
+
   // Group messages by date
   const groupMessagesByDate = (messages: Message[]) => {
     const groups: { date: string; messages: Message[] }[] = [];
@@ -875,7 +1026,7 @@ const AdminCommunityApp: React.FC = () => {
       // Navigate to login screen
       router.replace('/LoginScreen');
     } catch (error) {
-      console.error('âŒ Logout error:', error);
+      console.error('Ã¢ÂÅ’ Logout error:', error);
     }
   };
 
@@ -896,50 +1047,65 @@ const AdminCommunityApp: React.FC = () => {
     }
   };
 
-  const messageGroups = groupMessagesByDate(messages);
+  const filteredMessages = messages.filter(msg =>
+    msg.content?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const messageGroups = groupMessagesByDate(filteredMessages);
 
   return (
-    <View style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
-      <LinearGradient
-        colors={['#0f172a', '#1e293b', '#0f172a']}
-        style={styles.background}
-      >
-        <SafeAreaView style={styles.container}>
+    <View style={[styles.safeArea, themeStyles.root]}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+      <SafeAreaView style={styles.container}>
 
       {/* Admin Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={styles.backArrow}>{'<'}</Text>
-        </TouchableOpacity>
-
-        <View style={styles.headerCenter}>
-          <View style={styles.communityAvatar}>
-            <HomeIcon />
-          </View>
-          <View style={styles.headerInfo}>
-            <Text style={styles.communityName}>{community?.name || 'Community'}</Text>
-            <Text style={styles.communitySubtitle}>
-              {community?.member_count != null ? `${community.member_count} members` : 'Members'} - Online
-            </Text>
-          </View>
-        </View>
-
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <TouchableOpacity 
-            onPress={() => router.push({
-              pathname: "/MemberManagementScreen", 
-              params: { communityId: community?.id || community?.community_id || 36 }
-            } as any)} 
-            style={styles.headerButton}
-          >
-            <RemoveMemberIcon />
+      {isSearchActive ? (
+        <View style={[styles.header, themeStyles.header]}>
+          <TouchableOpacity onPress={() => setIsSearchActive(false)} style={styles.backButton}>
+            <Text style={[styles.backArrow, themeStyles.headerText]}>{'<'}</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => setJoinRequestsModalVisible(true)} style={styles.headerButton}>
-            <JoinRequestsIcon badgeCount={pendingRequestsCount} />
+          <TextInput
+            style={[styles.input, { flex: 1, color: themeStyles.headerText.color }]}
+            placeholder="Search messages..."
+            placeholderTextColor="#888"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            autoFocus
+          />
+          <TouchableOpacity onPress={() => { setSearchQuery(''); setIsSearchActive(false); }} style={styles.headerButton}>
+            <Text style={{ color: themeStyles.headerText.color }}>Cancel</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      ) : (
+        <View style={[styles.header, themeStyles.header]}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <Text style={[styles.backArrow, themeStyles.headerText]}>{'<'}</Text>
+          </TouchableOpacity>
+
+          <View style={styles.headerCenter}>
+            <View style={styles.communityAvatar}>
+              <HomeIcon />
+            </View>
+            <View style={styles.headerInfo}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={[styles.communityName, themeStyles.headerText]}>{community?.name || 'Community'}</Text>
+                <TouchableOpacity onPress={() => setOptionsMenuVisible(true)} style={styles.menuInlineButton}>
+                  <MoreVertical size={18} color={isDark ? "#f8fafc" : "#1e293b"} />
+                </TouchableOpacity>
+              </View>
+              <Text style={[styles.communitySubtitle, themeStyles.headerText, { opacity: 0.7 }]}>
+                {community?.member_count != null ? `${community.member_count} members` : 'Members'} - Online
+              </Text>
+            </View>
+          </View>
+
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <TouchableOpacity onPress={() => setJoinRequestsModalVisible(true)} style={styles.headerButton}>
+              <JoinRequestsIcon badgeCount={pendingRequestsCount} />
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
 
       {/* Messages with Date Headers */}
       <ScrollView
@@ -970,7 +1136,9 @@ const AdminCommunityApp: React.FC = () => {
               const isSOS = message.message_type === 'sos';
               const isComplaint = message.message_type === 'complaint';
               const isPetition = message.message_type === 'petition';
-              const isSpecialMessage = isAnnouncement || isSOS || isComplaint || isPetition;
+              const isPoll = message.message_type === 'poll';
+              const isSpecialMessage =
+                isAnnouncement || isSOS || isComplaint || isPetition || isPoll;
 
 
               return (
@@ -989,8 +1157,8 @@ const AdminCommunityApp: React.FC = () => {
                     isSpecialMessage
                       ? styles.specialMessageWrapper
                       : isMyMessage
-                        ? styles.adminMessageWrapper  // âœ… Right side for my messages
-                        : styles.memberMessageWrapper, // âœ… Left side for others
+                        ? themeStyles.myMsgWrapper  
+                        : themeStyles.otherMsgWrapper, 
                   ]}
                 >
                   <View
@@ -1000,7 +1168,14 @@ const AdminCommunityApp: React.FC = () => {
                       isSOS && styles.sosMessage,
                       isComplaint && styles.complaintMessage,
                       isPetition && styles.petitionMessage,
-                      !isSpecialMessage && (isMyMessage ? styles.adminMessage : styles.memberMessage),
+                      isPoll && {
+                        backgroundColor: 'transparent',
+                        borderWidth: 0,
+                        padding: 0,
+                        maxWidth: '100%',
+                      },
+                      !isSpecialMessage &&
+                        (isMyMessage ? themeStyles.myMessageBubble : themeStyles.messageBubble),
                     ]}
                   >
                     {!isMyMessage && !isSpecialMessage && message.full_name && (
@@ -1020,18 +1195,21 @@ const AdminCommunityApp: React.FC = () => {
                       <Text style={styles.petitionLabel}>PETITION</Text>
                     )}
 
-                    <Text
-                      style={[
-                        styles.messageText,
-                        isMyMessage && !isSpecialMessage && styles.adminMessageText,
-                        isAnnouncement && styles.announcementText,
-                        isSOS && styles.sosText,
-                        isComplaint && styles.complaintText,
-                        isPetition && styles.petitionText,
-                      ]}
-                    >
-                      {message.content}
-                    </Text>
+                    {!isPoll && (
+                      <Text
+                        style={[
+                          styles.messageText,
+                          isMyMessage && !isSpecialMessage && themeStyles.myMessageText,
+                          isAnnouncement && styles.announcementText,
+                          isSOS && styles.sosText,
+                          isComplaint && styles.complaintText,
+                          isPetition && styles.petitionText,
+                          themeStyles.messageText,
+                        ]}
+                      >
+                        {message.content}
+                      </Text>
+                    )}
 
                     <View style={styles.messageFooter}>
                       <Text
@@ -1063,15 +1241,18 @@ const AdminCommunityApp: React.FC = () => {
                     )}
 
                     {/* POLL CARD INTEGRATION */}
-                    {message.message_type === 'poll' && (
-                      <PollMessageCard
+                    {isPoll && (
+                      <PollChatIntimation
                         communityId={Number(communityId)}
                         pollId={Number(message.content || '0')}
-                        currentUserId={Number(currentUserId)}
                         isAdmin={true}
-
-                        sentByMe={isMyMessage}
-                        createdAt={message.created_at || ''}
+                        onOpenPoll={(pId) => {
+                          navigation.navigate('PollVoteScreen' as any, {
+                            communityId: Number(communityId),
+                            pollId: pId,
+                            isAdmin: true,
+                          });
+                        }}
                       />
                     )}
                   </View>
@@ -1096,7 +1277,8 @@ const AdminCommunityApp: React.FC = () => {
           communityName: community?.name || 'Community'
         })}
       >
-        <Text style={styles.chatbotButtonText}>🤖</Text>
+        <Sparkles size={28} color="#ffffff" />
+
       </TouchableOpacity>
 
       {/* Message Input */}
@@ -1295,8 +1477,163 @@ const AdminCommunityApp: React.FC = () => {
       </Modal>
 
 
+      {/* Options Menu Modal */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={optionsMenuVisible}
+        onRequestClose={() => setOptionsMenuVisible(false)}
+      >
+        <TouchableOpacity
+          style={{ flex: 1 }}
+          activeOpacity={1}
+          onPress={() => setOptionsMenuVisible(false)}
+        >
+          <View
+            style={{
+              position: 'absolute',
+              top: insets.top + 60,
+              right: 20,
+              backgroundColor: isDark ? '#1e293b' : '#ffffff',
+              borderRadius: 8,
+              width: 200,
+              padding: 5,
+              elevation: 10,
+              borderWidth: 1,
+              borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+            }}
+          >
+            <TouchableOpacity
+              style={{ padding: 15, borderBottomWidth: 0.5, borderBottomColor: 'rgba(0,0,0,0.1)' }}
+              onPress={() => {
+                setIsSearchActive(true);
+                setOptionsMenuVisible(false);
+              }}
+            >
+              <Text style={{ color: isDark ? '#f8fafc' : '#1e3a5f' }}>🔍 Search</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{ padding: 15, borderBottomWidth: 0.5, borderBottomColor: 'rgba(0,0,0,0.1)' }}
+              onPress={() => {
+                setWallpaperModalVisible(true);
+                setOptionsMenuVisible(false);
+              }}
+            >
+              <Text style={{ color: isDark ? '#f8fafc' : '#1e3a5f' }}>🖼️ Add Wallpaper</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{ padding: 15, borderBottomWidth: 0.5, borderBottomColor: 'rgba(0,0,0,0.1)' }}
+              onPress={() => {
+                setNotificationsMuted((prev) => !prev);
+                setOptionsMenuVisible(false);
+              }}
+            >
+              <Text style={{ color: isDark ? '#f8fafc' : '#1e3a5f' }}>{notificationsMuted ? '🔔 Unmute notifications' : '🔕 Mute notifications'}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{ padding: 15, borderBottomWidth: 0.5, borderBottomColor: 'rgba(0,0,0,0.1)' }}
+              onPress={() => {
+                setOptionsMenuVisible(false);
+                archiveCurrentCommunity();
+              }}
+            >
+              <Text style={{ color: isDark ? '#f8fafc' : '#1e3a5f' }}>🗄️ Archive community</Text>
+            </TouchableOpacity>
+            {currentUserId === communityCreatorId && (
+              <TouchableOpacity
+                style={{ padding: 15, borderBottomWidth: 0.5, borderBottomColor: 'rgba(0,0,0,0.1)' }}
+                onPress={() => {
+                  setOptionsMenuVisible(false);
+                  router.push({
+                    pathname: "/MemberManagementScreen",
+                    params: { communityId: community?.id || community?.community_id || 36 }
+                  } as any);
+                }}
+              >
+                <Text style={{ color: isDark ? '#f8fafc' : '#1e3a5f' }}>👥 Manage Members</Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity
+              style={{ padding: 15, borderBottomWidth: 0.5, borderBottomColor: 'rgba(0,0,0,0.1)' }}
+              onPress={() => {
+                setOptionsMenuVisible(false);
+                clearCommunityChat();
+              }}
+            >
+              <Text style={{ color: '#f59e0b' }}>🧹 Clear chat</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{ padding: 15 }}
+              onPress={() => {
+                setOptionsMenuVisible(false);
+                handleDeleteCommunity();
+              }}
+            >
+              <Text style={{ color: '#ef4444', fontWeight: 'bold' }}>🗑️ Delete Community</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Wallpaper Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={wallpaperModalVisible}
+        onRequestClose={() => setWallpaperModalVisible(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setWallpaperModalVisible(false)}
+        >
+          <TouchableOpacity activeOpacity={1}>
+            <View style={[styles.wallpaperModalContent, { backgroundColor: isDark ? '#1e293b' : '#ffffff' }]}>
+              <View style={styles.modalHeader}>
+                <Text style={[styles.modalTitle, { color: isDark ? '#f8fafc' : '#1e3a5f' }]}>Select Wallpaper</Text>
+                <TouchableOpacity onPress={() => setWallpaperModalVisible(false)}>
+                  <Text style={styles.closeButton}>X</Text>
+                </TouchableOpacity>
+              </View>
+
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginVertical: 20 }}>
+                {PRESET_WALLPAPERS.map((wp, i) => (
+                  <TouchableOpacity
+                    key={i}
+                    onPress={async () => {
+                      setSelectedWallpaper(wp);
+                      try {
+                        if (currentUserId) {
+                          const privateKey = `wallpaper_${communityId}_user_${currentUserId}`;
+                          await AsyncStorage.setItem(privateKey, wp);
+                        }
+                      } catch (e) {
+                        console.error('Failed to save wallpaper', e);
+                      }
+                      setWallpaperModalVisible(false);
+                    }}
+                  >
+                    <ImageBackground
+                      source={{ uri: wp }}
+                      style={{ width: 100, height: 160, marginRight: 15 }}
+                      imageStyle={{ borderRadius: 12 }}
+                    />
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+
+              <TouchableOpacity
+                style={[styles.sendAnnouncementButton, { marginHorizontal: 20 }]}
+                onPress={pickImage}
+              >
+                <Text style={{ color: 'white', fontWeight: 'bold' }}>Choose from Gallery</Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
+
         </SafeAreaView>
-      </LinearGradient>
     </View>
   );
 };
@@ -1318,6 +1655,13 @@ const styles = StyleSheet.create({
   iconPlaceholder: {
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  wallpaperModalContent: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+    maxHeight: '60%',
   },
   iconText: {
     fontSize: 18,
@@ -1375,6 +1719,12 @@ const styles = StyleSheet.create({
   headerButton: {
     padding: 8,
     position: 'relative',
+  },
+  menuInlineButton: {
+    marginLeft: 6,
+    padding: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   badgeContainer: {
     position: 'absolute',
@@ -2079,3 +2429,28 @@ const styles = StyleSheet.create({
   },
 });
 
+
+
+const lightTheme = StyleSheet.create({
+    root: { backgroundColor: 'transparent' },
+    header: { backgroundColor: 'rgba(255, 255, 255, 0.8)', borderBottomColor: 'rgba(0,0,0,0.1)' },
+    headerText: { color: '#1e293b' },
+    myMsgWrapper: { alignSelf: 'flex-end', alignItems: 'flex-end', paddingRight: 10 },
+    otherMsgWrapper: { alignSelf: 'flex-start', alignItems: 'flex-start', paddingLeft: 10 },
+    myMessageBubble: { backgroundColor: 'rgba(99, 102, 241, 1)', borderColor: 'rgba(99, 102, 241, 0.2)' },
+    messageBubble: { backgroundColor: 'rgba(255, 255, 255, 0.9)', borderColor: 'rgba(0,0,0,0.05)' },
+    messageText: { color: '#000000' },
+    myMessageText: { color: '#ffffff' },
+});
+
+const darkTheme = StyleSheet.create({
+    root: { backgroundColor: 'transparent' },
+    header: { backgroundColor: 'rgba(15, 23, 42, 0.8)', borderBottomColor: 'rgba(255,255,255,0.05)' },
+    headerText: { color: '#f8fafc' },
+    myMsgWrapper: { alignSelf: 'flex-end', alignItems: 'flex-end', paddingRight: 10 },
+    otherMsgWrapper: { alignSelf: 'flex-start', alignItems: 'flex-start', paddingLeft: 10 },
+    myMessageBubble: { backgroundColor: 'rgba(79, 70, 229, 1)', borderColor: 'rgba(255,255,255,0.1)' },
+    messageBubble: { backgroundColor: 'rgba(30, 41, 59, 0.8)', borderColor: 'rgba(255,255,255,0.08)' },
+    messageText: { color: '#f8fafc' },
+    myMessageText: { color: '#ffffff' },
+});

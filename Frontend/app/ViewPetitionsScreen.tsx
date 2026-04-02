@@ -23,6 +23,8 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE_URL } from '../lib/api';
 import { jwtDecode } from 'jwt-decode';
+import { AppContext } from './_layout';
+import { useContext } from 'react';
 import nlpService from '../lib/nlpService';
 
 
@@ -56,6 +58,10 @@ interface ChatMessage {
 }
 
 export default function ViewPetitionsScreen() {
+  const { theme } = useContext(AppContext);
+  const isDark = theme === 'dark';
+  const themeStyles = isDark ? darkTheme : lightTheme;
+
   const insets = useSafeAreaInsets();
   const route = useRoute<any>();
   const navigation = useNavigation<any>();
@@ -379,10 +385,10 @@ export default function ViewPetitionsScreen() {
   const renderPetition = ({ item }: { item: Petition }) => {
     const s = getStatusStyles(item.status);
     return (
-      <View style={styles.timelineItem}>
+      <View style={[styles.timelineItem, themeStyles.root]}>
         <View style={styles.timelineLine} />
         <View style={[styles.timelineDot, s.dot]} />
-        <View style={styles.petitionCard}>
+        <View style={[styles.petitionCard, themeStyles.card]}>
           <View style={styles.cardHeader}>
             <Text style={styles.memberName}>Author: {item.author_name}</Text>
             <View style={styles.cardHeaderRight}>
@@ -398,8 +404,8 @@ export default function ViewPetitionsScreen() {
               </TouchableOpacity>
             </View>
           </View>
-          <Text style={styles.petitionTitle}>{item.title}</Text>
-          <Text style={styles.petitionDesc}>{item.summary}</Text>
+          <Text style={[styles.petitionTitle, themeStyles.text]}>{item.title}</Text>
+          <Text style={[styles.petitionDesc, themeStyles.subText]}>{item.summary}</Text>
 
           {(userRole === 'HEAD' || userRole === 'ADMIN') && (!['APPROVED', 'REJECTED'].includes(item.status.toUpperCase().replace(/\s/g, '_'))) && (
             <View style={styles.cardActions}>
@@ -454,15 +460,15 @@ export default function ViewPetitionsScreen() {
 
   const renderListHeader = () => (
     <>
-      <View style={styles.header}>
-        <Text style={styles.title}>🗳️ Petitions Dashboard</Text>
-        <Text style={styles.subtitle}>Track all community petitions</Text>
+      <View style={[styles.header, themeStyles.header]}>
+        <Text style={[styles.title, themeStyles.headerText]}>🗳️ Petitions Dashboard</Text>
+        <Text style={[styles.subtitle, themeStyles.headerText]}>Track all community petitions</Text>
       </View>
 
-      <View style={styles.statsContainer}>
-        <View style={styles.statCard}><Text style={styles.statNumber}>{totalPetitions}</Text><Text style={styles.statLabel}>Total</Text></View>
-        <View style={styles.statCard}><Text style={styles.statNumber}>{approvedPetitionsCount || 0}</Text><Text style={styles.statLabel}>Approved</Text></View>
-        <View style={styles.statCard}><Text style={styles.statNumber}>{pendingPetitionsCount || 0}</Text><Text style={styles.statLabel}>Pending</Text></View>
+      <View style={[styles.statsContainer, themeStyles.card]}>
+        <View style={styles.statCard}><Text style={[styles.statNumber, themeStyles.text]}>{totalPetitions}</Text><Text style={[styles.statLabel, themeStyles.subText]}>Total</Text></View>
+        <View style={styles.statCard}><Text style={[styles.statNumber, themeStyles.text]}>{approvedPetitionsCount || 0}</Text><Text style={[styles.statLabel, themeStyles.subText]}>Approved</Text></View>
+        <View style={styles.statCard}><Text style={[styles.statNumber, themeStyles.text]}>{pendingPetitionsCount || 0}</Text><Text style={[styles.statLabel, themeStyles.subText]}>Pending</Text></View>
       </View>
 
       {(userRole === 'HEAD' || userRole === 'ADMIN') && (
@@ -476,12 +482,12 @@ export default function ViewPetitionsScreen() {
         </TouchableOpacity>
       )}
 
-      <View style={styles.searchContainer}>
+      <View style={[styles.searchContainer, themeStyles.card]}>
         <Text style={styles.searchIcon}>🔍</Text>
         <TextInput
-          style={styles.searchInput}
+          style={[styles.searchInput, themeStyles.text]}
           placeholder="Search by title, description, or author..."
-          placeholderTextColor="#9ca3af"
+          placeholderTextColor={isDark ? "#9ca3af" : "#64748b"}
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
@@ -568,12 +574,8 @@ export default function ViewPetitionsScreen() {
 
   return (
     <View style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
-      <LinearGradient
-        colors={['#0f172a', '#1e293b', '#0f172a']}
-        style={styles.background}
-      >
-        <View style={styles.container}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+      <View style={styles.container}>
       {loading ? (
         <View style={styles.loaderContainer}>
           <ActivityIndicator size="large" color="#3b82f6" />
@@ -706,8 +708,7 @@ export default function ViewPetitionsScreen() {
         </TouchableOpacity>
       </Modal>
         </View>
-      </LinearGradient>
-    </View>
+      </View>
   );
 }
 
@@ -992,4 +993,22 @@ const styles = StyleSheet.create({
   applyBtn: { backgroundColor: '#6366f1', paddingHorizontal: 20, justifyContent: 'center', borderRadius: 12 },
   applyBtnText: { color: '#fff', fontWeight: '700' },
   actionButtonSmallText: { color: '#fff', fontSize: 12, fontWeight: '700' },
+});
+
+const lightTheme = StyleSheet.create({
+    root: { backgroundColor: 'transparent' },
+    header: { backgroundColor: 'rgba(255, 255, 255, 0.8)', borderBottomColor: 'rgba(0,0,0,0.1)' },
+    headerText: { color: '#1e293b' },
+    card: { backgroundColor: 'rgba(255, 255, 255, 0.9)', borderColor: 'rgba(0,0,0,0.1)' },
+    text: { color: '#1e293b' },
+    subText: { color: '#475569' },
+});
+
+const darkTheme = StyleSheet.create({
+    root: { backgroundColor: 'transparent' },
+    header: { backgroundColor: 'rgba(15, 23, 42, 0.8)', borderBottomColor: 'rgba(255,255,255,0.05)' },
+    headerText: { color: '#f8fafc' },
+    card: { backgroundColor: 'rgba(30, 41, 59, 0.7)', borderColor: 'rgba(255,255,255,0.08)' },
+    text: { color: '#f8fafc' },
+    subText: { color: '#cbd5e1' },
 });

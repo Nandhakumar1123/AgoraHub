@@ -2,12 +2,14 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, Share, StyleSheet, Alert, Switch, Platform, StatusBar } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Feather';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { jwtDecode } from 'jwt-decode';
 import { API_BASE_URL } from '../lib/api';
+import { AppContext } from './_layout';
+import { useContext } from 'react';
 
 const BASE_URL = API_BASE_URL;
 
@@ -22,7 +24,7 @@ type Community = {
   created_at: string;
 };
 
-type UserCommunity = Community & { role: 'HEAD' | 'MEMBER' };
+type UserCommunity = Community & { role: 'HEAD' | 'MEMBER'; is_archived?: boolean; status?: string };
 
 type CommunityMember = {
   user_id: number;
@@ -35,6 +37,8 @@ type CommunityMember = {
 };
 
 export default function CommunityScreen() {
+  const { theme } = useContext(AppContext);
+  const isDark = theme === 'dark';
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>();
   const router = useRouter();
@@ -44,13 +48,14 @@ export default function CommunityScreen() {
   const [currentUser, setCurrentUser] = useState<{ user_id: number | null; full_name: string }>({ user_id: null, full_name: 'Guest' });
 
   // Screen states
-  const [activeTab, setActiveTab] = useState<'created' | 'joined'>('created');
+  const [activeTab, setActiveTab] = useState<'created' | 'joined' | 'archived'>('created');
   const [view, setView] = useState<'main' | 'create' | 'shareDetails' | 'joinCommunity' | 'memberList' | 'memberDetails'>('main');
   const [communities, setCommunities] = useState<UserCommunity[]>([]);
   const [selectedCommunity, setSelectedCommunity] = useState<UserCommunity | null>(null);
   const [communityMembers, setCommunityMembers] = useState<CommunityMember[]>([]);
   const [selectedMember, setSelectedMember] = useState<CommunityMember | null>(null);
   const [userRoleInCommunity, setUserRoleInCommunity] = useState<'HEAD' | 'MEMBER' | null>(null);
+  const [communityCreatorId, setCommunityCreatorId] = useState<number | null>(null);
   const [newCommunityName, setNewCommunityName] = useState('');
   const [joinCode, setJoinCode] = useState('');
   const [description, setDescription] = useState('');
@@ -62,8 +67,9 @@ export default function CommunityScreen() {
   const [groupChatEnabled, setGroupChatEnabled] = useState(false);
   const [anonymousEnabled, setAnonymousEnabled] = useState(false);
 
-  const createdCommunities = communities.filter(c => c.role === 'HEAD');
-  const joinedCommunities = communities.filter(c => c.role === 'MEMBER');
+  const createdCommunities = communities.filter(c => c.role === 'HEAD' && !c.is_archived && c.status !== 'ARCHIVED');
+  const joinedCommunities = communities.filter(c => c.role === 'MEMBER' && !c.is_archived && c.status !== 'ARCHIVED');
+  const archivedCommunities = communities.filter(c => c.is_archived || c.status === 'ARCHIVED');
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -90,6 +96,14 @@ export default function CommunityScreen() {
     if (currentUser?.user_id) fetchCommunities(currentUser.user_id);
   }, [currentUser]);
 
+  useFocusEffect(
+    useCallback(() => {
+      if (currentUser?.user_id) {
+        fetchCommunities(currentUser.user_id);
+      }
+    }, [currentUser?.user_id])
+  );
+
   async function fetchCommunities(userId: number) {
     try {
       const token = await AsyncStorage.getItem('authToken');
@@ -103,9 +117,10 @@ export default function CommunityScreen() {
         Authorization: `Bearer ${token}`,
       };
 
-      const [createdRes, joinedRes] = await Promise.all([
+      const [createdRes, joinedRes, archivedRes] = await Promise.all([
         fetch(`${BASE_URL}/created_communities/${userId}`, { headers }),
-        fetch(`${BASE_URL}/joined_communities/${userId}`, { headers })
+        fetch(`${BASE_URL}/joined_communities/${userId}`, { headers }),
+        fetch(`${BASE_URL}/archived_communities/${userId}`, { headers })
       ]);
 
       if (!createdRes.ok || !joinedRes.ok) {
@@ -115,10 +130,12 @@ export default function CommunityScreen() {
 
       const createdData = await createdRes.json();
       const joinedData = await joinedRes.json();
-      console.log('Fetched created communities:', createdData.length, 'joined communities:', joinedData.length);
+      const archivedData = await archivedRes.json();
+      console.log('Fetched:', createdData.length, 'created,', joinedData.length, 'joined,', archivedData.length, 'archived');
       const all = [
         ...createdData.map((c: any) => ({ ...c, role: 'HEAD' })),
-        ...joinedData.map((c: any) => ({ ...c, role: 'MEMBER' }))
+        ...joinedData.map((c: any) => ({ ...c, role: 'MEMBER' })),
+        ...archivedData.map((c: any) => ({ ...c, role: 'MEMBER' })) // Archived are handled as members for view
       ];
       console.log('Total communities after fetch:', all.length);
       setCommunities(all);
@@ -162,6 +179,7 @@ export default function CommunityScreen() {
       // ✅ Properly update both members and user role in one place
       setCommunityMembers(data.members);
       setUserRoleInCommunity(data.user_role);
+      setCommunityCreatorId(data.creator_user_id ?? null);
       console.log('✅ userRoleInCommunity updated to:', data.user_role);
     } catch (error) {
       console.error('Error fetching community members:', error);
@@ -330,15 +348,88 @@ export default function CommunityScreen() {
     setView('memberDetails');
   }
 
+  function openInfoCard(community: UserCommunity) {
+    if (community.role === 'HEAD') {
+        navigation.navigate("AdminCommunityApp", { community });
+    }
+  }
+
+  async function promoteMember(member: CommunityMember) {
+    if (!selectedCommunity) return;
+    if (!currentUser?.user_id) return;
+    if (!selectedCommunity.id) return;
+    // Only the permanent creator (who is also a HEAD) can promote
+    if (communityCreatorId == null || currentUser.user_id !== communityCreatorId) return;
+
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      if (!token) return;
+
+      const response = await fetch(`${BASE_URL}/communities/${selectedCommunity.id}/promote_member`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ member_id: member.user_id }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        Alert.alert('Error', data.error || 'Failed to promote member');
+        return;
+      }
+
+      Alert.alert('Success', `${member.full_name} has been promoted.`);
+      fetchCommunityMembers(selectedCommunity.id);
+    } catch (error) {
+      console.error('Failed to promote member:', error);
+      Alert.alert('Error', 'Failed to promote member');
+    }
+  }
+
+  async function demoteMember(member: CommunityMember) {
+    if (!selectedCommunity) return;
+    if (!currentUser?.user_id) return;
+    if (!selectedCommunity.id) return;
+    // Only the permanent creator can demote
+    if (communityCreatorId == null || currentUser.user_id !== communityCreatorId) return;
+    if (member.user_id === communityCreatorId) return; // permanent head
+    if (member.user_id === currentUser.user_id) return;
+
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      if (!token) return;
+
+      const response = await fetch(`${BASE_URL}/communities/${selectedCommunity.id}/demote_member`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ member_id: member.user_id }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        Alert.alert('Error', data.error || 'Failed to demote member');
+        return;
+      }
+
+      Alert.alert('Success', `${member.full_name} has been demoted to Member.`);
+      fetchCommunityMembers(selectedCommunity.id);
+    } catch (error) {
+      console.error('Failed to demote member:', error);
+      Alert.alert('Error', 'Failed to demote member');
+    }
+  }
+
   // ================= MAIN SCREEN =================
   if (view === 'main') {
     return (
-      <View style={styles.safeArea}>
-        <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
-        <LinearGradient
-          colors={['rgba(15, 23, 42, 0.5)', 'rgba(30, 41, 59, 0.5)', 'rgba(15, 23, 42, 0.5)']}
-          style={[styles.background, { paddingTop: insets.top }]}
-        >
+      <View style={[styles.safeArea, { backgroundColor: 'transparent' }]}>
+        <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+        <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.headerIcon}>👥</Text>
           <Text style={styles.headerTitle}>Communities</Text>
@@ -365,13 +456,16 @@ export default function CommunityScreen() {
           <TouchableOpacity style={[styles.tab, activeTab === 'joined' && styles.activeTab]} onPress={() => setActiveTab('joined')}>
             <Text style={[styles.tabText, activeTab === 'joined' && styles.activeTabText]}>Joined</Text>
           </TouchableOpacity>
+          <TouchableOpacity style={[styles.tab, activeTab === 'archived' && styles.activeTab]} onPress={() => setActiveTab('archived')}>
+            <Text style={[styles.tabText, activeTab === 'archived' && styles.activeTabText]}>Archived</Text>
+          </TouchableOpacity>
         </View>
 
         <ScrollView style={styles.scrollContent}>
           <View style={styles.content}>
-            {activeTab === 'created'
-              ? createdCommunities.length === 0
-                ? <View style={styles.emptyState}><Text>No Created Communities</Text></View>
+            {activeTab === 'created' && (
+              createdCommunities.length === 0
+                ? <View style={styles.emptyState}><Text style={{ color: '#94a3b8' }}>No Created Communities</Text></View>
                 : createdCommunities.map((community, index) => (
                   <TouchableOpacity key={community.id} style={[styles.communityCard, index > 0 && styles.communityCardMargin]} onPress={() => openCommunityApp(community)}>
                     <Text style={styles.communityName}>{community.name}</Text>
@@ -389,23 +483,55 @@ export default function CommunityScreen() {
                     </View>
                   </TouchableOpacity>
                 ))
-              : joinedCommunities.length === 0
-                ? <View style={styles.emptyState}><Text>No Joined Communities</Text></View>
+            )}
+
+            {activeTab === 'joined' && (
+              joinedCommunities.length === 0
+                ? <View style={styles.emptyState}><Text style={{ color: '#94a3b8' }}>No Joined Communities</Text></View>
                 : joinedCommunities.map((community, index) => (
                   <TouchableOpacity key={community.id} style={[styles.communityCard, index > 0 && styles.communityCardMargin]} onPress={() => openCommunityApp(community)}>
                     <Text style={styles.communityName}>{community.name}</Text>
+                    <Text style={{ color: '#6B7280', marginBottom: 6 }}>{community.description || 'No description'}</Text>
                     <View style={styles.badgeRow}>
+                      <Text style={styles.codeText}>Code: {community.code}</Text>
+                      <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+                        <Text style={styles.headInfo}>Head: {community.head_name}</Text>
+                        <TouchableOpacity onPress={(e) => { e.stopPropagation(); openMemberList(community); }}>
+                          <Icon name="users" size={22} color="#10B981" />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                    {community.member_count != null && (
+                      <Text style={{ color: '#6B7280', marginTop: 6 }}>
+                        Members: {Number(community.member_count)}
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                ))
+            )}
+
+            {activeTab === 'archived' && (
+              archivedCommunities.length === 0
+                ? <View style={styles.emptyState}><Text style={{ color: '#94a3b8' }}>No Archived Communities</Text></View>
+                : archivedCommunities.map((community, index) => (
+                  <TouchableOpacity key={community.id} style={[styles.communityCard, index > 0 && styles.communityCardMargin, { opacity: 0.7 }]} onPress={() => openCommunityApp(community)}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Text style={styles.communityName}>{community.name}</Text>
+                      <View style={{ backgroundColor: 'rgba(245, 158, 11, 0.1)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 }}>
+                        <Text style={{ color: '#f59e0b', fontSize: 10, fontWeight: '700' }}>ARCHIVED</Text>
+                      </View>
+                    </View>
+                    <Text style={{ color: '#6B7280', marginBottom: 6 }}>{community.description || 'No description'}</Text>
+                    <View style={styles.badgeRow}>
+                      <Text style={styles.codeText}>Code: {community.code}</Text>
                       <Text style={styles.headInfo}>Head: {community.head_name}</Text>
-                      <TouchableOpacity onPress={(e) => { e.stopPropagation(); openMemberList(community); }}>
-                        <Icon name="users" size={22} color="#10B981" />
-                      </TouchableOpacity>
                     </View>
                   </TouchableOpacity>
                 ))
-            }
+            )}
           </View>
         </ScrollView>
-        </LinearGradient>
+        </View>
       </View>
     );
   }
@@ -414,9 +540,8 @@ export default function CommunityScreen() {
   if (view === 'create') {
     return (
       <View style={styles.safeArea}>
-        <LinearGradient
-          colors={['rgba(15, 23, 42, 0.5)', 'rgba(30, 41, 59, 0.5)', 'rgba(15, 23, 42, 0.5)']}
-          style={[styles.background, { paddingTop: insets.top, flex: 1 }]}
+        <View
+          style={[styles.container, { paddingTop: insets.top, flex: 1 }]}
         >
         <ScrollView style={styles.scrollContent}>
         <View style={styles.header}>
@@ -475,7 +600,7 @@ export default function CommunityScreen() {
                     style={[styles.chatButton, { backgroundColor: item.state ? '#10b981' : '#9ca3af' }]}
                     onPress={() => {
                       if (item.state) {
-                        navigation.navigate('ChatScreen', { communityId: community?.id });
+                        navigation.navigate('ChatScreen', { communityId: selectedCommunity?.id });
                       } else {
                         Alert.alert('Chat Disabled', 'Group chat is currently disabled for this community.');
                       }
@@ -501,7 +626,7 @@ export default function CommunityScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
-      </LinearGradient>
+      </View>
       </View>
     );
   }
@@ -510,9 +635,8 @@ export default function CommunityScreen() {
   if (view === 'shareDetails' && selectedCommunity) {
     return (
       <View style={styles.safeArea}>
-        <LinearGradient
-          colors={['rgba(15, 23, 42, 0.5)', 'rgba(30, 41, 59, 0.5)', 'rgba(15, 23, 42, 0.5)']}
-          style={[styles.background, { paddingTop: insets.top, alignItems: 'center', justifyContent: 'center' }]}
+        <View
+          style={[styles.container, { paddingTop: insets.top, alignItems: 'center', justifyContent: 'center' }]}
         >
           <Text style={styles.headerTitle}>🎉 Community Created!</Text>
           <Text style={styles.communityName}>{selectedCommunity.name}</Text>
@@ -523,7 +647,7 @@ export default function CommunityScreen() {
           <TouchableOpacity onPress={() => setView('main')} style={[styles.headerButton, { marginTop: 20 }]}>
             <Text style={styles.headerButtonText}>Go to Main</Text>
           </TouchableOpacity>
-        </LinearGradient>
+        </View>
       </View>
     );
   }
@@ -532,9 +656,8 @@ export default function CommunityScreen() {
   if (view === 'joinCommunity') {
     return (
       <View style={styles.safeArea}>
-        <LinearGradient
-          colors={['rgba(15, 23, 42, 0.5)', 'rgba(30, 41, 59, 0.5)', 'rgba(15, 23, 42, 0.5)']}
-          style={[styles.background, { paddingTop: insets.top, flex: 1 }]}
+        <View
+          style={[styles.container, { paddingTop: insets.top, flex: 1 }]}
         >
           <View style={styles.header}>
             <Text style={styles.headerTitle}>Join Community</Text>
@@ -557,7 +680,7 @@ export default function CommunityScreen() {
               <Text style={styles.primaryButtonText}>Join</Text>
             </TouchableOpacity>
           </View>
-        </LinearGradient>
+        </View>
       </View>
     );
   }
@@ -566,9 +689,8 @@ export default function CommunityScreen() {
   if (view === 'memberList' && selectedCommunity) {
     return (
       <View style={styles.safeArea}>
-        <LinearGradient
-          colors={['rgba(15, 23, 42, 0.5)', 'rgba(30, 41, 59, 0.5)', 'rgba(15, 23, 42, 0.5)']}
-          style={[styles.background, { paddingTop: insets.top, flex: 1 }]}
+        <View
+          style={[styles.container, { paddingTop: insets.top, flex: 1 }]}
         >
         <View style={styles.header}>
           <TouchableOpacity onPress={() => setView('main')} style={styles.backButton}>
@@ -617,7 +739,10 @@ export default function CommunityScreen() {
                   )}
                 </TouchableOpacity>
 
-                {userRoleInCommunity === 'HEAD' && member.role === 'MEMBER' && (
+                {userRoleInCommunity === 'HEAD' &&
+                 communityCreatorId != null &&
+                 currentUser?.user_id === communityCreatorId &&
+                 member.role === 'MEMBER' && (
                   <TouchableOpacity
                     style={styles.promoteButton}
                     onPress={() => promoteMember(member)}
@@ -626,11 +751,26 @@ export default function CommunityScreen() {
                     <Text style={styles.promoteButtonText}>Make Head</Text>
                   </TouchableOpacity>
                 )}
+
+                {userRoleInCommunity === 'HEAD' &&
+                 communityCreatorId != null &&
+                 currentUser?.user_id === communityCreatorId &&
+                 member.role === 'HEAD' &&
+                 member.user_id !== communityCreatorId &&
+                 member.user_id !== currentUser?.user_id && (
+                  <TouchableOpacity
+                    style={styles.demoteButton}
+                    onPress={() => demoteMember(member)}
+                  >
+                    <Icon name="user-minus" size={16} color="#ef4444" />
+                    <Text style={styles.demoteButtonText}>Demote Head</Text>
+                  </TouchableOpacity>
+                )}
               </View>
             ))}
           </View>
         </ScrollView>
-        </LinearGradient>
+        </View>
       </View>
     );
   }
@@ -639,9 +779,8 @@ export default function CommunityScreen() {
   if (view === 'memberDetails' && selectedMember) {
     return (
       <View style={styles.safeArea}>
-        <LinearGradient
-          colors={['rgba(15, 23, 42, 0.5)', 'rgba(30, 41, 59, 0.5)', 'rgba(15, 23, 42, 0.5)']}
-          style={[styles.background, { paddingTop: insets.top, flex: 1 }]}
+        <View
+          style={[styles.container, { paddingTop: insets.top, flex: 1 }]}
         >
         <View style={styles.header}>
           <TouchableOpacity onPress={() => setView('memberList')} style={styles.backButton}>
@@ -695,7 +834,7 @@ export default function CommunityScreen() {
             </View>
           </View>
         </ScrollView>
-        </LinearGradient>
+        </View>
       </View>
     );
   }
@@ -705,6 +844,7 @@ export default function CommunityScreen() {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: 'transparent' },
+  container: { flex: 1 },
   header: {
     paddingHorizontal: 12,
     paddingVertical: 12,
@@ -912,6 +1052,25 @@ const styles = StyleSheet.create({
   },
   promoteButtonText: {
     color: '#818cf8',
+    fontSize: 14,
+    fontWeight: '700',
+    marginLeft: 8,
+  },
+
+  demoteButton: {
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.3)',
+  },
+  demoteButtonText: {
+    color: '#ef4444',
     fontSize: 14,
     fontWeight: '700',
     marginLeft: 8,

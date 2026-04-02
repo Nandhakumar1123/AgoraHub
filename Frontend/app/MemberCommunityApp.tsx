@@ -22,7 +22,9 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import io, { Socket } from 'socket.io-client';
 import { API_BASE_URL, SOCKET_BASE_URL } from '../lib/api';
-import PollMessageCard from './PollMessageCard';
+import { AppContext } from './_layout';
+import { useContext } from 'react';
+import PollChatIntimation from './PollChatIntimation';
 import PollCreateScreen from './PollCreateScreen';
 
 
@@ -263,6 +265,11 @@ const useCommunityMessages = (communityId: number, currentUserId: number | null)
       });
     });
 
+    // Listen for chat clearing
+    socket.on('chat_cleared', () => {
+      setMessages([]);
+    });
+
     return () => {
       socket.emit('leave_community', communityId);
       socket.disconnect();
@@ -371,7 +378,7 @@ const memberFeatures = [
   { id: 4, title: 'Anonymous Chat', icon: '💬', color: '#45B7D1' },
   { id: 5, title: 'Community Events', icon: '📅', color: '#96CEB4' },
   { id: 6, title: 'Resources', icon: '📚', color: '#FECA57' },
-  { id: 7, title: 'Polling', icon: '🗳️', color: '#667eea' },
+  { id: 7, title: 'Poll', icon: '🗳️', color: '#667eea' },
 ];
 
 // Media options
@@ -385,6 +392,10 @@ const mediaOptions = [
 ];
 
 const MemberCommunityApp: React.FC = () => {
+  const { theme } = useContext(AppContext);
+  const isDark = theme === 'dark';
+  const themeStyles = isDark ? darkTheme : lightTheme;
+
   const insets = useSafeAreaInsets();
   const route = useRoute<MemberCommunityRouteProp>();
   const communityId = Number(route.params?.community?.id || route.params?.community?.community_id || 36);
@@ -605,7 +616,7 @@ const MemberCommunityApp: React.FC = () => {
           }
         }
       });
-    } else if (feature.title === 'Polling') {
+    } else if (feature.title === 'Poll') {
       navigation.navigate('PollsListScreen' as any, {
         communityId: community?.id || community?.community_id || 36,
         community: community,
@@ -722,18 +733,14 @@ const MemberCommunityApp: React.FC = () => {
   });
 
   return (
-    <View style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
-      <LinearGradient
-        colors={['#0f172a', '#1e293b', '#0f172a']}
-        style={styles.background}
-      >
-        <SafeAreaView style={styles.container}>
+    <View style={[styles.safeArea, themeStyles.root]}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+      <SafeAreaView style={styles.container}>
 
       {/* WhatsApp-style Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, themeStyles.header]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={styles.backArrow}>←</Text>
+          <Text style={[styles.backArrow, themeStyles.headerText]}>←</Text>
         </TouchableOpacity>
 
 
@@ -742,13 +749,26 @@ const MemberCommunityApp: React.FC = () => {
             <HomeIcon />
           </View>
           <View style={styles.headerInfo}>
-            <Text style={styles.communityName}>{community?.name || 'Community'}</Text>
-            <Text style={styles.communitySubtitle}>
+            <Text style={[styles.communityName, themeStyles.headerText]}>{community?.name || 'Community'}</Text>
+            <Text style={[styles.communitySubtitle, themeStyles.headerText, { opacity: 0.7 }]}>
               {community?.member_count != null ? `${community.member_count} members` : 'Members'} • Online
             </Text>
           </View>
         </View>
-        <TouchableOpacity onPress={handleLogout} style={styles.headerButton}>
+                <TouchableOpacity 
+          onPress={() => {
+            Alert.alert(
+              'Menu',
+              'Select an option',
+              [
+                { text: 'Logout', onPress: handleLogout, style: 'destructive' },
+                { text: 'Cancel', style: 'cancel' }
+              ]
+            );
+          }} 
+          style={styles.headerButton}
+        >
+
           <MenuIcon />
         </TouchableOpacity>
       </View>
@@ -784,7 +804,8 @@ const MemberCommunityApp: React.FC = () => {
               const isSOS = message.message_type === 'sos';
               const isComplaint = message.message_type === 'complaint';
               const isPetition = message.message_type === 'petition';
-              const isSpecialMessage = isAnnouncement || isSOS || isComplaint || isPetition;
+              const isPoll = message.message_type === 'poll';
+              const isSpecialMessage = isAnnouncement || isSOS || isComplaint || isPetition || isPoll;
 
 
               return (
@@ -795,8 +816,8 @@ const MemberCommunityApp: React.FC = () => {
                     isSpecialMessage
                       ? styles.specialMessageWrapper
                       : isOwn
-                        ? styles.ownMessageWrapper    // ✅ Right side for my messages
-                        : styles.otherMessageWrapper, // ✅ Left side for others
+                        ? themeStyles.myMsgWrapper    
+                        : themeStyles.otherMsgWrapper, 
                   ]}
                 >
                   <View
@@ -806,7 +827,13 @@ const MemberCommunityApp: React.FC = () => {
                       isSOS && styles.sosMessage,
                       isComplaint && styles.complaintMessage,
                       isPetition && styles.petitionMessage,
-                      !isSpecialMessage && (isOwn ? styles.ownMessage : styles.otherMessage),
+                      isPoll && {
+                        backgroundColor: 'transparent',
+                        borderWidth: 0,
+                        padding: 0,
+                        maxWidth: '100%',
+                      },
+                      !isSpecialMessage && (isOwn ? themeStyles.myMessageBubble : themeStyles.messageBubble),
                     ]}
                   >
                     {/* ✅ Show sender name ONLY for messages from others */}
@@ -829,18 +856,21 @@ const MemberCommunityApp: React.FC = () => {
                     )}
 
                     {/* Message content */}
-                    <Text
-                      style={[
-                        styles.messageText,
-                        isOwn && !isSpecialMessage && styles.ownMessageText,
-                        isAnnouncement && styles.announcementText,
-                        isSOS && styles.sosText,
-                        isComplaint && styles.complaintText,
-                        isPetition && styles.petitionText,
-                      ]}
-                    >
-                      {message.content}
-                    </Text>
+                    {!isPoll && (
+                      <Text
+                        style={[
+                          styles.messageText,
+                          !isSpecialMessage &&
+                            (isOwn ? themeStyles.myMessageText : themeStyles.messageText),
+                          isAnnouncement && styles.announcementText,
+                          isSOS && styles.sosText,
+                          isComplaint && styles.complaintText,
+                          isPetition && styles.petitionText,
+                        ]}
+                      >
+                        {message.content}
+                      </Text>
+                    )}
 
                     {/* Message time with checkmark */}
                     <View style={styles.messageFooter}>
@@ -874,15 +904,18 @@ const MemberCommunityApp: React.FC = () => {
                     )}
 
                     {/* POLL CARD INTEGRATION */}
-                    {message.message_type === 'poll' && (
-                      <PollMessageCard
+                    {isPoll && (
+                      <PollChatIntimation
                         communityId={Number(communityId)}
                         pollId={Number(message.content || '0')}
-                        currentUserId={Number(currentUserId)}
                         isAdmin={false}
-
-                        sentByMe={isOwn}
-                        createdAt={message.created_at || ''}
+                        onOpenPoll={(pId) => {
+                          navigation.navigate('PollVoteScreen' as any, {
+                            communityId: Number(communityId),
+                            pollId: pId,
+                            isAdmin: false,
+                          });
+                        }}
                       />
                     )}
                   </View>
@@ -1011,7 +1044,6 @@ const MemberCommunityApp: React.FC = () => {
       </Modal>
 
         </SafeAreaView>
-      </LinearGradient>
     </View>
   );
 };
@@ -1457,4 +1489,27 @@ const styles = StyleSheet.create({
     marginTop: 8,
     paddingHorizontal: 32,
   },
+});
+const lightTheme = StyleSheet.create({
+    root: { backgroundColor: 'transparent' },
+    header: { backgroundColor: 'rgba(255, 255, 255, 0.8)', borderBottomColor: 'rgba(0,0,0,0.1)' },
+    headerText: { color: '#1e293b' },
+    myMsgWrapper: { alignSelf: 'flex-end', alignItems: 'flex-end', paddingRight: 10 },
+    otherMsgWrapper: { alignSelf: 'flex-start', alignItems: 'flex-start', paddingLeft: 10 },
+    myMessageBubble: { backgroundColor: 'rgba(99, 102, 241, 1)', borderColor: 'rgba(99, 102, 241, 0.2)' },
+    messageBubble: { backgroundColor: 'rgba(255, 255, 255, 0.9)', borderColor: 'rgba(0,0,0,0.05)' },
+    messageText: { color: '#000000' },
+    myMessageText: { color: '#ffffff' },
+});
+
+const darkTheme = StyleSheet.create({
+    root: { backgroundColor: 'transparent' },
+    header: { backgroundColor: 'rgba(15, 23, 42, 0.8)', borderBottomColor: 'rgba(255,255,255,0.05)' },
+    headerText: { color: '#f8fafc' },
+    myMsgWrapper: { alignSelf: 'flex-end', alignItems: 'flex-end', paddingRight: 10 },
+    otherMsgWrapper: { alignSelf: 'flex-start', alignItems: 'flex-start', paddingLeft: 10 },
+    myMessageBubble: { backgroundColor: 'rgba(79, 70, 229, 1)', borderColor: 'rgba(255,255,255,0.1)' },
+    messageBubble: { backgroundColor: 'rgba(30, 41, 59, 0.8)', borderColor: 'rgba(255,255,255,0.08)' },
+    messageText: { color: '#f8fafc' },
+    myMessageText: { color: '#ffffff' },
 });

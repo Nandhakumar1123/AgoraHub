@@ -183,7 +183,6 @@ const PollMessageCard: React.FC<PollMessageCardProps> = ({
     const [voting, setVoting] = useState(false);
     const [selected, setSelected] = useState<number[]>([]);
     const [hasVoted, setHasVoted] = useState(false);
-    const [showRes, setShowRes] = useState(false);
     const [collapsed, setCollapsed] = useState(false);
 
     const fadeIn = useRef(new Animated.Value(0)).current;
@@ -245,48 +244,24 @@ const PollMessageCard: React.FC<PollMessageCardProps> = ({
                     setSelected(ids);
                 }
             }
-
-            // Visibility Logic
-            let shouldShowRes = false;
-
-            // If poll is closed, everyone sees results
-            if (!data.effectively_active) {
-                shouldShowRes = true;
-            }
-            // Otherwise follow visibility settings
-            else if (data.result_visibility === 'immediate') {
-                shouldShowRes = true;
-            } else if (data.result_visibility === 'after_vote') {
-                if (data.my_voted_option_ids && data.my_voted_option_ids.length > 0) {
-                    shouldShowRes = true;
-                }
-            } else if (data.result_visibility === 'after_close') {
-                // Already handled by !data.effectively_active check above, 
-                // but kept for logical completeness
-                if (!data.effectively_active) {
-                    shouldShowRes = true;
-                }
-            }
-
-            // Admins always see results if they want? 
-            // User requested immediate update on both Head/Admin side.
-            if (isAdmin) {
-                shouldShowRes = true;
-            }
-
-            setShowRes(shouldShowRes);
             setPoll(data);
         } catch { /* silent */ }
         finally { setLoading(false); }
     };
 
+    // Ensure poll expiry is reflected even if no vote-close websocket event arrives.
+    useEffect(() => {
+        if (!poll?.closes_at || !poll.effectively_active) return;
+        const intervalId = setInterval(() => {
+            load();
+        }, 30000); // refresh every 30s
+        return () => clearInterval(intervalId);
+    }, [poll?.closes_at, poll?.effectively_active, pollId, communityId]);
+
     const toggle = (id: number) => {
         if (!poll || hasVoted) return;
-        setSelected(prev =>
-            poll.allow_multiple_answers
-                ? prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
-                : [id]
-        );
+        // Requirement: single-vote polls (one selected option).
+        setSelected([id]);
     };
 
     const castVote = async () => {
@@ -308,7 +283,6 @@ const PollMessageCard: React.FC<PollMessageCardProps> = ({
                 return;
             }
             setHasVoted(true);
-            if (poll.result_visibility === 'after_vote') setShowRes(true);
             // After voting, we should check if the poll closed automatically
             await load();
         } catch { Alert.alert('Network error', 'Please try again.'); }
@@ -344,11 +318,16 @@ const PollMessageCard: React.FC<PollMessageCardProps> = ({
 
     const isOpen = poll.effectively_active;
     const canVote = isOpen && !hasVoted;
-    const meetsMin = poll.total_voters >= poll.min_votes_to_show || poll.min_votes_to_show === 0;
-    const showPct = showRes && meetsMin;
+    // Requirement: on the voting page, show vote distribution only after poll ends.
+    const showPct = !isOpen;
     const maxPct = Math.max(...poll.options.map(o => o.vote_percentage || 0));
     const votedSet = new Set(poll.my_voted_option_ids || []);
     const timerLabel = timeLeft(poll.closes_at, poll.effectively_active);
+    const firstSelectedId = selected[0] ?? (poll.my_voted_option_ids?.[0] ?? null);
+    const selectedOptionLabel =
+        firstSelectedId != null
+            ? poll.options.find(o => o.option_id === firstSelectedId)?.label
+            : null;
 
     return (
         <Animated.View
@@ -420,6 +399,16 @@ const PollMessageCard: React.FC<PollMessageCardProps> = ({
                             </View>
                         )}
 
+                        {hasVoted && isOpen && (
+                            <View style={s.votedSummaryBox}>
+                                <Text style={s.votedSummaryTitle}>✅ You have already voted</Text>
+                                {selectedOptionLabel ? (
+                                    <Text style={s.votedSummarySub}>Selected option: {selectedOptionLabel}</Text>
+                                ) : null}
+                                <Text style={s.votedSummaryStatus}>Status: Vote Casted</Text>
+                            </View>
+                        )}
+
                         {/* ── Options ─────────────────────────────────────────── */}
                         <View style={s.optionsBox}>
                             {poll.options
@@ -486,7 +475,7 @@ const PollMessageCard: React.FC<PollMessageCardProps> = ({
                         </View>
 
                         {/* ── Results Chart ───────────────────────────────────── */}
-                        {showRes && meetsMin && (
+                        {!isOpen && (
                             <ResultsChart options={poll.options} />
                         )}
 
@@ -511,39 +500,13 @@ const PollMessageCard: React.FC<PollMessageCardProps> = ({
                                                 : <>
                                                     <Text style={s.voteBtnIcon}>🗳️</Text>
                                                     <Text style={s.voteBtnTxt}>
-                                                        {hasVoted && poll.allow_change_vote ? 'Update Vote' : 'Cast Vote'}
-                                                        {poll.allow_multiple_answers && selected.length > 1
-                                                            ? ` (${selected.length})` : ''}
+                                                        Submit Vote
                                                     </Text>
                                                 </>
                                             }
                                         </LinearGradient>
                                     </TouchableOpacity>
                                 </Animated.View>
-                            )}
-
-                            {/* Change Vote button (if allowed and already voted) */}
-                            {isOpen && hasVoted && poll.allow_change_vote && !canVote && (
-                                <TouchableOpacity
-                                    style={s.changeVoteBtn}
-                                    onPress={() => setHasVoted(false)}
-                                >
-                                    <Text style={s.changeVoteBtnTxt}>✏️ Change Vote</Text>
-                                </TouchableOpacity>
-                            )}
-
-                            {/* Voted + result toggle */}
-                            {hasVoted && (
-                                <TouchableOpacity style={s.resToggle} onPress={() => setShowRes(v => !v)}>
-                                    <Text style={s.resToggleTxt}>{showRes ? '▲ Hide' : '📊 Results'}</Text>
-                                </TouchableOpacity>
-                            )}
-
-                            {/* After-close hint */}
-                            {hasVoted && !showRes && poll.result_visibility === 'after_close' && (
-                                <View style={s.lockedPill}>
-                                    <Text style={s.lockedTxt}>🔒 Results after close</Text>
-                                </View>
                             )}
 
                             {/* Admin close button */}
@@ -553,13 +516,6 @@ const PollMessageCard: React.FC<PollMessageCardProps> = ({
                                 </TouchableOpacity>
                             )}
                         </View>
-
-                        {/* ── min votes gate ──────────────────────────────────── */}
-                        {!meetsMin && (
-                            <Text style={s.minVoteHint}>
-                                🔒 {poll.min_votes_to_show - poll.total_voters} more votes needed to reveal results
-                            </Text>
-                        )}
                     </>
                 )}
 
@@ -630,6 +586,33 @@ const s = StyleSheet.create({
 
     title: { color: '#f1f5f9', fontSize: 14, fontWeight: '700', paddingHorizontal: 12, paddingBottom: 6, lineHeight: 20 },
     desc: { color: '#94a3b8', fontSize: 12, paddingHorizontal: 12, paddingBottom: 8, lineHeight: 17 },
+
+    votedSummaryBox: {
+        marginHorizontal: 12,
+        marginBottom: 10,
+        padding: 12,
+        backgroundColor: 'rgba(16,185,129,0.12)',
+        borderRadius: 14,
+        borderWidth: 1,
+        borderColor: 'rgba(16,185,129,0.35)',
+    },
+    votedSummaryTitle: {
+        color: '#a7f3d0',
+        fontSize: 13,
+        fontWeight: '900',
+        marginBottom: 4,
+    },
+    votedSummarySub: {
+        color: '#e5e7eb',
+        fontSize: 12,
+        fontWeight: '700',
+        marginBottom: 4,
+    },
+    votedSummaryStatus: {
+        color: '#34d399',
+        fontSize: 12,
+        fontWeight: '900',
+    },
 
     pillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, paddingHorizontal: 12, paddingBottom: 8 },
     pill: { backgroundColor: 'rgba(102,126,234,0.15)', color: '#a5b4fc', fontSize: 10, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(102,126,234,0.25)' },

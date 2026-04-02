@@ -44,7 +44,8 @@ const PollCreateScreen: React.FC<PollCreateScreenProps> = ({
   const [duration, setDuration] = useState<PollDuration>('7d');
   const [resultVisibility, setResultVisibility] = useState<ResultVisibility>('after_vote');
   const [votingRequirement, setVotingRequirement] = useState<VotingRequirement>('none');
-  const [allowChangeVote, setAllowChangeVote] = useState(true);
+  // Requirement: each user can vote only once per poll (no vote changes).
+  const [allowChangeVote, setAllowChangeVote] = useState(false);
   const [showVoterCount, setShowVoterCount] = useState(true);
   const [anonymousVoting, setAnonymousVoting] = useState(false);
   const [requireComment, setRequireComment] = useState(false);
@@ -372,14 +373,19 @@ const PollCreateScreen: React.FC<PollCreateScreenProps> = ({
 
               <TouchableOpacity
                 style={styles.settingCard}
-                onPress={() => setAllowMultiple(!allowMultiple)}
+                onPress={() =>
+                  Alert.alert(
+                    'Single Choice Poll',
+                    'Each member can select exactly one option.'
+                  )
+                }
               >
                 <View style={styles.settingLeft}>
                   <Text style={styles.settingEmoji}>☑️</Text>
                   <View style={styles.settingInfo}>
                     <Text style={styles.settingLabel}>Multiple Answers</Text>
                     <Text style={styles.settingHint}>
-                      Let members choose more than one option
+                      Disabled (single option only)
                     </Text>
                   </View>
                 </View>
@@ -390,14 +396,19 @@ const PollCreateScreen: React.FC<PollCreateScreenProps> = ({
 
               <TouchableOpacity
                 style={styles.settingCard}
-                onPress={() => setAllowChangeVote(!allowChangeVote)}
+                onPress={() =>
+                  Alert.alert(
+                    'Vote Changes Disabled',
+                    'Each user can vote only once per poll.'
+                  )
+                }
               >
                 <View style={styles.settingLeft}>
                   <Text style={styles.settingEmoji}>🔄</Text>
                   <View style={styles.settingInfo}>
                     <Text style={styles.settingLabel}>Allow Vote Changes</Text>
                     <Text style={styles.settingHint}>
-                      Members can modify their vote before poll ends
+                      Each user can vote only once per poll.
                     </Text>
                   </View>
                 </View>

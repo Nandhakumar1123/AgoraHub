@@ -11,13 +11,12 @@ import {
     Dimensions,
     Modal,
     Alert,
-    Platform
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { API_BASE_URL } from '../lib/api';
-import PollMessageCard from './PollMessageCard';
+import PollChatIntimation from './PollChatIntimation';
 import PollCreateScreen from './PollCreateScreen';
 
 const { width } = Dimensions.get('window');
@@ -30,39 +29,11 @@ const PollsListScreen = () => {
     const [polls, setPolls] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
-    const [currentUserId, setCurrentUserId] = useState<number | null>(null);
     const [pollModalVisible, setPollModalVisible] = useState(false);
 
     useEffect(() => {
         fetchPolls();
-        getCurrentUser();
     }, []);
-
-    const getCurrentUser = async () => {
-        try {
-            const token = await AsyncStorage.getItem('authToken');
-            if (token) {
-                let payload;
-                if (Platform.OS === 'web') {
-                    payload = JSON.parse(atob(token.split('.')[1]));
-                } else {
-                    // Polyfill or different approach for mobile if needed, 
-                    // but MemberCommunityApp uses atob, so assuming it's available or polyfilled.
-                    try {
-                        payload = JSON.parse(atob(token.split('.')[1]));
-                    } catch (e) {
-                        // Fallback for some RN environments
-                        console.warn('atob failed, user_id might be missing');
-                    }
-                }
-                if (payload) {
-                    setCurrentUserId(payload.user_id);
-                }
-            }
-        } catch (error) {
-            console.error('Error getting current user:', error);
-        }
-    };
 
     const fetchPolls = async () => {
         try {
@@ -92,13 +63,17 @@ const PollsListScreen = () => {
 
     const renderItem = ({ item }: { item: any }) => (
         <View style={styles.pollCardContainer}>
-            <PollMessageCard
+            <PollChatIntimation
                 communityId={Number(communityId)}
                 pollId={item.poll_id}
-                currentUserId={currentUserId || 0}
                 isAdmin={isAdmin}
-                sentByMe={item.created_by === currentUserId}
-                createdAt={item.created_at}
+                onOpenPoll={(pId) => {
+                    navigation.navigate('PollVoteScreen' as any, {
+                        communityId: Number(communityId),
+                        pollId: pId,
+                        isAdmin: isAdmin,
+                    });
+                }}
             />
         </View>
     );

@@ -35,14 +35,15 @@ import {
     ChevronRight,
     AtSign
 } from "lucide-react-native";
-import { useColorScheme } from "react-native";
+import { useContext } from "react";
+import { AppContext } from "./_layout";
 import { API_ROOT } from "../lib/api";
 
 const { width } = Dimensions.get("window");
 const BASE_URL = API_ROOT;
 
 const ProfileScreen = () => {
-    const theme = useColorScheme();
+    const { theme } = useContext(AppContext);
     const isDark = theme === "dark";
     const [profile, setProfile] = useState<any>(null);
     const [loading, setLoading] = useState(true);
@@ -351,7 +352,7 @@ const ProfileScreen = () => {
                                 label="Full Name" 
                                 icon={<User size={20} color="#6366f1" />} 
                                 value={formDataState.full_name} 
-                                onChangeText={(val) => setFormDataState({...formDataState, full_name: val})} 
+                                                                onChangeText={(val: string) => setFormDataState({...formDataState, full_name: val})} 
                                 error={errors.full_name}
                                 isDark={isDark}
                             />
@@ -360,7 +361,7 @@ const ProfileScreen = () => {
                                 label="Email Address" 
                                 icon={<Mail size={20} color="#6366f1" />} 
                                 value={formDataState.email} 
-                                onChangeText={(val) => setFormDataState({...formDataState, email: val})} 
+                                                                onChangeText={(val: string) => setFormDataState({...formDataState, email: val})} 
                                 error={errors.email}
                                 isDark={isDark}
                             />
@@ -369,7 +370,7 @@ const ProfileScreen = () => {
                                 label="Mobile Number" 
                                 icon={<Phone size={20} color="#6366f1" />} 
                                 value={formDataState.mobile_number} 
-                                onChangeText={(val) => setFormDataState({...formDataState, mobile_number: val})} 
+                                                                onChangeText={(val: string) => setFormDataState({...formDataState, mobile_number: val})} 
                                 error={errors.mobile_number}
                                 isDark={isDark}
                                 keyboardType="phone-pad"
@@ -379,7 +380,7 @@ const ProfileScreen = () => {
                                 label="Bio" 
                                 icon={<Info size={20} color="#6366f1" />} 
                                 value={formDataState.bio} 
-                                onChangeText={(val) => setFormDataState({...formDataState, bio: val})} 
+                                                                onChangeText={(val: string) => setFormDataState({...formDataState, bio: val})} 
                                 isDark={isDark}
                             />
 
@@ -387,7 +388,7 @@ const ProfileScreen = () => {
                                 label="Description" 
                                 icon={<Edit2 size={20} color="#6366f1" />} 
                                 value={formDataState.description} 
-                                onChangeText={(val) => setFormDataState({...formDataState, description: val})} 
+                                                                onChangeText={(val: string) => setFormDataState({...formDataState, description: val})} 
                                 multiline
                                 isDark={isDark}
                             />

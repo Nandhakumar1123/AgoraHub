@@ -965,6 +965,62 @@ app.get("/api/joined_communities/:user_id", authenticateToken, async (req, res) 
   }
 });
 
+// Fetch archived communities for user
+app.get("/api/archived_communities/:user_id", authenticateToken, async (req, res) => {
+  try {
+    const { user_id: param_user_id } = req.params;
+    const authenticated_user_id = req.user.user_id;
+
+    if (parseInt(param_user_id) !== authenticated_user_id) {
+      return res.status(403).json({ error: "Unauthorized access to archived communities" });
+    }
+
+    const communitiesResult = await pool.query(
+      `SELECT
+         c.community_id AS id,
+         c.code,
+         c.name,
+         c.description,
+         COUNT(DISTINCT m_all.user_id) AS member_count,
+         c.created_at,
+         c.is_archived,
+         m_user.status
+       FROM communities c
+       LEFT JOIN memberships m_all ON c.community_id = m_all.community_id AND m_all.status = 'ACTIVE'
+       JOIN memberships m_user ON c.community_id = m_user.community_id
+       WHERE m_user.user_id = $1 AND m_user.status = 'ARCHIVED'
+       GROUP BY c.community_id, c.code, c.name, c.description, c.created_at, c.is_archived, m_user.status
+       ORDER BY c.created_at DESC`,
+      [authenticated_user_id]
+    );
+
+    const communitiesWithHeads = await Promise.all(
+      communitiesResult.rows.map(async (community) => {
+        const headsResult = await pool.query(
+          `SELECT u.full_name
+           FROM users u
+           JOIN memberships m ON u.user_id = m.user_id
+           WHERE m.community_id = $1 AND m.role = 'HEAD' AND m.status = 'ACTIVE'
+           ORDER BY u.full_name`,
+          [community.id]
+        );
+
+        const headNames = headsResult.rows.map(row => row.full_name);
+        return {
+          ...community,
+          head_name: headNames.length > 0 ? headNames.join(', ') : 'No heads',
+          role: 'MEMBER' // Defaulting to member role for archived view
+        };
+      })
+    );
+
+    res.json(communitiesWithHeads);
+  } catch (error) {
+    console.error("❌ Error fetching archived communities:", error);
+    res.status(500).json({ error: "Error fetching archived communities" });
+  }
+});
+
 // Get community members
 app.get("/api/community_members/:community_id", authenticateToken, async (req, res) => {
   try {
@@ -1019,10 +1075,21 @@ app.get("/api/community_members/:community_id", authenticateToken, async (req, r
       });
     }
 
+    const creatorResult = await pool.query(
+      `SELECT created_by
+       FROM communities
+       WHERE community_id = $1`,
+      [community_id]
+    );
+
+    const creator_user_id =
+      creatorResult.rows.length > 0 ? creatorResult.rows[0].created_by : null;
+
     res.json({
       community_id: parseInt(community_id),
       members: members,
-      user_role: userRole
+      user_role: userRole,
+      creator_user_id,
     });
 
   } catch (error) {
@@ -1049,6 +1116,21 @@ app.delete("/api/community_members/:community_id/:user_id", authenticateToken, a
     // Cannot remove yourself if you are the only head (just basic check)
     if (parseInt(user_id) === requestingUserId) {
       return res.status(400).json({ error: "You cannot remove yourself from the community via this menu." });
+    }
+
+    // Permanently protect the community creator from being removed
+    const creatorResult = await pool.query(
+      `SELECT created_by
+       FROM communities
+       WHERE community_id = $1`,
+      [community_id]
+    );
+
+    const creator_user_id =
+      creatorResult.rows.length > 0 ? creatorResult.rows[0].created_by : null;
+
+    if (creator_user_id != null && parseInt(user_id) === creator_user_id) {
+      return res.status(403).json({ error: "You cannot remove the community creator." });
     }
 
     const result = await pool.query(
@@ -1167,8 +1249,20 @@ app.post("/api/communities/:communityId/promote_member", authenticateToken, asyn
       [requestingUserId, communityId]
     );
 
-    if (requestingUserCheck.rows.length === 0 || !['HEAD', 'ADMIN'].includes(requestingUserCheck.rows[0].role)) {
-      return res.status(403).json({ error: "Only community HEAD or ADMIN can promote members" });
+    if (requestingUserCheck.rows.length === 0 || requestingUserCheck.rows[0].role !== 'HEAD') {
+      return res.status(403).json({ error: "Only the permanent community head can promote members" });
+    }
+
+    const promoteCreatorResult = await pool.query(
+      `SELECT created_by FROM communities WHERE community_id = $1`,
+      [communityId]
+    );
+
+    const promote_creator_user_id =
+      promoteCreatorResult.rows.length > 0 ? promoteCreatorResult.rows[0].created_by : null;
+
+    if (promote_creator_user_id == null || promote_creator_user_id !== requestingUserId) {
+      return res.status(403).json({ error: "Only the community creator can promote members" });
     }
 
     const memberCheck = await pool.query(
@@ -1193,6 +1287,85 @@ app.post("/api/communities/:communityId/promote_member", authenticateToken, asyn
   } catch (error) {
     console.error("❌ Error promoting member:", error);
     res.status(500).json({ error: "Failed to promote member" });
+  }
+});
+
+// Demote a HEAD back to MEMBER (community creator cannot be demoted)
+app.post("/api/communities/:communityId/demote_member", authenticateToken, async (req, res) => {
+  try {
+    const { communityId } = req.params;
+    const { member_id } = req.body;
+    const requestingUserId = req.user.user_id;
+
+    const requestingUserCheck = await pool.query(
+      `SELECT role
+       FROM memberships
+       WHERE user_id = $1 AND community_id = $2 AND status = 'ACTIVE'`,
+      [requestingUserId, communityId]
+    );
+
+    if (requestingUserCheck.rows.length === 0 || requestingUserCheck.rows[0].role !== 'HEAD') {
+      return res.status(403).json({ error: "Only the permanent community head can demote heads" });
+    }
+
+    const demoteCreatorResult = await pool.query(
+      `SELECT created_by FROM communities WHERE community_id = $1`,
+      [communityId]
+    );
+
+    const demote_creator_user_id =
+      demoteCreatorResult.rows.length > 0 ? demoteCreatorResult.rows[0].created_by : null;
+
+    if (demote_creator_user_id == null || demote_creator_user_id !== requestingUserId) {
+      return res.status(403).json({ error: "Only the community creator can demote heads" });
+    }
+
+    // Prevent self-demotion via the menu to avoid locking out the admin panel accidentally
+    if (parseInt(member_id) === requestingUserId) {
+      return res.status(400).json({ error: "You cannot demote yourself." });
+    }
+
+    const memberCheck = await pool.query(
+      `SELECT user_id, role
+       FROM memberships
+       WHERE user_id = $1 AND community_id = $2 AND status = 'ACTIVE'`,
+      [member_id, communityId]
+    );
+
+    if (memberCheck.rows.length === 0) {
+      return res.status(404).json({ error: "Member not found in this community" });
+    }
+
+    if (memberCheck.rows[0].role !== 'HEAD') {
+      return res.status(400).json({ error: "Only heads can be demoted" });
+    }
+
+    // Community creator must always remain permanent Head
+    const creatorResult = await pool.query(
+      `SELECT created_by
+       FROM communities
+       WHERE community_id = $1`,
+      [communityId]
+    );
+
+    const creator_user_id =
+      creatorResult.rows.length > 0 ? creatorResult.rows[0].created_by : null;
+
+    if (creator_user_id != null && parseInt(member_id) === creator_user_id) {
+      return res.status(403).json({ error: "The community creator cannot be demoted." });
+    }
+
+    await pool.query(
+      `UPDATE memberships
+       SET role = 'MEMBER'
+       WHERE user_id = $1 AND community_id = $2 AND status = 'ACTIVE'`,
+      [member_id, communityId]
+    );
+
+    res.json({ message: "Member successfully demoted to MEMBER" });
+  } catch (error) {
+    console.error("❌ Error demoting head:", error);
+    res.status(500).json({ error: "Failed to demote member" });
   }
 });
 
@@ -1236,6 +1409,149 @@ app.put("/api/update_community_features/:id", authenticateToken, async (req, res
   } catch (error) {
     console.error("❌ Error updating community settings:", error);
     res.status(500).json({ error: "Failed to update feature toggles" });
+  }
+});
+
+// Delete community (HEAD only)
+app.delete("/api/communities/:communityId", authenticateToken, async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const communityId = parseInt(req.params.communityId, 10);
+    const userId = req.user.user_id;
+
+    if (isNaN(communityId)) {
+      return res.status(400).json({ error: "Invalid community ID" });
+    }
+
+    await client.query("BEGIN");
+
+    // 1. Verify user is HEAD of this community
+    const adminCheck = await client.query(
+      "SELECT role FROM memberships WHERE user_id = $1 AND community_id = $2 AND role = 'HEAD' AND status = 'ACTIVE'",
+      [userId, communityId]
+    );
+
+    if (adminCheck.rows.length === 0) {
+      await client.query("ROLLBACK");
+      console.warn(`[DeleteCommunity] Unauthorized delete attempt by user ${userId} for community ${communityId}`);
+      return res.status(403).json({ error: "Only community HEAD can delete the community" });
+    }
+
+    // 2. Perform manual cleanup for tables without CASCADE (if any)
+    await client.query("DELETE FROM nlp_audit WHERE community_id = $1", [communityId]);
+    await client.query("DELETE FROM nlp_analyses WHERE community_id = $1", [communityId]);
+    await client.query("DELETE FROM bot_chat_history WHERE community_id = $1", [communityId]);
+    await client.query("DELETE FROM poll_votes WHERE poll_id IN (SELECT poll_id FROM polls WHERE community_id = $1)", [communityId]);
+    await client.query("DELETE FROM poll_options WHERE poll_id IN (SELECT poll_id FROM polls WHERE community_id = $1)", [communityId]);
+
+    // 3. Delete the community (this will trigger CASCADE on memberships, messages, petitions, etc. in a standard schema)
+    const result = await client.query(
+      "DELETE FROM communities WHERE community_id = $1",
+      [communityId]
+    );
+
+    if (result.rowCount === 0) {
+      await client.query("ROLLBACK");
+      return res.status(404).json({ error: "Community not found" });
+    }
+
+    await client.query("COMMIT");
+    res.json({ message: "Community and all associated data deleted successfully" });
+  } catch (error) {
+    await client.query("ROLLBACK");
+    console.error("❌ Error deleting community:", error);
+    res.status(500).json({ error: "Failed to delete community" });
+  } finally {
+    client.release();
+  }
+});
+
+// Bulk delete community messages (Admin Only)
+app.delete("/api/communities/:communityId/messages", authenticateToken, async (req, res) => {
+  try {
+    const { communityId } = req.params;
+    const userId = req.user.user_id;
+
+    // Check if user is HEAD or ADMIN
+    const adminCheck = await pool.query(
+      "SELECT role FROM memberships WHERE user_id = $1 AND community_id = $2 AND role IN ('HEAD', 'ADMIN') AND status = 'ACTIVE'",
+      [userId, communityId]
+    );
+
+    if (adminCheck.rows.length === 0) {
+      return res.status(403).json({ error: "Unauthorized: Admin access required" });
+    }
+
+    // Clear all standard community chat messages
+    await pool.query("DELETE FROM chat_messages WHERE community_id = $1", [communityId]);
+    
+    // Clear public anonymous messages for this community too
+    await pool.query("DELETE FROM anonymous_messages WHERE community_id = $1", [communityId]);
+
+    // Notify all clients in the community
+    io.to(`community_${communityId}`).emit('chat_cleared');
+
+    res.json({ success: true, message: "Chat messages cleared successfully" });
+  } catch (error) {
+    console.error("❌ Error clearing community chat:", error);
+    res.status(500).json({ error: "Failed to clear chat" });
+  }
+});
+
+// Archive communities for a user or globally
+app.post("/api/communities/archive", authenticateToken, async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const { communityIds } = req.body;
+    const userId = req.user.user_id;
+
+    console.log(`📥 Archiving request from user ${userId} for communities:`, communityIds);
+
+    if (!Array.isArray(communityIds) || communityIds.length === 0) {
+      return res.status(400).json({ error: "No community IDs provided" });
+    }
+
+    await client.query("BEGIN");
+
+    for (const commId of communityIds) {
+      // Check if user is HEAD to decide if it's a GLOBAL or LOCAL archive
+      const headCheck = await client.query(
+        "SELECT role FROM memberships WHERE user_id = $1 AND community_id = $2 AND role = 'HEAD' AND status = 'ACTIVE'",
+        [userId, commId]
+      );
+
+      console.log(`🔍 Head check for user ${userId} in community ${commId}:`, headCheck.rows[0]);
+
+      if (headCheck.rows.length > 0) {
+        // User is HEAD - Make it GLOBAL
+        const commUpdate = await client.query(
+          "UPDATE communities SET is_archived = TRUE WHERE community_id = $1",
+          [commId]
+        );
+        // Also update all active members' status to ARCHIVED
+        const membUpdate = await client.query(
+          "UPDATE memberships SET status = 'ARCHIVED' WHERE community_id = $1 AND (status = 'ACTIVE' OR status = 'PENDING')",
+          [commId]
+        );
+        console.log(`✅ GLOBAL Archive for community ${commId}: community updated ${commUpdate.rowCount}, members updated ${membUpdate.rowCount}`);
+      } else {
+        // User is just a MEMBER - Archive only for THEM
+        const membUpdate = await client.query(
+          "UPDATE memberships SET status = 'ARCHIVED' WHERE user_id = $1 AND community_id = $2",
+          [userId, commId]
+        );
+        console.log(`✅ LOCAL Archive for user ${userId} in community ${commId}: updated ${membUpdate.rowCount}`);
+      }
+    }
+
+    await client.query("COMMIT");
+    res.json({ success: true, message: "Communities archived successfully" });
+  } catch (error) {
+    await client.query("ROLLBACK");
+    console.error("❌ Error archiving communities:", error);
+    res.status(500).json({ error: "Failed to archive communities" });
+  } finally {
+    client.release();
   }
 });
 
@@ -2957,6 +3273,37 @@ app.post("/api/communities/:communityId/polls", authenticateToken, async (req, r
       params
     );
 
+    // Insert a chat message so the poll appears in the community chat stream.
+    // Clients render polls when `message_type === 'poll'` and use `content` as `poll_id`.
+    const chatMessageResult = await pool.query(
+      `INSERT INTO chat_messages
+        (community_id, sender_id, message_type, content, attachments, parent_message_id)
+       VALUES ($1, $2, 'poll', $3, $4, NULL)
+       RETURNING *`,
+      [
+        communityId,
+        userId,
+        String(poll.poll_id),
+        JSON.stringify([]),
+      ]
+    );
+
+    const chatMessage = chatMessageResult.rows[0];
+    const fullMessage = {
+      message_id: parseInt(chatMessage.message_id),
+      community_id: parseInt(chatMessage.community_id),
+      sender_id: parseInt(chatMessage.sender_id),
+      full_name: null,
+      profile_type: null,
+      role: null,
+      message_type: chatMessage.message_type,
+      content: chatMessage.content,
+      attachments: chatMessage.attachments,
+      parent_message_id: chatMessage.parent_message_id,
+      created_at: chatMessage.created_at,
+    };
+    io.to(`community_${communityId}`).emit("new_message", fullMessage);
+
     // Fetch options for response
     const optionsResult = await pool.query(
       `SELECT option_id, label, position
@@ -3106,8 +3453,9 @@ app.post("/api/communities/:communityId/polls/:pollId/vote", authenticateToken, 
     const actualOptionIds = option_ids || optionIds;
     const userId = req.user.user_id;
 
-    if (!Array.isArray(actualOptionIds) || actualOptionIds.length === 0) {
-      return res.status(400).json({ error: "At least one option must be selected" });
+    // Requirement: single-vote polls store exactly one selected_option per user.
+    if (!Array.isArray(actualOptionIds) || actualOptionIds.length !== 1) {
+      return res.status(400).json({ error: "Exactly one option must be selected" });
     }
 
     await client.query("BEGIN");
@@ -3129,11 +3477,6 @@ app.post("/api/communities/:communityId/polls/:pollId/vote", authenticateToken, 
       return res.status(400).json({ error: "This poll is no longer active" });
     }
 
-    // Check multiple answers setting
-    if (!poll.allow_multiple_answers && actualOptionIds.length > 1) {
-      return res.status(400).json({ error: "Multiple answers are not allowed for this poll" });
-    }
-
     // Check if user has already voted
     const existingVote = await client.query(
       `SELECT vote_id FROM poll_votes WHERE poll_id = $1 AND user_id = $2 LIMIT 1`,
@@ -3141,14 +3484,7 @@ app.post("/api/communities/:communityId/polls/:pollId/vote", authenticateToken, 
     );
 
     if (existingVote.rows.length > 0) {
-      if (!poll.allow_change_vote) {
-        return res.status(400).json({ error: "Vote changes are not allowed for this poll" });
-      }
-      // Delete old votes if change is allowed
-      await client.query(
-        `DELETE FROM poll_votes WHERE poll_id = $1 AND user_id = $2`,
-        [pollId, userId]
-      );
+      return res.status(400).json({ error: "You have already voted" });
     }
 
     // Check comment requirement

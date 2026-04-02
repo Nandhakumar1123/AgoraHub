@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 import nlpService from '../lib/nlpService';
+import { AppContext } from './_layout';
 
 interface Complaint {
   complaint_id: number;
@@ -60,6 +61,9 @@ export default function ComplaintDetailsScreen() {
   const [complaint, setComplaint] = useState<Complaint | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { theme } = useContext(AppContext);
+  const isDark = theme === 'dark';
+
   const [menuVisible, setMenuVisible] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
 
@@ -350,25 +354,27 @@ export default function ComplaintDetailsScreen() {
     }
   };
 
+  const themeStyles = isDark ? darkTheme : lightTheme;
+
   return (
-    <View style={styles.root}>
-      <ScrollView style={styles.container}>
-        <View style={styles.header}>
+    <View style={[styles.root, themeStyles.root]}>
+      <ScrollView style={[styles.container, themeStyles.root]}>
+        <View style={[styles.header, themeStyles.header]}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Text style={styles.backButton}>← Back</Text>
+            <Text style={[styles.backButton, themeStyles.headerText]}>← Back</Text>
           </TouchableOpacity>
-          <Text style={styles.title}>Complaint Details</Text>
+          <Text style={[styles.title, themeStyles.headerText]}>Complaint Details</Text>
           <TouchableOpacity
             onPress={() => setMenuVisible((prev) => !prev)}
             style={styles.menuButton}
           >
-            <Text style={styles.menuButtonText}>⋮</Text>
+            <Text style={[styles.menuButtonText, themeStyles.headerText]}>⋮</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.content}>
           {['Pending', 'InProgress', 'Review', 'OPEN', 'IN_PROGRESS'].includes(complaint.status) && userRole === 'HEAD' && (
-            <View style={styles.topActions}>
+            <View style={[styles.topActions, themeStyles.card]}>
               <View style={styles.aiAnalysisCard}>
                 <View style={styles.aiHeader}>
                   <Text style={styles.aiTitle}>🤖 AI Analysis & Suggestions</Text>
@@ -389,7 +395,7 @@ export default function ComplaintDetailsScreen() {
                 )}
               </View>
 
-              <Text style={styles.adminActionTitle}>Update Complaint Status</Text>
+              <Text style={[styles.adminActionTitle, themeStyles.text]}>Update Complaint Status</Text>
               <View style={[styles.actionRow, { flexWrap: 'wrap', gap: 8 }]}>
                 <TouchableOpacity
                   style={[styles.miniActionButton, styles.inProgressButton]}
@@ -425,8 +431,8 @@ export default function ComplaintDetailsScreen() {
             </View>
           )}
 
-          <View style={styles.card}>
-            <Text style={styles.complaintTitle}>{complaint.title}</Text>
+          <View style={[styles.card, themeStyles.card]}>
+            <Text style={[styles.complaintTitle, themeStyles.text]}>{complaint.title}</Text>
 
             <View style={styles.statusRow}>
               <View
@@ -449,22 +455,22 @@ export default function ComplaintDetailsScreen() {
 
             <View style={styles.metaInfo}>
               <Text style={styles.metaLabel}>Author:</Text>
-              <Text style={styles.metaValue}>{complaint.author_name}</Text>
+              <Text style={[styles.metaValue, themeStyles.text]}>{complaint.author_name}</Text>
             </View>
 
             <View style={styles.metaInfo}>
               <Text style={styles.metaLabel}>Community:</Text>
-              <Text style={styles.metaValue}>{complaint.community_name}</Text>
+              <Text style={[styles.metaValue, themeStyles.text]}>{complaint.community_name}</Text>
             </View>
 
             <View style={styles.metaInfo}>
               <Text style={styles.metaLabel}>Category:</Text>
-              <Text style={styles.metaValue}>{complaint.category}</Text>
+              <Text style={[styles.metaValue, themeStyles.text]}>{complaint.category}</Text>
             </View>
 
             <View style={styles.metaInfo}>
               <Text style={styles.metaLabel}>Created:</Text>
-              <Text style={styles.metaValue}>
+              <Text style={[styles.metaValue, themeStyles.text]}>
                 {new Date(complaint.created_at).toLocaleDateString()}
               </Text>
             </View>
@@ -485,21 +491,21 @@ export default function ComplaintDetailsScreen() {
 
             <View style={styles.metaInfo}>
               <Text style={styles.metaLabel}>Visibility:</Text>
-              <Text style={styles.metaValue}>
+              <Text style={[styles.metaValue, themeStyles.text]}>
                 {complaint.visibility ? complaint.visibility : 'N/A'}
               </Text>
             </View>
 
             <View style={styles.metaInfo}>
               <Text style={styles.metaLabel}>Allow follow-up:</Text>
-              <Text style={styles.metaValue}>
+              <Text style={[styles.metaValue, themeStyles.text]}>
                 {complaint.allow_follow_up ? 'Yes' : 'No'}
               </Text>
             </View>
 
             <View style={styles.metaInfo}>
               <Text style={styles.metaLabel}>Preferred contact:</Text>
-              <Text style={styles.metaValue}>
+              <Text style={[styles.metaValue, themeStyles.text]}>
                 {complaint.preferred_contact_channel
                   ? complaint.preferred_contact_channel
                   : 'N/A'}
@@ -509,7 +515,7 @@ export default function ComplaintDetailsScreen() {
             <View style={styles.metaInfo}>
               <Text style={styles.metaLabel}>Contact email:</Text>
               {complaint.contact_email ? (
-                <Text style={styles.metaValue}>{complaint.contact_email}</Text>
+                <Text style={[styles.metaValue, themeStyles.text]}>{complaint.contact_email}</Text>
               ) : (
                 <Text style={[styles.metaValue, styles.metaValueMissing]}>Not provided</Text>
               )}
@@ -518,7 +524,7 @@ export default function ComplaintDetailsScreen() {
             <View style={styles.metaInfo}>
               <Text style={styles.metaLabel}>Contact phone:</Text>
               {complaint.contact_phone ? (
-                <Text style={styles.metaValue}>{complaint.contact_phone}</Text>
+                <Text style={[styles.metaValue, themeStyles.text]}>{complaint.contact_phone}</Text>
               ) : (
                 <Text style={[styles.metaValue, styles.metaValueMissing]}>Not provided</Text>
               )}
@@ -538,21 +544,21 @@ export default function ComplaintDetailsScreen() {
             )}
 
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Description</Text>
-              <Text style={styles.sectionContent}>{complaint.description}</Text>
+              <Text style={[styles.sectionTitle, themeStyles.text]}>Description</Text>
+              <Text style={[styles.sectionContent, themeStyles.subText]}>{complaint.description}</Text>
             </View>
 
             {complaint.resolution_notes && (
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Resolution Notes</Text>
-                <Text style={styles.sectionContent}>{complaint.resolution_notes}</Text>
+                <Text style={[styles.sectionTitle, themeStyles.text]}>Resolution Notes</Text>
+                <Text style={[styles.sectionContent, themeStyles.subText]}>{complaint.resolution_notes}</Text>
               </View>
             )}
 
             {complaint.priority_score && (
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Priority Score</Text>
-                <Text style={styles.sectionContent}>{complaint.priority_score}/10</Text>
+                <Text style={[styles.sectionTitle, themeStyles.text]}>Priority Score</Text>
+                <Text style={[styles.sectionContent, themeStyles.subText]}>{complaint.priority_score}/10</Text>
               </View>
             )}
           </View>
@@ -567,7 +573,7 @@ export default function ComplaintDetailsScreen() {
           activeOpacity={1}
           onPress={() => setMenuVisible(false)}
         >
-          <View style={styles.menuDropdown}>
+          <View style={[styles.menuDropdown, themeStyles.dropdown]}>
             <TouchableOpacity
               onPress={() => {
                 setMenuVisible(false);
@@ -576,7 +582,7 @@ export default function ComplaintDetailsScreen() {
               }}
               style={styles.menuItem}
             >
-              <Text style={styles.menuItemText}>Ask AI about this complaint</Text>
+              <Text style={[styles.menuItemText, themeStyles.text]}>Ask AI about this complaint</Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
@@ -1171,4 +1177,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+});
+const lightTheme = StyleSheet.create({
+    root: { backgroundColor: 'transparent' },
+    header: { backgroundColor: 'rgba(255, 255, 255, 0.8)', borderBottomColor: 'rgba(0,0,0,0.1)' },
+    headerText: { color: '#1e293b' },
+    card: { backgroundColor: 'rgba(255, 255, 255, 0.9)', borderColor: 'rgba(0,0,0,0.1)' },
+    text: { color: '#1e293b' },
+    subText: { color: '#475569' },
+    dropdown: { backgroundColor: '#ffffff', borderColor: 'rgba(0,0,0,0.1)' },
+});
+
+const darkTheme = StyleSheet.create({
+    root: { backgroundColor: 'transparent' },
+    header: { backgroundColor: 'rgba(15, 23, 42, 0.8)', borderBottomColor: 'rgba(255,255,255,0.05)' },
+    headerText: { color: '#f8fafc' },
+    card: { backgroundColor: 'rgba(30, 41, 59, 0.7)', borderColor: 'rgba(255,255,255,0.08)' },
+    text: { color: '#f8fafc' },
+    subText: { color: '#cbd5e1' },
+    dropdown: { backgroundColor: '#1e293b', borderColor: 'rgba(255,255,255,0.1)' },
 });

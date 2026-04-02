@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 import nlpService from '../lib/nlpService';
+import { AppContext } from './_layout';
 
 type PetitionStatus = 'Review' | 'Pending' | 'InProgress' | 'Approved' | 'Rejected';
 
@@ -54,6 +55,9 @@ const BASE_URL = API_BASE_URL;
 const { height } = Dimensions.get('window');
 
 export default function PetitionDetailsScreen() {
+  const { theme } = useContext(AppContext);
+  const isDark = theme === 'dark';
+
   const route = useRoute();
   const navigation = useNavigation();
   const { petitionId, communityId } = route.params as { petitionId: number; communityId: number };
@@ -374,22 +378,24 @@ export default function PetitionDetailsScreen() {
 
   const displayText = (val: string | undefined) => (val != null && String(val).trim() !== '' ? String(val).trim() : 'N/A');
 
+  const themeStyles = isDark ? darkTheme : lightTheme;
+
   return (
-    <View style={styles.root}>
-      <ScrollView style={styles.container}>
-        <View style={styles.header}>
+    <View style={[styles.root, themeStyles.root]}>
+      <ScrollView style={[styles.container, themeStyles.root]}>
+        <View style={[styles.header, themeStyles.header]}>
           <View style={styles.headerLeft}>
             <TouchableOpacity onPress={() => navigation.goBack()}>
-              <Text style={styles.backButton}>← Back</Text>
+              <Text style={[styles.backButton, themeStyles.headerText]}>← Back</Text>
             </TouchableOpacity>
-            <Text style={styles.title}>Petition Details</Text>
+            <Text style={[styles.title, themeStyles.headerText]}>Petition Details</Text>
           </View>
           <View style={styles.headerRight}>
             <TouchableOpacity
               onPress={() => setMenuVisible((prev) => !prev)}
               style={styles.menuButton}
             >
-              <Text style={styles.menuButtonText}>⋮</Text>
+              <Text style={[styles.menuButtonText, themeStyles.headerText]}>⋮</Text>
             </TouchableOpacity>
             <View
               style={[
@@ -404,7 +410,7 @@ export default function PetitionDetailsScreen() {
 
         <View style={styles.content}>
           {['Pending', 'InProgress', 'Review', 'OPEN', 'IN_PROGRESS'].includes(petition.status) && userRole === 'HEAD' && (
-            <View style={styles.topActions}>
+            <View style={[styles.topActions, themeStyles.card]}>
               <View style={styles.aiAnalysisCard}>
                 <View style={styles.aiHeader}>
                   <Text style={styles.aiTitle}>🤖 AI Analysis & Suggestions</Text>
@@ -425,7 +431,7 @@ export default function PetitionDetailsScreen() {
                 )}
               </View>
 
-              <Text style={styles.adminActionTitle}>Update Petition Status</Text>
+              <Text style={[styles.adminActionTitle, themeStyles.text]}>Update Petition Status</Text>
               <View style={[styles.actionRow, { flexWrap: 'wrap', gap: 8 }]}>
                 {STATUS_OPTIONS.map((opt) => {
                   const soft = getStatusSoftColors(opt);
@@ -455,8 +461,8 @@ export default function PetitionDetailsScreen() {
             </View>
           )}
 
-          <View style={styles.card}>
-            <Text style={styles.petitionTitle}>{displayText(petition.title)}</Text>
+          <View style={[styles.card, themeStyles.card]}>
+            <Text style={[styles.petitionTitle, themeStyles.text]}>{displayText(petition.title)}</Text>
 
             <View style={styles.statusRow}>
               <View
@@ -471,22 +477,22 @@ export default function PetitionDetailsScreen() {
 
             <View style={styles.metaInfo}>
               <Text style={styles.metaLabel}>Author:</Text>
-              <Text style={styles.metaValue}>{displayText(petition.author_name)}</Text>
+              <Text style={[styles.metaValue, themeStyles.text]}>{displayText(petition.author_name)}</Text>
             </View>
 
             <View style={styles.metaInfo}>
               <Text style={styles.metaLabel}>Community:</Text>
-              <Text style={styles.metaValue}>{displayText(petition.community_name)}</Text>
+              <Text style={[styles.metaValue, themeStyles.text]}>{displayText(petition.community_name)}</Text>
             </View>
 
             <View style={styles.metaInfo}>
               <Text style={styles.metaLabel}>Created:</Text>
-              <Text style={styles.metaValue}>{formatDate(petition.created_at)}</Text>
+              <Text style={[styles.metaValue, themeStyles.text]}>{formatDate(petition.created_at)}</Text>
             </View>
 
             <View style={styles.metaInfo}>
               <Text style={styles.metaLabel}>Goal Type:</Text>
-              <Text style={styles.metaValue}>
+              <Text style={[styles.metaValue, themeStyles.text]}>
                 {displayText(
                   petition.goal_type === 'Other'
                     ? petition.other_goal_type
@@ -497,7 +503,7 @@ export default function PetitionDetailsScreen() {
 
             <View style={styles.metaInfo}>
               <Text style={styles.metaLabel}>Impact Area:</Text>
-              <Text style={styles.metaValue}>
+              <Text style={[styles.metaValue, themeStyles.text]}>
                 {displayText(
                   petition.impact_area === 'Other'
                     ? petition.other_impact_area
@@ -508,7 +514,7 @@ export default function PetitionDetailsScreen() {
 
             <View style={styles.metaInfo}>
               <Text style={styles.metaLabel}>Affected Groups:</Text>
-              <Text style={styles.metaValue}>
+              <Text style={[styles.metaValue, themeStyles.text]}>
                 {Array.isArray(petition.affected_groups) &&
                   petition.affected_groups.length > 0
                   ? petition.affected_groups.join(', ')
@@ -517,30 +523,28 @@ export default function PetitionDetailsScreen() {
             </View>
 
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Summary</Text>
-              <Text style={styles.sectionContent}>{displayText(petition.summary)}</Text>
+              <Text style={[styles.sectionTitle, themeStyles.text]}>Summary</Text>
+              <Text style={[styles.sectionContent, themeStyles.subText]}>{displayText(petition.summary)}</Text>
             </View>
 
-
-
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Proposed Action</Text>
-              <Text style={styles.sectionContent}>
+              <Text style={[styles.sectionTitle, themeStyles.text]}>Proposed Action</Text>
+              <Text style={[styles.sectionContent, themeStyles.subText]}>
                 {displayText(petition.proposed_action)}
               </Text>
             </View>
 
             {petition.reference_context && (
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Reference Context</Text>
-                <Text style={styles.sectionContent}>{petition.reference_context}</Text>
+                <Text style={[styles.sectionTitle, themeStyles.text]}>Reference Context</Text>
+                <Text style={[styles.sectionContent, themeStyles.subText]}>{petition.reference_context}</Text>
               </View>
             )}
 
             {petition.remarks && (
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Remarks</Text>
-                <Text style={styles.sectionContent}>{petition.remarks}</Text>
+                <Text style={[styles.sectionTitle, themeStyles.text]}>Remarks</Text>
+                <Text style={[styles.sectionContent, themeStyles.subText]}>{petition.remarks}</Text>
               </View>
             )}
 
@@ -555,7 +559,7 @@ export default function PetitionDetailsScreen() {
           activeOpacity={1}
           onPress={() => setMenuVisible(false)}
         >
-          <View style={styles.menuDropdown}>
+          <View style={[styles.menuDropdown, themeStyles.dropdown]}>
             <TouchableOpacity
               onPress={() => {
                 setMenuVisible(false);
@@ -564,7 +568,7 @@ export default function PetitionDetailsScreen() {
               }}
               style={styles.menuItem}
             >
-              <Text style={styles.menuItemText}>Ask AI about this petition</Text>
+              <Text style={[styles.menuItemText, themeStyles.text]}>Ask AI about this petition</Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
@@ -1115,4 +1119,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginTop: 12,
   },
+});
+const lightTheme = StyleSheet.create({
+    root: { backgroundColor: 'transparent' },
+    header: { backgroundColor: 'rgba(255, 255, 255, 0.8)', borderBottomColor: 'rgba(0,0,0,0.1)' },
+    headerText: { color: '#1e293b' },
+    card: { backgroundColor: 'rgba(255, 255, 255, 0.9)', borderColor: 'rgba(0,0,0,0.1)' },
+    text: { color: '#1e293b' },
+    subText: { color: '#475569' },
+    dropdown: { backgroundColor: '#ffffff', borderColor: 'rgba(0,0,0,0.1)' },
+});
+
+const darkTheme = StyleSheet.create({
+    root: { backgroundColor: 'transparent' },
+    header: { backgroundColor: 'rgba(15, 23, 42, 0.8)', borderBottomColor: 'rgba(255,255,255,0.05)' },
+    headerText: { color: '#f8fafc' },
+    card: { backgroundColor: 'rgba(30, 41, 59, 1)', borderColor: 'rgba(255,255,255,0.08)' },
+    text: { color: '#f8fafc' },
+    subText: { color: '#cbd5e1' },
+    dropdown: { backgroundColor: '#1e293b', borderColor: 'rgba(255,255,255,0.1)' },
 });
