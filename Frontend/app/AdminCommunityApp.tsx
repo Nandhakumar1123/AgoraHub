@@ -35,7 +35,7 @@ import PollChatIntimation from './PollChatIntimation';
 import nlpService from '../lib/nlpService';
 
 import JoinRequestsModal from './JoinRequestsModal';
-import { Bot, UserMinus, UserPlus, Bell, Trash2, Sparkles, MoreVertical } from 'lucide-react-native';
+import { Bot, UserMinus, UserPlus, Bell, Trash2, Sparkles, MoreVertical, PlusCircle, Plus } from 'lucide-react-native';
 
 
 // Type definitions
@@ -468,7 +468,7 @@ const RemoveMemberIcon = () => (
 
 const PlusIcon = () => (
   <View style={styles.iconPlaceholder}>
-    <Text style={styles.boldIconText}>+</Text>
+    <PlusCircle size={28} color="#f8fafc" />
   </View>
 );
 
@@ -1301,7 +1301,7 @@ const AdminCommunityApp: React.FC = () => {
             </View>
           )}
           <TouchableOpacity onPress={openMediaModal} style={styles.attachButton}>
-            <Text style={styles.attachText}>+</Text>
+            <Plus size={24} color="#ffffff" />
           </TouchableOpacity>
 
           <TextInput

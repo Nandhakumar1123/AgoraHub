@@ -19,6 +19,7 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
 } from 'react-native';
+import { Bot, PlusCircle, Plus } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import io, { Socket } from 'socket.io-client';
 import { API_BASE_URL, SOCKET_BASE_URL } from '../lib/api';
@@ -361,7 +362,7 @@ const MenuIcon = () => (
 
 const PlusIcon = () => (
   <View style={styles.iconPlaceholder}>
-    <Text style={styles.boldIconText}>+</Text>
+    <PlusCircle size={28} color="#f8fafc" />
   </View>
 );
 
@@ -405,7 +406,7 @@ const MemberCommunityApp: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [mediaModalVisible, setMediaModalVisible] = useState(false);
   const [pollModalVisible, setPollModalVisible] = useState(false);
-  
+
   // AI assistant state
   const [sessionHash, setSessionHash] = useState<string | null>(null);
 
@@ -737,313 +738,323 @@ const MemberCommunityApp: React.FC = () => {
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
       <SafeAreaView style={styles.container}>
 
-      {/* WhatsApp-style Header */}
-      <View style={[styles.header, themeStyles.header]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={[styles.backArrow, themeStyles.headerText]}>←</Text>
-        </TouchableOpacity>
+        {/* WhatsApp-style Header */}
+        <View style={[styles.header, themeStyles.header]}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <Text style={[styles.backArrow, themeStyles.headerText]}>←</Text>
+          </TouchableOpacity>
 
 
-        <View style={styles.headerCenter}>
-          <View style={styles.communityAvatar}>
-            <HomeIcon />
-          </View>
-          <View style={styles.headerInfo}>
-            <Text style={[styles.communityName, themeStyles.headerText]}>{community?.name || 'Community'}</Text>
-            <Text style={[styles.communitySubtitle, themeStyles.headerText, { opacity: 0.7 }]}>
-              {community?.member_count != null ? `${community.member_count} members` : 'Members'} • Online
-            </Text>
-          </View>
-        </View>
-                <TouchableOpacity 
-          onPress={() => {
-            Alert.alert(
-              'Menu',
-              'Select an option',
-              [
-                { text: 'Logout', onPress: handleLogout, style: 'destructive' },
-                { text: 'Cancel', style: 'cancel' }
-              ]
-            );
-          }} 
-          style={styles.headerButton}
-        >
-
-          <MenuIcon />
-        </TouchableOpacity>
-      </View>
-
-      {/* Messages with Date Headers */}
-      <ScrollView
-        ref={scrollViewRef}
-        style={styles.messagesWrapper}
-        contentContainerStyle={styles.messagesContent}
-      >
-        {/* ✅ FIXED: Message rendering with proper alignment */}
-        {orderedDates.map((dateKey) => (
-          <View key={dateKey}>
-            {/* Date Header */}
-            <View style={styles.dateHeader}>
-              <View style={styles.dateHeaderBadge}>
-                <Text style={styles.dateHeaderText}>{formatDateHeader(dateKey)}</Text>
-              </View>
+          <View style={styles.headerCenter}>
+            <View style={styles.communityAvatar}>
+              <HomeIcon />
             </View>
+            <View style={styles.headerInfo}>
+              <Text style={[styles.communityName, themeStyles.headerText]}>{community?.name || 'Community'}</Text>
+              <Text style={[styles.communitySubtitle, themeStyles.headerText, { opacity: 0.7 }]}>
+                {community?.member_count != null ? `${community.member_count} members` : 'Members'} • Online
+              </Text>
+            </View>
+          </View>
+          <TouchableOpacity
+            onPress={() => {
+              Alert.alert(
+                'Menu',
+                'Select an option',
+                [
+                  { text: 'Logout', onPress: handleLogout, style: 'destructive' },
+                  { text: 'Cancel', style: 'cancel' }
+                ]
+              );
+            }}
+            style={styles.headerButton}
+          >
 
-            {/* Messages for this date */}
-            {messageGroups[dateKey].map((message, msgIndex) => {
-              // ✅ CRITICAL FIX: Ensure both IDs are numbers and handle null cases
-              const messageSenderId = message.sender_id ? Number(message.sender_id) : null;
-              const currentUserIdNum = currentUserId ? Number(currentUserId) : null;
+            <MenuIcon />
+          </TouchableOpacity>
+        </View>
 
-              // ✅ Only mark as "my message" if both IDs exist and match
-              const isOwn = messageSenderId !== null &&
-                currentUserIdNum !== null &&
-                messageSenderId === currentUserIdNum;
+        {/* Messages with Date Headers */}
+        <ScrollView
+          ref={scrollViewRef}
+          style={styles.messagesWrapper}
+          contentContainerStyle={styles.messagesContent}
+        >
+          {/* ✅ FIXED: Message rendering with proper alignment */}
+          {orderedDates.map((dateKey) => (
+            <View key={dateKey}>
+              {/* Date Header */}
+              <View style={styles.dateHeader}>
+                <View style={styles.dateHeaderBadge}>
+                  <Text style={styles.dateHeaderText}>{formatDateHeader(dateKey)}</Text>
+                </View>
+              </View>
 
-              const isAnnouncement = message.message_type === 'announcement';
-              const isSOS = message.message_type === 'sos';
-              const isComplaint = message.message_type === 'complaint';
-              const isPetition = message.message_type === 'petition';
-              const isPoll = message.message_type === 'poll';
-              const isSpecialMessage = isAnnouncement || isSOS || isComplaint || isPetition || isPoll;
+              {/* Messages for this date */}
+              {messageGroups[dateKey].map((message, msgIndex) => {
+                // ✅ CRITICAL FIX: Ensure both IDs are numbers and handle null cases
+                const messageSenderId = message.sender_id ? Number(message.sender_id) : null;
+                const currentUserIdNum = currentUserId ? Number(currentUserId) : null;
+
+                // ✅ Only mark as "my message" if both IDs exist and match
+                const isOwn = messageSenderId !== null &&
+                  currentUserIdNum !== null &&
+                  messageSenderId === currentUserIdNum;
+
+                const isAnnouncement = message.message_type === 'announcement';
+                const isSOS = message.message_type === 'sos';
+                const isComplaint = message.message_type === 'complaint';
+                const isPetition = message.message_type === 'petition';
+                const isPoll = message.message_type === 'poll';
+                const isSpecialMessage = isAnnouncement || isSOS || isComplaint || isPetition || isPoll;
 
 
-              return (
-                <View
-                  key={`msg-${message.message_id || message.id || message._id}-${msgIndex}`}
-                  style={[
-                    styles.messageWrapper,
-                    isSpecialMessage
-                      ? styles.specialMessageWrapper
-                      : isOwn
-                        ? themeStyles.myMsgWrapper    
-                        : themeStyles.otherMsgWrapper, 
-                  ]}
-                >
+                return (
                   <View
+                    key={`msg-${message.message_id || message.id || message._id}-${msgIndex}`}
                     style={[
-                      styles.messageBubble,
-                      isAnnouncement && styles.announcementMessage,
-                      isSOS && styles.sosMessage,
-                      isComplaint && styles.complaintMessage,
-                      isPetition && styles.petitionMessage,
-                      isPoll && {
-                        backgroundColor: 'transparent',
-                        borderWidth: 0,
-                        padding: 0,
-                        maxWidth: '100%',
-                      },
-                      !isSpecialMessage && (isOwn ? themeStyles.myMessageBubble : themeStyles.messageBubble),
+                      styles.messageWrapper,
+                      isSpecialMessage
+                        ? styles.specialMessageWrapper
+                        : isOwn
+                          ? themeStyles.myMsgWrapper
+                          : themeStyles.otherMsgWrapper,
                     ]}
                   >
-                    {/* ✅ Show sender name ONLY for messages from others */}
-                    {!isOwn && !isSpecialMessage && message.full_name && (
-                      <Text style={styles.senderName}>{message.full_name}</Text>
-                    )}
+                    <View
+                      style={[
+                        styles.messageBubble,
+                        isAnnouncement && styles.announcementMessage,
+                        isSOS && styles.sosMessage,
+                        isComplaint && styles.complaintMessage,
+                        isPetition && styles.petitionMessage,
+                        isPoll && {
+                          backgroundColor: 'transparent',
+                          borderWidth: 0,
+                          padding: 0,
+                          maxWidth: '100%',
+                        },
+                        !isSpecialMessage && (isOwn ? themeStyles.myMessageBubble : themeStyles.messageBubble),
+                      ]}
+                    >
+                      {/* ✅ Show sender name ONLY for messages from others */}
+                      {!isOwn && !isSpecialMessage && message.full_name && (
+                        <Text style={styles.senderName}>{message.full_name}</Text>
+                      )}
 
-                    {/* Special message labels */}
-                    {isAnnouncement && (
-                      <Text style={styles.announcementLabel}>📢 ANNOUNCEMENT</Text>
-                    )}
-                    {isSOS && (
-                      <Text style={styles.sosLabel}>🚨 SOS ALERT</Text>
-                    )}
-                    {isComplaint && (
-                      <Text style={styles.complaintLabel}>⚠️ COMPLAINT</Text>
-                    )}
-                    {isPetition && (
-                      <Text style={styles.petitionLabel}>📋 PETITION</Text>
-                    )}
+                      {/* Special message labels */}
+                      {isAnnouncement && (
+                        <Text style={styles.announcementLabel}>📢 ANNOUNCEMENT</Text>
+                      )}
+                      {isSOS && (
+                        <Text style={styles.sosLabel}>🚨 SOS ALERT</Text>
+                      )}
+                      {isComplaint && (
+                        <Text style={styles.complaintLabel}>⚠️ COMPLAINT</Text>
+                      )}
+                      {isPetition && (
+                        <Text style={styles.petitionLabel}>📋 PETITION</Text>
+                      )}
 
-                    {/* Message content */}
-                    {!isPoll && (
-                      <Text
-                        style={[
-                          styles.messageText,
-                          !isSpecialMessage &&
+                      {/* Message content */}
+                      {!isPoll && (
+                        <Text
+                          style={[
+                            styles.messageText,
+                            !isSpecialMessage &&
                             (isOwn ? themeStyles.myMessageText : themeStyles.messageText),
-                          isAnnouncement && styles.announcementText,
-                          isSOS && styles.sosText,
-                          isComplaint && styles.complaintText,
-                          isPetition && styles.petitionText,
-                        ]}
-                      >
-                        {message.content}
-                      </Text>
-                    )}
+                            isAnnouncement && styles.announcementText,
+                            isSOS && styles.sosText,
+                            isComplaint && styles.complaintText,
+                            isPetition && styles.petitionText,
+                          ]}
+                        >
+                          {message.content}
+                        </Text>
+                      )}
 
-                    {/* Message time with checkmark */}
-                    <View style={styles.messageFooter}>
-                      <Text
-                        style={[
-                          styles.messageTime,
-                          isOwn && !isSpecialMessage && styles.ownMessageTime,
-                        ]}
-                      >
-                        {message.created_at
-                          ? new Date(message.created_at).toLocaleTimeString([], {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })
-                          : ''}
-                      </Text>
-                      {/* ✅ Show checkmark ONLY for my messages with message_id */}
-                      {isOwn && !isSpecialMessage && message.message_id && (
-                        <Text style={styles.checkMark}>✓✓</Text>
+                      {/* Message time with checkmark */}
+                      <View style={styles.messageFooter}>
+                        <Text
+                          style={[
+                            styles.messageTime,
+                            isOwn && !isSpecialMessage && styles.ownMessageTime,
+                          ]}
+                        >
+                          {message.created_at
+                            ? new Date(message.created_at).toLocaleTimeString([], {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })
+                            : ''}
+                        </Text>
+                        {/* ✅ Show checkmark ONLY for my messages with message_id */}
+                        {isOwn && !isSpecialMessage && message.message_id && (
+                          <Text style={styles.checkMark}>✓✓</Text>
+                        )}
+                      </View>
+
+                      {/* WhatsApp-style tail - only for non-special messages */}
+                      {!isSpecialMessage && (
+                        <View
+                          style={[
+                            styles.messageTail,
+                            isOwn ? styles.ownMessageTail : styles.otherMessageTail,
+                          ]}
+                        />
+                      )}
+
+                      {/* POLL CARD INTEGRATION */}
+                      {isPoll && (
+                        <PollChatIntimation
+                          communityId={Number(communityId)}
+                          pollId={Number(message.content || '0')}
+                          isAdmin={false}
+                          onOpenPoll={(pId) => {
+                            navigation.navigate('PollVoteScreen' as any, {
+                              communityId: Number(communityId),
+                              pollId: pId,
+                              isAdmin: false,
+                            });
+                          }}
+                        />
                       )}
                     </View>
-
-                    {/* WhatsApp-style tail - only for non-special messages */}
-                    {!isSpecialMessage && (
-                      <View
-                        style={[
-                          styles.messageTail,
-                          isOwn ? styles.ownMessageTail : styles.otherMessageTail,
-                        ]}
-                      />
-                    )}
-
-                    {/* POLL CARD INTEGRATION */}
-                    {isPoll && (
-                      <PollChatIntimation
-                        communityId={Number(communityId)}
-                        pollId={Number(message.content || '0')}
-                        isAdmin={false}
-                        onOpenPoll={(pId) => {
-                          navigation.navigate('PollVoteScreen' as any, {
-                            communityId: Number(communityId),
-                            pollId: pId,
-                            isAdmin: false,
-                          });
-                        }}
-                      />
-                    )}
                   </View>
-                </View>
 
-              );
-            })}
+                );
+              })}
+            </View>
+          ))}
+        </ScrollView>
+
+        <TouchableOpacity style={styles.floatingButton} onPress={openModal}>
+          <PlusIcon />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.chatbotFloatingButton}
+          onPress={() => navigation.navigate('AIChatScreen', {
+            communityId: communityId,
+            communityName: community?.name || 'Community'
+          })}
+        >
+
+          <Sparkles size={28} color="#ffffff" />
+        </TouchableOpacity>
+
+        {/* Message Input */}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+        >
+          <View style={styles.inputContainer}>
+            <TouchableOpacity onPress={openMediaModal} style={styles.attachButton}>
+              <Plus size={24} color="#ffffff" />
+            </TouchableOpacity>
+
+            <TextInput
+              style={styles.input}
+              placeholder="Type a message"
+              placeholderTextColor="#888"
+              value={messageText}
+              onChangeText={setMessageText}
+              multiline
+              onSubmitEditing={handleSend}
+            />
+
+            <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
+              <SendIcon />
+            </TouchableOpacity>
           </View>
-        ))}
-      </ScrollView>
+        </KeyboardAvoidingView>
 
-      {/* Floating Action Button */}
-      <TouchableOpacity style={styles.floatingButton} onPress={openModal}>
-        <PlusIcon />
-      </TouchableOpacity>
+        {/* Features Modal */}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={closeModal}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Community Features</Text>
+                <TouchableOpacity onPress={closeModal}>
+                  <Text style={styles.closeButton}>✕</Text>
+                </TouchableOpacity>
+              </View>
 
-      {/* Message Input */}
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-      >
-        <View style={styles.inputContainer}>
-          <TouchableOpacity onPress={openMediaModal} style={styles.attachButton}>
-            <Text style={styles.attachText}>+</Text>
-          </TouchableOpacity>
+              <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
+                {memberFeatures.map((feature) => (
+                  <TouchableOpacity
+                    key={feature.id}
+                    style={styles.featureItem}
+                    onPress={() => handleFeaturePress(feature)}
+                  >
+                    <View style={[styles.featureIcon, { backgroundColor: feature.color }]}>
+                      <Text style={styles.featureEmoji}>{feature.icon}</Text>
+                    </View>
+                    <Text style={styles.featureTitle}>{feature.title}</Text>
+                    <Text style={styles.featureArrow}>›</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
 
-          <TextInput
-            style={styles.input}
-            placeholder="Type a message"
-            placeholderTextColor="#888"
-            value={messageText}
-            onChangeText={setMessageText}
-            multiline
-            onSubmitEditing={handleSend}
+        {/* Media Attachment Modal */}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={mediaModalVisible}
+          onRequestClose={closeMediaModal}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.mediaModalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Share Media</Text>
+                <TouchableOpacity onPress={closeMediaModal}>
+                  <Text style={styles.closeButton}>✕</Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.mediaGrid}>
+                {mediaOptions.map((option) => (
+                  <TouchableOpacity
+                    key={option.id}
+                    style={styles.mediaOption}
+                    onPress={() => handleMediaOptionPress(option)}
+                  >
+                    <View style={[styles.mediaIconContainer, { backgroundColor: option.color }]}>
+                      <Text style={styles.mediaEmoji}>{option.icon}</Text>
+                    </View>
+                    <Text style={styles.mediaTitle}>{option.title}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          </View>
+        </Modal>
+
+        {/* Poll Creation Modal */}
+        <Modal
+          animationType="slide"
+          transparent={false}
+          visible={pollModalVisible}
+          onRequestClose={() => setPollModalVisible(false)}
+        >
+          <PollCreateScreen
+            communityId={String(communityId)}
+            onCancel={() => setPollModalVisible(false)}
+            onCreated={(poll: any) => {
+              setPollModalVisible(false);
+            }}
           />
+        </Modal>
 
-          <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
-            <SendIcon />
-          </TouchableOpacity>
-        </View>
-      </KeyboardAvoidingView>
-
-      {/* Features Modal */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={closeModal}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Community Features</Text>
-              <TouchableOpacity onPress={closeModal}>
-                <Text style={styles.closeButton}>✕</Text>
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
-              {memberFeatures.map((feature) => (
-                <TouchableOpacity
-                  key={feature.id}
-                  style={styles.featureItem}
-                  onPress={() => handleFeaturePress(feature)}
-                >
-                  <View style={[styles.featureIcon, { backgroundColor: feature.color }]}>
-                    <Text style={styles.featureEmoji}>{feature.icon}</Text>
-                  </View>
-                  <Text style={styles.featureTitle}>{feature.title}</Text>
-                  <Text style={styles.featureArrow}>›</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Media Attachment Modal */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={mediaModalVisible}
-        onRequestClose={closeMediaModal}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.mediaModalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Share Media</Text>
-              <TouchableOpacity onPress={closeMediaModal}>
-                <Text style={styles.closeButton}>✕</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.mediaGrid}>
-              {mediaOptions.map((option) => (
-                <TouchableOpacity
-                  key={option.id}
-                  style={styles.mediaOption}
-                  onPress={() => handleMediaOptionPress(option)}
-                >
-                  <View style={[styles.mediaIconContainer, { backgroundColor: option.color }]}>
-                    <Text style={styles.mediaEmoji}>{option.icon}</Text>
-                  </View>
-                  <Text style={styles.mediaTitle}>{option.title}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Poll Creation Modal */}
-      <Modal
-        animationType="slide"
-        transparent={false}
-        visible={pollModalVisible}
-        onRequestClose={() => setPollModalVisible(false)}
-      >
-        <PollCreateScreen
-          communityId={String(communityId)}
-          onCancel={() => setPollModalVisible(false)}
-          onCreated={(poll: any) => {
-            setPollModalVisible(false);
-          }}
-        />
-      </Modal>
-
-        </SafeAreaView>
+      </SafeAreaView>
     </View>
   );
 };
@@ -1488,28 +1499,45 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 8,
     paddingHorizontal: 32,
+    marginTop: 8,
+  },
+  chatbotFloatingButton: {
+    position: 'absolute',
+    bottom: 78,
+    left: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#155EEF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
   },
 });
 const lightTheme = StyleSheet.create({
-    root: { backgroundColor: 'transparent' },
-    header: { backgroundColor: 'rgba(255, 255, 255, 0.8)', borderBottomColor: 'rgba(0,0,0,0.1)' },
-    headerText: { color: '#1e293b' },
-    myMsgWrapper: { alignSelf: 'flex-end', alignItems: 'flex-end', paddingRight: 10 },
-    otherMsgWrapper: { alignSelf: 'flex-start', alignItems: 'flex-start', paddingLeft: 10 },
-    myMessageBubble: { backgroundColor: 'rgba(99, 102, 241, 1)', borderColor: 'rgba(99, 102, 241, 0.2)' },
-    messageBubble: { backgroundColor: 'rgba(255, 255, 255, 0.9)', borderColor: 'rgba(0,0,0,0.05)' },
-    messageText: { color: '#000000' },
-    myMessageText: { color: '#ffffff' },
+  root: { backgroundColor: 'transparent' },
+  header: { backgroundColor: 'rgba(255, 255, 255, 0.8)', borderBottomColor: 'rgba(0,0,0,0.1)' },
+  headerText: { color: '#1e293b' },
+  myMsgWrapper: { alignSelf: 'flex-end', alignItems: 'flex-end', paddingRight: 10 },
+  otherMsgWrapper: { alignSelf: 'flex-start', alignItems: 'flex-start', paddingLeft: 10 },
+  myMessageBubble: { backgroundColor: 'rgba(99, 102, 241, 1)', borderColor: 'rgba(99, 102, 241, 0.2)' },
+  messageBubble: { backgroundColor: 'rgba(255, 255, 255, 0.9)', borderColor: 'rgba(0,0,0,0.05)' },
+  messageText: { color: '#000000' },
+  myMessageText: { color: '#ffffff' },
 });
 
 const darkTheme = StyleSheet.create({
-    root: { backgroundColor: 'transparent' },
-    header: { backgroundColor: 'rgba(15, 23, 42, 0.8)', borderBottomColor: 'rgba(255,255,255,0.05)' },
-    headerText: { color: '#f8fafc' },
-    myMsgWrapper: { alignSelf: 'flex-end', alignItems: 'flex-end', paddingRight: 10 },
-    otherMsgWrapper: { alignSelf: 'flex-start', alignItems: 'flex-start', paddingLeft: 10 },
-    myMessageBubble: { backgroundColor: 'rgba(79, 70, 229, 1)', borderColor: 'rgba(255,255,255,0.1)' },
-    messageBubble: { backgroundColor: 'rgba(30, 41, 59, 0.8)', borderColor: 'rgba(255,255,255,0.08)' },
-    messageText: { color: '#f8fafc' },
-    myMessageText: { color: '#ffffff' },
+  root: { backgroundColor: 'transparent' },
+  header: { backgroundColor: 'rgba(15, 23, 42, 0.8)', borderBottomColor: 'rgba(255,255,255,0.05)' },
+  headerText: { color: '#f8fafc' },
+  myMsgWrapper: { alignSelf: 'flex-end', alignItems: 'flex-end', paddingRight: 10 },
+  otherMsgWrapper: { alignSelf: 'flex-start', alignItems: 'flex-start', paddingLeft: 10 },
+  myMessageBubble: { backgroundColor: 'rgba(79, 70, 229, 1)', borderColor: 'rgba(255,255,255,0.1)' },
+  messageBubble: { backgroundColor: 'rgba(30, 41, 59, 0.8)', borderColor: 'rgba(255,255,255,0.08)' },
+  messageText: { color: '#f8fafc' },
+  myMessageText: { color: '#ffffff' },
 });

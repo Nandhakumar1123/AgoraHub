@@ -48,7 +48,7 @@ export default function CommunityScreen() {
   const [currentUser, setCurrentUser] = useState<{ user_id: number | null; full_name: string }>({ user_id: null, full_name: 'Guest' });
 
   // Screen states
-  const [activeTab, setActiveTab] = useState<'created' | 'joined' | 'archived'>('created');
+  const [activeTab, setActiveTab] = useState<'created' | 'joined'>('created');
   const [view, setView] = useState<'main' | 'create' | 'shareDetails' | 'joinCommunity' | 'memberList' | 'memberDetails'>('main');
   const [communities, setCommunities] = useState<UserCommunity[]>([]);
   const [selectedCommunity, setSelectedCommunity] = useState<UserCommunity | null>(null);
@@ -456,9 +456,6 @@ export default function CommunityScreen() {
           <TouchableOpacity style={[styles.tab, activeTab === 'joined' && styles.activeTab]} onPress={() => setActiveTab('joined')}>
             <Text style={[styles.tabText, activeTab === 'joined' && styles.activeTabText]}>Joined</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.tab, activeTab === 'archived' && styles.activeTab]} onPress={() => setActiveTab('archived')}>
-            <Text style={[styles.tabText, activeTab === 'archived' && styles.activeTabText]}>Archived</Text>
-          </TouchableOpacity>
         </View>
 
         <ScrollView style={styles.scrollContent}>
@@ -510,25 +507,7 @@ export default function CommunityScreen() {
                 ))
             )}
 
-            {activeTab === 'archived' && (
-              archivedCommunities.length === 0
-                ? <View style={styles.emptyState}><Text style={{ color: '#94a3b8' }}>No Archived Communities</Text></View>
-                : archivedCommunities.map((community, index) => (
-                  <TouchableOpacity key={community.id} style={[styles.communityCard, index > 0 && styles.communityCardMargin, { opacity: 0.7 }]} onPress={() => openCommunityApp(community)}>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Text style={styles.communityName}>{community.name}</Text>
-                      <View style={{ backgroundColor: 'rgba(245, 158, 11, 0.1)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 }}>
-                        <Text style={{ color: '#f59e0b', fontSize: 10, fontWeight: '700' }}>ARCHIVED</Text>
-                      </View>
-                    </View>
-                    <Text style={{ color: '#6B7280', marginBottom: 6 }}>{community.description || 'No description'}</Text>
-                    <View style={styles.badgeRow}>
-                      <Text style={styles.codeText}>Code: {community.code}</Text>
-                      <Text style={styles.headInfo}>Head: {community.head_name}</Text>
-                    </View>
-                  </TouchableOpacity>
-                ))
-            )}
+
           </View>
         </ScrollView>
         </View>

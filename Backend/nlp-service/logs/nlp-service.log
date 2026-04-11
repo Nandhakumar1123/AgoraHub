@@ -15830,3 +15830,424 @@
 2026-04-02 17:22:28 [ERROR]: Uncaught exception {"error":"listen EADDRINUSE: address already in use 0.0.0.0:3002","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:3002\n    at Server.setupListenHandle [as _listen2] (node:net:1940:16)\n    at listenInCluster (node:net:1997:12)\n    at node:net:2206:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}
 2026-04-02 17:22:28 [INFO]: UNCAUGHT_EXCEPTION received, shutting down gracefully...
 2026-04-02 17:22:28 [INFO]: ✅ All connections closed
+2026-04-11 10:07:18 [INFO]: ✅ PostgreSQL connected
+2026-04-11 10:07:18 [INFO]: ✅ PostgreSQL connected
+2026-04-11 10:07:18 [INFO]: ✅ Redis connected (NLP service available)
+2026-04-11 10:07:18 [INFO]: Preloading NLP models...
+2026-04-11 10:07:18 [INFO]: Preloading NLP models...
+2026-04-11 10:07:18 [INFO]: Loading sentiment analysis model...
+2026-04-11 10:07:18 [INFO]: Loading toxicity detection model...
+2026-04-11 10:07:19 [INFO]: ✅ Sentiment analysis model loaded {"duration":"395ms"}
+2026-04-11 10:07:19 [INFO]: ✅ Toxicity detection model loaded {"duration":"813ms"}
+2026-04-11 10:07:19 [INFO]: ✅ All NLP models preloaded
+2026-04-11 10:07:19 [INFO]: 🚀 Civix Platform running on port 3002
+2026-04-11 10:07:19 [INFO]: Environment: development
+2026-04-11 10:07:19 [INFO]: Accessible at http://localhost:3002 (local)
+2026-04-11 10:07:19 [INFO]: Socket.io enabled for real-time features
+2026-04-11 10:07:19 [INFO]: NLP ChatBot service: OPTIONAL
+2026-04-11 10:13:53 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"16ms","ip":"127.0.0.1"}
+2026-04-11 11:11:43 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:11:44 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"975ms","ip":"127.0.0.1"}
+2026-04-11 11:11:45 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:11:45 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:11:45 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:11:45 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"447ms","ip":"127.0.0.1"}
+2026-04-11 11:11:45 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/15","status":304,"duration":"431ms","ip":"127.0.0.1"}
+2026-04-11 11:11:45 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/15","status":304,"duration":"24ms","ip":"127.0.0.1"}
+2026-04-11 11:11:45 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:11:45 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"82ms","ip":"127.0.0.1"}
+2026-04-11 11:11:45 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":200,"duration":"692ms","ip":"127.0.0.1"}
+2026-04-11 11:11:45 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"12ms","ip":"127.0.0.1"}
+2026-04-11 11:12:09 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:12:09 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":200,"duration":"74ms","ip":"127.0.0.1"}
+2026-04-11 11:12:09 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:12:09 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:12:09 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":200,"duration":"105ms","ip":"127.0.0.1"}
+2026-04-11 11:12:09 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:12:09 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:12:09 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"122ms","ip":"127.0.0.1"}
+2026-04-11 11:12:09 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"11ms","ip":"127.0.0.1"}
+2026-04-11 11:12:09 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/messages","status":200,"duration":"187ms","ip":"127.0.0.1"}
+2026-04-11 11:12:09 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"9ms","ip":"127.0.0.1"}
+2026-04-11 11:12:09 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/9","status":304,"duration":"61ms","ip":"127.0.0.1"}
+2026-04-11 11:12:09 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"73ms","ip":"127.0.0.1"}
+2026-04-11 11:12:09 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/8","status":304,"duration":"69ms","ip":"127.0.0.1"}
+2026-04-11 11:12:10 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":200,"duration":"172ms","ip":"127.0.0.1"}
+2026-04-11 11:12:25 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:12:25 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"56ms","ip":"127.0.0.1"}
+2026-04-11 11:12:40 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:12:40 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"76ms","ip":"127.0.0.1"}
+2026-04-11 11:12:55 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:12:55 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"67ms","ip":"127.0.0.1"}
+2026-04-11 11:13:10 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:13:10 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"71ms","ip":"127.0.0.1"}
+2026-04-11 11:13:25 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:13:25 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"58ms","ip":"127.0.0.1"}
+2026-04-11 11:13:40 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:13:40 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"53ms","ip":"127.0.0.1"}
+2026-04-11 11:13:55 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:13:55 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"57ms","ip":"127.0.0.1"}
+2026-04-11 11:14:17 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:14:17 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"86ms","ip":"127.0.0.1"}
+2026-04-11 11:14:21 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:14:21 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:14:21 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"81ms","ip":"127.0.0.1"}
+2026-04-11 11:14:21 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"11ms","ip":"127.0.0.1"}
+2026-04-11 11:14:21 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"8ms","ip":"127.0.0.1"}
+2026-04-11 11:14:21 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"10ms","ip":"127.0.0.1"}
+2026-04-11 11:14:21 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/8","status":304,"duration":"10ms","ip":"127.0.0.1"}
+2026-04-11 11:14:21 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/9","status":304,"duration":"10ms","ip":"127.0.0.1"}
+2026-04-11 11:14:25 [INFO]: Loading multilingual sentiment model...
+2026-04-11 11:14:27 [WARN]: Slow operation {"operation":"Multilingual model initialization","duration":"2613ms"}
+2026-04-11 11:14:27 [INFO]: ✅ Multilingual sentiment model loaded {"duration":"2613ms"}
+2026-04-11 11:14:27 [WARN]: Slow operation {"operation":"Sentiment analysis","duration":"2695ms","language":"ta"}
+2026-04-11 11:14:27 [WARN]: Slow operation {"operation":"Full NLP analysis","duration":"2818ms"}
+2026-04-11 11:14:27 [INFO]: Content moderation completed {"userId":15,"communityId":46,"action":"approved","duration":"2911ms"}
+2026-04-11 11:14:27 [INFO]: HTTP Request {"method":"POST","path":"/api/communities/46/messages","status":200,"duration":"2942ms","ip":"127.0.0.1"}
+2026-04-11 11:14:28 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":304,"duration":"15ms","ip":"127.0.0.1"}
+2026-04-11 11:14:36 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"7ms","ip":"127.0.0.1"}
+2026-04-11 11:14:46 [INFO]: Detected intent {"intent":"summary","question":"give the today chat summary"}
+2026-04-11 11:14:46 [INFO]: Querying LLM {"intent":"summary","promptLength":774}
+2026-04-11 11:14:46 [INFO]: Querying Ollama {"model":"llama3.2:1b","promptLength":774,"host":"http://127.0.0.1:11434"}
+2026-04-11 11:14:51 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:14:51 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"138ms","ip":"127.0.0.1"}
+2026-04-11 11:15:02 [INFO]: Ollama Response Received {"duration":"16214ms","model":"llama3.2:1b"}
+2026-04-11 11:15:02 [WARN]: Slow operation {"operation":"Ollama query","duration":"16214ms"}
+2026-04-11 11:15:02 [INFO]: LLM response received {"answerLength":332,"intent":"summary"}
+2026-04-11 11:15:02 [INFO]: API Request {"method":"POST","path":"/ask","userId":15,"communityId":46,"ip":"127.0.0.1","duration":16589}
+2026-04-11 11:15:02 [INFO]: HTTP Request {"method":"POST","path":"/ask","status":200,"duration":"16641ms","ip":"127.0.0.1"}
+2026-04-11 11:15:07 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:15:07 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"84ms","ip":"127.0.0.1"}
+2026-04-11 11:15:22 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:15:22 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"61ms","ip":"127.0.0.1"}
+2026-04-11 11:15:37 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:15:37 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"86ms","ip":"127.0.0.1"}
+2026-04-11 11:15:52 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:15:52 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"72ms","ip":"127.0.0.1"}
+2026-04-11 11:16:07 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:16:07 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"67ms","ip":"127.0.0.1"}
+2026-04-11 11:16:33 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:16:33 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"57ms","ip":"127.0.0.1"}
+2026-04-11 11:16:36 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"5ms","ip":"127.0.0.1"}
+2026-04-11 11:16:51 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:16:51 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"66ms","ip":"127.0.0.1"}
+2026-04-11 11:16:52 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:16:52 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:16:52 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"95ms","ip":"127.0.0.1"}
+2026-04-11 11:16:53 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"6ms","ip":"127.0.0.1"}
+2026-04-11 11:16:53 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"10ms","ip":"127.0.0.1"}
+2026-04-11 11:16:53 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"19ms","ip":"127.0.0.1"}
+2026-04-11 11:16:53 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/8","status":304,"duration":"14ms","ip":"127.0.0.1"}
+2026-04-11 11:16:53 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/9","status":304,"duration":"8ms","ip":"127.0.0.1"}
+2026-04-11 11:16:59 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":200,"duration":"80ms","ip":"127.0.0.1"}
+2026-04-11 11:17:08 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:17:08 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"45ms","ip":"127.0.0.1"}
+2026-04-11 11:17:23 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:17:23 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"57ms","ip":"127.0.0.1"}
+2026-04-11 11:17:38 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:17:38 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"164ms","ip":"127.0.0.1"}
+2026-04-11 11:17:53 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:17:53 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"58ms","ip":"127.0.0.1"}
+2026-04-11 11:18:08 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:18:08 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"96ms","ip":"127.0.0.1"}
+2026-04-11 11:18:23 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:18:23 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"96ms","ip":"127.0.0.1"}
+2026-04-11 11:18:38 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:18:38 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"88ms","ip":"127.0.0.1"}
+2026-04-11 11:18:53 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:18:53 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"56ms","ip":"127.0.0.1"}
+2026-04-11 11:19:08 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:19:08 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"110ms","ip":"127.0.0.1"}
+2026-04-11 11:19:23 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:19:23 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"101ms","ip":"127.0.0.1"}
+2026-04-11 11:19:38 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:19:38 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"85ms","ip":"127.0.0.1"}
+2026-04-11 11:19:53 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:19:53 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"119ms","ip":"127.0.0.1"}
+2026-04-11 11:20:08 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:20:08 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"96ms","ip":"127.0.0.1"}
+2026-04-11 11:21:08 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:21:08 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"117ms","ip":"127.0.0.1"}
+2026-04-11 11:22:08 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:22:08 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"120ms","ip":"127.0.0.1"}
+2026-04-11 11:23:08 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:23:08 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"106ms","ip":"127.0.0.1"}
+2026-04-11 11:24:08 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:24:08 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"114ms","ip":"127.0.0.1"}
+2026-04-11 11:24:28 [INFO]: SIGINT received, shutting down gracefully...
+2026-04-11 11:24:38 [ERROR]: Forced shutdown after timeout
+2026-04-11 11:26:57 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:26:57 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:26:57 [INFO]: ✅ Redis connected (NLP service available)
+2026-04-11 11:26:57 [INFO]: Preloading NLP models...
+2026-04-11 11:26:57 [INFO]: Preloading NLP models...
+2026-04-11 11:26:57 [INFO]: Loading sentiment analysis model...
+2026-04-11 11:26:57 [INFO]: Loading toxicity detection model...
+2026-04-11 11:26:58 [INFO]: ✅ Sentiment analysis model loaded {"duration":"455ms"}
+2026-04-11 11:26:58 [INFO]: ✅ Toxicity detection model loaded {"duration":"877ms"}
+2026-04-11 11:26:58 [INFO]: ✅ All NLP models preloaded
+2026-04-11 11:26:58 [INFO]: 🚀 Civix Platform running on port 3002
+2026-04-11 11:26:58 [INFO]: Environment: development
+2026-04-11 11:26:58 [INFO]: Accessible at http://localhost:3002 (local)
+2026-04-11 11:26:58 [INFO]: Socket.io enabled for real-time features
+2026-04-11 11:26:58 [INFO]: NLP ChatBot service: OPTIONAL
+2026-04-11 11:27:03 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"43ms","ip":"127.0.0.1"}
+2026-04-11 11:27:05 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:27:05 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:27:05 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"141ms","ip":"127.0.0.1"}
+2026-04-11 11:27:05 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"33ms","ip":"127.0.0.1"}
+2026-04-11 11:27:06 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"9ms","ip":"127.0.0.1"}
+2026-04-11 11:27:06 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"36ms","ip":"127.0.0.1"}
+2026-04-11 11:27:06 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/8","status":304,"duration":"29ms","ip":"127.0.0.1"}
+2026-04-11 11:27:06 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/9","status":304,"duration":"20ms","ip":"127.0.0.1"}
+2026-04-11 11:27:10 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/15","status":304,"duration":"15ms","ip":"127.0.0.1"}
+2026-04-11 11:27:10 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:27:10 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:27:10 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"119ms","ip":"127.0.0.1"}
+2026-04-11 11:27:10 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:27:10 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"268ms","ip":"127.0.0.1"}
+2026-04-11 11:27:14 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"5ms","ip":"127.0.0.1"}
+2026-04-11 11:27:24 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:27:24 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":401,"duration":"298ms","ip":"127.0.0.1"}
+2026-04-11 11:27:31 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"207ms","ip":"127.0.0.1"}
+2026-04-11 11:27:31 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:27:31 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:27:31 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"82ms","ip":"127.0.0.1"}
+2026-04-11 11:27:31 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/15","status":304,"duration":"7ms","ip":"127.0.0.1"}
+2026-04-11 11:27:31 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:27:31 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"11ms","ip":"127.0.0.1"}
+2026-04-11 11:27:31 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"114ms","ip":"127.0.0.1"}
+2026-04-11 11:27:32 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/15","status":304,"duration":"11ms","ip":"127.0.0.1"}
+2026-04-11 11:27:32 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"15ms","ip":"127.0.0.1"}
+2026-04-11 11:27:37 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"10ms","ip":"127.0.0.1"}
+2026-04-11 11:27:37 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"21ms","ip":"127.0.0.1"}
+2026-04-11 11:27:37 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/messages","status":200,"duration":"97ms","ip":"127.0.0.1"}
+2026-04-11 11:27:37 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:27:37 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"115ms","ip":"127.0.0.1"}
+2026-04-11 11:27:37 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"20ms","ip":"127.0.0.1"}
+2026-04-11 11:27:38 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/8","status":304,"duration":"19ms","ip":"127.0.0.1"}
+2026-04-11 11:27:38 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/9","status":304,"duration":"17ms","ip":"127.0.0.1"}
+2026-04-11 11:27:38 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"19ms","ip":"127.0.0.1"}
+2026-04-11 11:27:38 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"12ms","ip":"127.0.0.1"}
+2026-04-11 11:27:38 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"32ms","ip":"127.0.0.1"}
+2026-04-11 11:27:38 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/8","status":304,"duration":"30ms","ip":"127.0.0.1"}
+2026-04-11 11:27:38 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/9","status":304,"duration":"31ms","ip":"127.0.0.1"}
+2026-04-11 11:27:53 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:27:53 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"51ms","ip":"127.0.0.1"}
+2026-04-11 11:28:08 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:28:08 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"47ms","ip":"127.0.0.1"}
+2026-04-11 11:28:23 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:28:23 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"57ms","ip":"127.0.0.1"}
+2026-04-11 11:28:38 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:28:38 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"97ms","ip":"127.0.0.1"}
+2026-04-11 11:28:53 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:28:53 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"69ms","ip":"127.0.0.1"}
+2026-04-11 11:29:08 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:29:08 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"152ms","ip":"127.0.0.1"}
+2026-04-11 11:29:23 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:29:23 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"106ms","ip":"127.0.0.1"}
+2026-04-11 11:30:01 [INFO]: SIGINT received, shutting down gracefully...
+2026-04-11 11:30:03 [INFO]: SIGINT received, shutting down gracefully...
+2026-04-11 11:30:08 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:30:08 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"111ms","ip":"127.0.0.1"}
+2026-04-11 11:30:11 [ERROR]: Forced shutdown after timeout
+2026-04-11 11:31:26 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:31:26 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:31:26 [INFO]: ✅ Redis connected (NLP service available)
+2026-04-11 11:31:26 [INFO]: Preloading NLP models...
+2026-04-11 11:31:26 [INFO]: Preloading NLP models...
+2026-04-11 11:31:26 [INFO]: Loading sentiment analysis model...
+2026-04-11 11:31:26 [INFO]: Loading toxicity detection model...
+2026-04-11 11:31:26 [INFO]: ✅ Sentiment analysis model loaded {"duration":"404ms"}
+2026-04-11 11:31:26 [INFO]: ✅ Toxicity detection model loaded {"duration":"806ms"}
+2026-04-11 11:31:26 [INFO]: ✅ All NLP models preloaded
+2026-04-11 11:31:26 [INFO]: 🚀 Civix Platform running on port 3002
+2026-04-11 11:31:26 [INFO]: Environment: development
+2026-04-11 11:31:26 [INFO]: Accessible at http://localhost:3002 (local)
+2026-04-11 11:31:26 [INFO]: Socket.io enabled for real-time features
+2026-04-11 11:31:26 [INFO]: NLP ChatBot service: OPTIONAL
+2026-04-11 11:31:31 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"32ms","ip":"127.0.0.1"}
+2026-04-11 11:31:37 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/36","status":403,"duration":"12ms","ip":"127.0.0.1"}
+2026-04-11 11:31:37 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"2ms","ip":"127.0.0.1"}
+2026-04-11 11:31:48 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:31:48 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"296ms","ip":"127.0.0.1"}
+2026-04-11 11:31:49 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:31:49 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:31:49 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:31:49 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"143ms","ip":"127.0.0.1"}
+2026-04-11 11:31:49 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"163ms","ip":"127.0.0.1"}
+2026-04-11 11:31:49 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/15","status":304,"duration":"20ms","ip":"127.0.0.1"}
+2026-04-11 11:31:49 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"35ms","ip":"127.0.0.1"}
+2026-04-11 11:31:49 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/15","status":304,"duration":"11ms","ip":"127.0.0.1"}
+2026-04-11 11:31:49 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"21ms","ip":"127.0.0.1"}
+2026-04-11 11:31:51 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"17ms","ip":"127.0.0.1"}
+2026-04-11 11:31:51 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/messages","status":304,"duration":"20ms","ip":"127.0.0.1"}
+2026-04-11 11:31:51 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"29ms","ip":"127.0.0.1"}
+2026-04-11 11:31:51 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:31:51 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"110ms","ip":"127.0.0.1"}
+2026-04-11 11:31:51 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"30ms","ip":"127.0.0.1"}
+2026-04-11 11:31:51 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/9","status":304,"duration":"19ms","ip":"127.0.0.1"}
+2026-04-11 11:31:51 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/8","status":304,"duration":"27ms","ip":"127.0.0.1"}
+2026-04-11 11:31:51 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"9ms","ip":"127.0.0.1"}
+2026-04-11 11:31:51 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"18ms","ip":"127.0.0.1"}
+2026-04-11 11:31:51 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"35ms","ip":"127.0.0.1"}
+2026-04-11 11:31:51 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/8","status":304,"duration":"31ms","ip":"127.0.0.1"}
+2026-04-11 11:31:51 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/9","status":304,"duration":"31ms","ip":"127.0.0.1"}
+2026-04-11 11:32:02 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":304,"duration":"172ms","ip":"127.0.0.1"}
+2026-04-11 11:32:04 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:32:04 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:32:04 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:32:04 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"295ms","ip":"127.0.0.1"}
+2026-04-11 11:32:04 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"11ms","ip":"127.0.0.1"}
+2026-04-11 11:32:04 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"20ms","ip":"127.0.0.1"}
+2026-04-11 11:32:04 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/8","status":304,"duration":"19ms","ip":"127.0.0.1"}
+2026-04-11 11:32:04 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"14ms","ip":"127.0.0.1"}
+2026-04-11 11:32:04 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/9","status":304,"duration":"23ms","ip":"127.0.0.1"}
+2026-04-11 11:32:19 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:32:19 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"114ms","ip":"127.0.0.1"}
+2026-04-11 11:32:35 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:32:35 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"45ms","ip":"127.0.0.1"}
+2026-04-11 11:32:50 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:32:50 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"45ms","ip":"127.0.0.1"}
+2026-04-11 11:33:05 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:33:05 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"88ms","ip":"127.0.0.1"}
+2026-04-11 11:33:20 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:33:20 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"102ms","ip":"127.0.0.1"}
+2026-04-11 11:33:29 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:33:29 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:33:29 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:33:29 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"173ms","ip":"127.0.0.1"}
+2026-04-11 11:33:29 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/15","status":304,"duration":"173ms","ip":"127.0.0.1"}
+2026-04-11 11:33:29 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/15","status":304,"duration":"11ms","ip":"127.0.0.1"}
+2026-04-11 11:33:29 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"21ms","ip":"127.0.0.1"}
+2026-04-11 11:33:29 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:33:29 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"226ms","ip":"127.0.0.1"}
+2026-04-11 11:33:29 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"14ms","ip":"127.0.0.1"}
+2026-04-11 11:33:35 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"7ms","ip":"127.0.0.1"}
+2026-04-11 11:33:50 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:33:50 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"101ms","ip":"127.0.0.1"}
+2026-04-11 11:34:08 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:34:08 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"119ms","ip":"127.0.0.1"}
+2026-04-11 11:34:16 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:34:16 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:34:16 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"99ms","ip":"127.0.0.1"}
+2026-04-11 11:34:16 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"8ms","ip":"127.0.0.1"}
+2026-04-11 11:34:16 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/messages","status":304,"duration":"11ms","ip":"127.0.0.1"}
+2026-04-11 11:34:16 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"7ms","ip":"127.0.0.1"}
+2026-04-11 11:34:17 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"24ms","ip":"127.0.0.1"}
+2026-04-11 11:34:17 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"14ms","ip":"127.0.0.1"}
+2026-04-11 11:34:17 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/8","status":304,"duration":"33ms","ip":"127.0.0.1"}
+2026-04-11 11:34:17 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/9","status":304,"duration":"35ms","ip":"127.0.0.1"}
+2026-04-11 11:34:32 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:34:32 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"127ms","ip":"127.0.0.1"}
+2026-04-11 11:34:47 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:34:47 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"110ms","ip":"127.0.0.1"}
+2026-04-11 11:35:02 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:35:02 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"93ms","ip":"127.0.0.1"}
+2026-04-11 11:35:17 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:35:17 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"76ms","ip":"127.0.0.1"}
+2026-04-11 11:35:32 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:35:32 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"102ms","ip":"127.0.0.1"}
+2026-04-11 11:35:47 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:35:47 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"85ms","ip":"127.0.0.1"}
+2026-04-11 11:36:02 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:36:02 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"95ms","ip":"127.0.0.1"}
+2026-04-11 11:37:03 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:37:03 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"64ms","ip":"127.0.0.1"}
+2026-04-11 11:37:37 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:37:37 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"96ms","ip":"127.0.0.1"}
+2026-04-11 11:37:46 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":304,"duration":"129ms","ip":"127.0.0.1"}
+2026-04-11 11:37:47 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"6ms","ip":"127.0.0.1"}
+2026-04-11 11:37:48 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:37:48 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:37:48 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"120ms","ip":"127.0.0.1"}
+2026-04-11 11:37:48 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"7ms","ip":"127.0.0.1"}
+2026-04-11 11:37:48 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"11ms","ip":"127.0.0.1"}
+2026-04-11 11:37:48 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"18ms","ip":"127.0.0.1"}
+2026-04-11 11:37:48 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/8","status":304,"duration":"20ms","ip":"127.0.0.1"}
+2026-04-11 11:37:48 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/9","status":304,"duration":"15ms","ip":"127.0.0.1"}
+2026-04-11 11:37:52 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/15","status":304,"duration":"10ms","ip":"127.0.0.1"}
+2026-04-11 11:37:52 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:37:52 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:37:52 [INFO]: ✅ PostgreSQL connected
+2026-04-11 11:37:52 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"128ms","ip":"127.0.0.1"}
+2026-04-11 11:37:52 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"126ms","ip":"127.0.0.1"}
+2026-04-11 11:37:56 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":200,"duration":"6ms","ip":"127.0.0.1"}
+2026-04-11 14:58:26 [INFO]: ✅ PostgreSQL connected
+2026-04-11 14:58:26 [INFO]: ✅ PostgreSQL connected
+2026-04-11 14:58:26 [INFO]: ✅ PostgreSQL connected
+2026-04-11 14:58:26 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/15","status":304,"duration":"233ms","ip":"127.0.0.1"}
+2026-04-11 14:58:26 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"249ms","ip":"127.0.0.1"}
+2026-04-11 14:58:26 [INFO]: ✅ PostgreSQL connected
+2026-04-11 14:58:26 [INFO]: ✅ PostgreSQL connected
+2026-04-11 14:58:26 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"406ms","ip":"127.0.0.1"}
+2026-04-11 14:58:27 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"8ms","ip":"127.0.0.1"}
+2026-04-11 14:58:27 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"14ms","ip":"127.0.0.1"}
+2026-04-11 14:58:27 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"11ms","ip":"127.0.0.1"}
+2026-04-11 14:58:27 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/messages","status":304,"duration":"23ms","ip":"127.0.0.1"}
+2026-04-11 14:58:27 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"9ms","ip":"127.0.0.1"}
+2026-04-11 14:58:27 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"21ms","ip":"127.0.0.1"}
+2026-04-11 14:58:27 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"31ms","ip":"127.0.0.1"}
+2026-04-11 14:58:27 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/9","status":304,"duration":"28ms","ip":"127.0.0.1"}
+2026-04-11 14:58:27 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/8","status":304,"duration":"33ms","ip":"127.0.0.1"}
+2026-04-11 14:58:29 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":304,"duration":"84ms","ip":"127.0.0.1"}
+2026-04-11 14:58:42 [INFO]: ✅ PostgreSQL connected
+2026-04-11 14:58:42 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"54ms","ip":"127.0.0.1"}
+2026-04-11 14:58:57 [INFO]: ✅ PostgreSQL connected
+2026-04-11 14:58:57 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"161ms","ip":"127.0.0.1"}
+2026-04-11 14:59:12 [INFO]: ✅ PostgreSQL connected
+2026-04-11 14:59:12 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"75ms","ip":"127.0.0.1"}
+2026-04-11 14:59:27 [INFO]: ✅ PostgreSQL connected
+2026-04-11 14:59:27 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"60ms","ip":"127.0.0.1"}
+2026-04-11 14:59:43 [INFO]: ✅ PostgreSQL connected
+2026-04-11 14:59:43 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"74ms","ip":"127.0.0.1"}
+2026-04-11 14:59:57 [INFO]: ✅ PostgreSQL connected
+2026-04-11 14:59:57 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"55ms","ip":"127.0.0.1"}
+2026-04-11 15:00:13 [INFO]: ✅ PostgreSQL connected
+2026-04-11 15:00:13 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"51ms","ip":"127.0.0.1"}
+2026-04-11 15:00:27 [INFO]: ✅ PostgreSQL connected
+2026-04-11 15:00:27 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"71ms","ip":"127.0.0.1"}
+2026-04-11 15:01:02 [INFO]: ✅ PostgreSQL connected
+2026-04-11 15:01:02 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"51ms","ip":"127.0.0.1"}
+2026-04-11 15:02:01 [INFO]: ✅ PostgreSQL connected
+2026-04-11 15:02:01 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"69ms","ip":"127.0.0.1"}
+2026-04-11 15:03:02 [INFO]: ✅ PostgreSQL connected
+2026-04-11 15:03:02 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"67ms","ip":"127.0.0.1"}
+2026-04-11 15:03:13 [INFO]: ✅ PostgreSQL connected
+2026-04-11 15:03:13 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"71ms","ip":"127.0.0.1"}
+2026-04-11 15:03:28 [INFO]: ✅ PostgreSQL connected
+2026-04-11 15:03:28 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"54ms","ip":"127.0.0.1"}
+2026-04-11 15:03:42 [INFO]: ✅ PostgreSQL connected
+2026-04-11 15:03:42 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"58ms","ip":"127.0.0.1"}
+2026-04-11 15:03:58 [INFO]: ✅ PostgreSQL connected
+2026-04-11 15:03:58 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"55ms","ip":"127.0.0.1"}
+2026-04-11 15:04:12 [INFO]: ✅ PostgreSQL connected
+2026-04-11 15:04:12 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"52ms","ip":"127.0.0.1"}
+2026-04-11 15:05:02 [INFO]: ✅ PostgreSQL connected
+2026-04-11 15:05:02 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"64ms","ip":"127.0.0.1"}
+2026-04-11 15:06:01 [INFO]: ✅ PostgreSQL connected
+2026-04-11 15:06:01 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"67ms","ip":"127.0.0.1"}
+2026-04-11 15:07:02 [INFO]: ✅ PostgreSQL connected
+2026-04-11 15:07:02 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"67ms","ip":"127.0.0.1"}
+2026-04-11 15:08:01 [INFO]: ✅ PostgreSQL connected
+2026-04-11 15:08:01 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"72ms","ip":"127.0.0.1"}
+2026-04-11 15:09:02 [INFO]: ✅ PostgreSQL connected
+2026-04-11 15:09:02 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"54ms","ip":"127.0.0.1"}
+2026-04-11 15:10:01 [INFO]: ✅ PostgreSQL connected
+2026-04-11 15:10:01 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"97ms","ip":"127.0.0.1"}
+2026-04-11 15:11:02 [INFO]: ✅ PostgreSQL connected
+2026-04-11 15:11:02 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"48ms","ip":"127.0.0.1"}
+2026-04-11 15:11:08 [INFO]: ✅ PostgreSQL connected
+2026-04-11 15:11:08 [INFO]: ✅ PostgreSQL connected
+2026-04-11 15:11:08 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"79ms","ip":"127.0.0.1"}
+2026-04-11 15:11:08 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"8ms","ip":"127.0.0.1"}
+2026-04-11 15:11:09 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"10ms","ip":"127.0.0.1"}
+2026-04-11 15:11:09 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/8","status":304,"duration":"6ms","ip":"127.0.0.1"}
+2026-04-11 15:11:09 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/9","status":304,"duration":"12ms","ip":"127.0.0.1"}
+2026-04-11 15:11:09 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"6ms","ip":"127.0.0.1"}
+2026-04-11 15:11:10 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/15","status":304,"duration":"11ms","ip":"127.0.0.1"}
+2026-04-11 15:11:10 [INFO]: ✅ PostgreSQL connected
+2026-04-11 15:11:10 [INFO]: ✅ PostgreSQL connected
+2026-04-11 15:11:10 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"92ms","ip":"127.0.0.1"}
+2026-04-11 15:11:10 [INFO]: ✅ PostgreSQL connected
+2026-04-11 15:11:10 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"89ms","ip":"127.0.0.1"}
