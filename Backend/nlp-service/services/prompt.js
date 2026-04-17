@@ -4,14 +4,16 @@
  * Handles ALL community types and all NLP tasks
  */
 
-const SYSTEM_CONTEXT = `You are a concise community AI assistant.
+const SYSTEM_CONTEXT = `You are an intelligent community assistant.
 Rules:
-- Response ONLY in English.
-- Identify all distinct issues separately.
-- Summary: 2 lines max per point. Use Numbers (1. 2. 3.).
-- Solutions: Actionable steps for each point. Use Numbers (1. 2. 3.).
-- NO BOLDING. Plain text only. No asterisks (**).
-- Maximum 200 words.`;
+1. Response ONLY in English.
+2. NO BOLDING. Use plain text only. No asterisks (**).
+3. Use this format for each item:
+   <number>. [Original Content/Short Title]
+   Summary: [Brief summary]
+   Solution: [Actionable solution]
+4. Identify all distinct issues separately.
+5. Maximum 250 words total.`;
 
 /**
  * SOLUTIONS PROMPT - Provides actionable, specific fixes
@@ -118,12 +120,13 @@ Instructions:
 1. List each distinct issue separately as a numbered Item.
 2. For each Item, provide a brief Summary and a practical Solution.
 3. No names. Respond ONLY in English.
-4. Translate internally if needed, but do not show translations.
+4. Translate internally if needed (handles English, Tamil, Tanglish, Hindi, etc.), but do not show translations.
 5. NO BOLDING. Use plain text only.
+6. Summarize EVERY distinct issue or message found in the transcript. Do NOT skip any content.
 
 Output Format:
 
-Item <number>:
+1. [Original Content/Issue Name]
 Summary:
 <Short and clear summary>
 
@@ -154,7 +157,7 @@ Instructions:
 
 Output Format:
 
-Item 1:
+1. [Relevant Context Title]
 Summary:
 <Concise answer summary in English>
 
@@ -451,6 +454,9 @@ function getPrompt(intentType, data, question, options = {}) {
     case 'suggest_action':
       return getApprovalSuggestionPrompt(data, options.itemType);
 
+    case 'list':
+      return getListRecordsPrompt(data, question, options.showName || false);
+
     case 'general':
     default:
       return getGeneralQuestionPrompt(data, question);
@@ -503,7 +509,39 @@ function detectIntent(question) {
     return 'announcement';
   }
 
+  // List/Show records
+  if (q.match(/\b(list|show|fetch|search|view|get)\b/) && q.match(/\b(record|message|complaint|petition|chat|all|entries|entry|detail|item|history)s?\b/)) {
+    return 'list';
+  }
+
   return 'general';
+}
+
+/**
+ * LIST RECORDS PROMPT - Only display records, no suggestions or solutions
+ */
+function getListRecordsPrompt(data, question, showName = false) {
+  return `You are an intelligent community assistant.
+User's Request: ${question}
+
+Records to display:
+${data}
+
+Task: Display the records as a clean list.
+Rules:
+1. Show only the requested details.
+2. For each item, show: Content, Status, and Priority (unless specific fields were asked).
+3. ${showName ? 'Include the Name/Author of each record.' : 'Do NOT include names/authors unless specifically asked.'}
+4. Respond ONLY in English.
+5. NO BOLDING. Use plain text.
+6. ABSOLUTELY NO SUGGESTIONS AND NO SOLUTIONS.
+7. If no records are found, state clearly that no records match the criteria.
+
+Format:
+1. Content: [Content] | Status: [Status] | Priority: [Priority] ${showName ? '| Name: [Name]' : ''}
+2. Content: [Content] | Status: [Status] | Priority: [Priority] ${showName ? '| Name: [Name]' : ''}
+
+Output ONLY the list:`;
 }
 
 /**
@@ -521,10 +559,10 @@ function formatMessagesAsList(messages) {
 function formatMessagesAsTranscript(messages) {
   return messages
     .map((m) => {
-      const time = m.created_at ? new Date(m.created_at).toLocaleString('en-US') : '';
       const sender = m.sender_name || 'User';
       const content = m.content || m;
-      return time ? `[${time}] ${sender}: ${content}` : `${sender}: ${content}`;
+      // Simpler format for model: "Sender: Content"
+      return `${sender}: ${content}`;
     })
     .join('\n');
 }
@@ -592,52 +630,17 @@ Answer (in ${targetLang}):`;
 // Analyse a multilingual user message
 const PROMPT_MULTILINGUAL_ANALYSIS = (message) => `You are an intelligent multilingual AI assistant for analyzing chats, complaints, and petitions.
 
-Your tasks:
+Strict Rules:
+1. ALWAYS respond in English only.
+2. NO BOLDING. Use plain text only. No asterisks (**).
+3. Format each real item found:
+   <number>. [Original Content/Short Title]
+   Summary: [Brief summary]
+   Solution: [Actionable solution]
+4. Do NOT use samples or placeholders.
+5. If no records are found, say: "I couldn't find any specific records for your request, but I'm here to help with general questions."
 
-1. Input Handling:
-- The input may contain multiple messages from a specific day or based on a user request.
-- The content may be in any language (English, Tamil, Tanglish, Hindi, etc.).
-- You must understand all languages correctly.
-
-2. Filtering:
-- If a date or specific request is mentioned, process ONLY the provided relevant messages.
-- Treat each message/complaint/petition as a separate item.
-
-3. Processing:
-For EACH item:
-- Understand the issue clearly.
-- Translate internally if needed.
-- Do NOT show translation in output.
-
-4. Output Requirements:
-- ALWAYS respond in English only.
-- For EACH item, provide it in the format:
-
-Item <number>:
-Summary:
-<Short and clear summary>
-
-Solution:
-<Practical and actionable solution>
-
-5. Rules:
-- Do NOT provide any overall summary.
-- Do NOT combine items.
-- Do NOT skip any item.
-- Always include both Summary and Solution.
-- Keep responses clear and structured.
-- Avoid unnecessary details.
-- Do not mention names unless required.
-
-6. If input is a general question:
-- Answer clearly in English.
-
-Important:
-- Output must be ONLY in English.
-- Must handle mixed-language input correctly.
-- Must work for chat, complaint, and petition data.
-
-Input to analyze:
+Analyze this input:
 ${message}`;
 
 const PROMPT_NOTIFICATION_SUMMARY = (postContent) => `You are a notification summarization system.

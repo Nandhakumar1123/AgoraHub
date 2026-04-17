@@ -19,7 +19,7 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
 } from 'react-native';
-import { Bot, PlusCircle, Plus } from 'lucide-react-native';
+import { Bot, PlusCircle, Plus, Sparkles } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import io, { Socket } from 'socket.io-client';
 import { API_BASE_URL, SOCKET_BASE_URL } from '../lib/api';
@@ -378,7 +378,6 @@ const memberFeatures = [
   { id: 2, title: 'Raise Petition', icon: '📝', color: '#4ECDC4' },
   { id: 4, title: 'Anonymous Chat', icon: '💬', color: '#45B7D1' },
   { id: 5, title: 'Community Events', icon: '📅', color: '#96CEB4' },
-  { id: 6, title: 'Resources', icon: '📚', color: '#FECA57' },
   { id: 7, title: 'Poll', icon: '🗳️', color: '#667eea' },
 ];
 
@@ -932,16 +931,6 @@ const MemberCommunityApp: React.FC = () => {
           <PlusIcon />
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.chatbotFloatingButton}
-          onPress={() => navigation.navigate('AIChatScreen', {
-            communityId: communityId,
-            communityName: community?.name || 'Community'
-          })}
-        >
-
-          <Sparkles size={28} color="#ffffff" />
-        </TouchableOpacity>
 
         {/* Message Input */}
         <KeyboardAvoidingView

@@ -10,17 +10,11 @@ function getApiUrl(): string {
     // Follow project convention:
     // - Web should hit `localhost`.
     // - Mobile (Android/iOS) should hit the LAN IP provided via `.env`.
-    if (envUrl && typeof envUrl === 'string') {
-      if (Platform.OS === 'android' || Platform.OS === 'ios') {
-        return envUrl.replace(/\/$/, '');
-      }
-    }
-  } catch (_) { }
-  // Backend/.env uses PORT=3002 by default; use 3000 only if you run backend without .env
-  if (Platform.OS === 'android' || Platform.OS === 'ios') {
-    return 'http://10.251.153.57:3002/api';
+    console.log('[API] Using URL:', envUrl || 'Fallback: http://10.189.20.57:3002/api');
+    return envUrl || 'http://10.189.20.57:3002/api';
+  } catch (_) {
+    return 'http://localhost:3002/api';
   }
-  return 'http://localhost:3002/api';
 }
 
 export const API_BASE_URL = getApiUrl();

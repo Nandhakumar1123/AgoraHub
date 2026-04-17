@@ -480,3 +480,20 @@
 2026-04-02 17:22:28 [ERROR]: Uncaught exception {"error":"listen EADDRINUSE: address already in use 0.0.0.0:3002","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:3002\n    at Server.setupListenHandle [as _listen2] (node:net:1940:16)\n    at listenInCluster (node:net:1997:12)\n    at node:net:2206:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}
 2026-04-11 11:24:38 [ERROR]: Forced shutdown after timeout
 2026-04-11 11:30:11 [ERROR]: Forced shutdown after timeout
+2026-04-17 09:16:02 [ERROR]: Bot query error {"error":"questionLower is not defined","question":"Give the today chat summary","communityId":46}
+2026-04-17 09:16:02 [ERROR]: Bot ask endpoint error {"error":"questionLower is not defined","userId":15}
+2026-04-17 09:16:54 [ERROR]: Bot query error {"error":"questionLower is not defined","question":"give the today chat summary","communityId":46}
+2026-04-17 09:16:54 [ERROR]: Bot ask endpoint error {"error":"questionLower is not defined","userId":15}
+2026-04-17 09:18:16 [ERROR]: Forced shutdown after timeout
+2026-04-17 09:19:36 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-04-17 09:19:36 [ERROR]: LLM query failed {"error":"timeout of 60000ms exceeded","intent":"summary"}
+2026-04-17 09:53:54 [ERROR]: Error during shutdown {"error":"Called end on pool more than once"}
+2026-04-17 10:05:59 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-04-17 10:05:59 [ERROR]: LLM query failed {"error":"timeout of 60000ms exceeded","intent":"summary"}
+2026-04-17 10:07:35 [ERROR]: Uncaught exception {"error":"listen EADDRINUSE: address already in use 0.0.0.0:3002","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:3002\n    at Server.setupListenHandle [as _listen2] (node:net:1940:16)\n    at listenInCluster (node:net:1997:12)\n    at node:net:2206:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}
+2026-04-17 10:35:59 [ERROR]: Error during shutdown {"error":"Called end on pool more than once"}
+2026-04-17 11:08:23 [ERROR]: Forced shutdown after timeout
+2026-04-17 11:58:33 [ERROR]: Forced shutdown after timeout
+2026-04-17 12:21:31 [ERROR]: Uncaught exception {"error":"listen EADDRINUSE: address already in use 0.0.0.0:3002","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:3002\n    at Server.setupListenHandle [as _listen2] (node:net:1940:16)\n    at listenInCluster (node:net:1997:12)\n    at node:net:2206:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}
+2026-04-17 12:31:25 [ERROR]: Uncaught exception {"error":"listen EADDRINUSE: address already in use 0.0.0.0:3002","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:3002\n    at Server.setupListenHandle [as _listen2] (node:net:1940:16)\n    at listenInCluster (node:net:1997:12)\n    at node:net:2206:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}
+2026-04-17 12:33:22 [ERROR]: Uncaught exception {"error":"listen EADDRINUSE: address already in use 0.0.0.0:3002","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:3002\n    at Server.setupListenHandle [as _listen2] (node:net:1940:16)\n    at listenInCluster (node:net:1997:12)\n    at node:net:2206:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}

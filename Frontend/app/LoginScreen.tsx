@@ -61,8 +61,11 @@ export default function LoginScreen({ navigation: propNavigation }: { navigation
       setConnectionError(null);
       checkBackendConnection().then(({ ok, message }) => {
         if (cancelled) return;
-        setConnectionStatus(ok ? "Backend connected" : null);
-        if (!ok) setConnectionError(`Cannot reach backend: ${message}. Is it running at ${API_ROOT}?`);
+        setConnectionStatus(ok ? "Backend connected" : `Connection failed. Attempted: ${API_ROOT}`);
+        if (!ok) {
+          const detailedError = `Cannot reach backend at ${API_ROOT}. Network error: ${message}. If you're on mobile, ensure your phone is on the same Wi-Fi as your PC (${API_ROOT.match(/\d+\.\d+\.\d+\.\d+/)?.[0] || 'Unknown IP'}).`;
+          setConnectionError(detailedError);
+        }
       });
       return () => { cancelled = true; setConnectionStatus(null); };
     }, [])

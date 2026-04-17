@@ -721,7 +721,8 @@ function isLowSignalMessage(content) {
     /^bye$/,
   ];
 
-  if (text.length <= 3) return true;
+  // Only skip greetings/check-ins as requested.
+  // Relaxed length filter to support short meaningful messages in other languages.
   return lowSignalPatterns.some((r) => r.test(text));
 }
 
@@ -796,6 +797,21 @@ function isSentimentQuery(question) {
     q.includes('positive') ||
     q.includes('negative') ||
     q.includes('emotion')
+  );
+}
+
+function isListQuery(question) {
+  const q = String(question || '').toLowerCase();
+  return (
+    q.includes('list') ||
+    q.includes('show') ||
+    q.includes('fetch') ||
+    q.includes('search') ||
+    q.includes('view') ||
+    q.includes('get records') ||
+    q.includes('get complaints') ||
+    q.includes('get petitions') ||
+    q.includes('get messages')
   );
 }
 
@@ -999,6 +1015,14 @@ function isImportantMessage(content) {
     'please',
     "don't",
     'do not',
+    // Tanglish/Tamil/Multilingual common problem keywords
+    'prblm', 'problem', 'visshu', 'issue', 'help', 'sos', 'alert', 'urgent',
+    'kelvi', 'bathil', 'enna', 'yen', 'etharku', 'eppo',
+    'bad', 'worst', 'poor', 'not good', 'not working', 'broken', 'repair',
+    'food', 'taste', 'quality', 'water', 'current', 'power', 'light',
+    'noise', 'sound', 'disturb', 'misbehave', 'fight', 'scolding',
+    'unavu', 'suvai', 'tharam', 'nalladhu', 'illai', 'mosam', 'pranchanai',
+    'kedi', 'thonga', 'thiru', 'police', 'complaint', 'admin', 'help',
   ];
 
   return importantKeywords.some((k) => lower.includes(k)) || /[:.!?]/.test(text);
@@ -1328,15 +1352,21 @@ async function fetchCommunityChatMessages(communityId, question, limit = 50) {
     params.push(range.end.toISOString());
     sql += ` ORDER BY cm.created_at DESC LIMIT $4`;
     params.push(limit);
-  } else {
+  } else if (dateFilter.mode === 'none' || !dateFilter.mode) {
     const wideIntentWindow =
       isAnnouncementQuery(question) ||
       isSentimentQuery(question) ||
       isAbuseQuery(question) ||
       isToxicityRatingQuery(question);
+    
     sql += wideIntentWindow
       ? ` AND cm.created_at >= NOW() - INTERVAL '90 days'`
       : ` AND cm.created_at >= NOW() - INTERVAL '24 hours'`;
+    sql += ` ORDER BY cm.created_at DESC LIMIT $2`;
+    params.push(limit);
+  } else {
+    // Fallback for other modes we might have missed or just defaulting to 24h if mode exists but not handled
+    sql += ` AND cm.created_at >= NOW() - INTERVAL '24 hours'`;
     sql += ` ORDER BY cm.created_at DESC LIMIT $2`;
     params.push(limit);
   }
@@ -1388,8 +1418,13 @@ async function fetchCommunityComplaints(communityId, question, limit = 50) {
     params.push(range.end.toISOString());
     sql += ` ORDER BY c.created_at DESC LIMIT $4`;
     params.push(limit);
-  } else {
+  } else if (dateFilter.mode === 'none' || !dateFilter.mode) {
     sql += ` AND c.created_at >= NOW() - INTERVAL '30 days'`;
+    sql += ` ORDER BY c.created_at DESC LIMIT $2`;
+    params.push(limit);
+  } else {
+    // Other mode present but not handled explicitly for complaints
+    sql += ` AND c.created_at >= NOW() - INTERVAL '7 days'`;
     sql += ` ORDER BY c.created_at DESC LIMIT $2`;
     params.push(limit);
   }
@@ -1442,8 +1477,13 @@ async function fetchCommunityPetitions(communityId, question, limit = 50) {
     params.push(range.end.toISOString());
     sql += ` ORDER BY p.created_at DESC LIMIT $4`;
     params.push(limit);
+  } else if (dateFilter.mode === 'none' || !dateFilter.mode) {
+    sql += ` AND p.created_at >= NOW() - INTERVAL '30 days'`;
+    sql += ` ORDER BY p.created_at DESC LIMIT $2`;
+    params.push(limit);
   } else {
-    sql += ` AND p.created_at >= NOW() - INTERVAL '90 days'`;
+    // Mode present but not explicitly handled for petitions
+    sql += ` AND p.created_at >= NOW() - INTERVAL '7 days'`;
     sql += ` ORDER BY p.created_at DESC LIMIT $2`;
     params.push(limit);
   }
@@ -1524,6 +1564,10 @@ async function summarizeFromChatMessages(question, communityId) {
   if (isLanguageFilterQuery(question)) {
     return await handleLanguageFilterQuery(question, communityId);
   }
+
+  const isListing = isListQuery(question);
+  const questionLower = question.toLowerCase();
+  const showName = questionLower.includes('name') || questionLower.includes('sender') || questionLower.includes('who');
   // Fetch messages using existing function
   const messages = await fetchCommunityChatMessages(communityId, question);
 
@@ -1564,7 +1608,8 @@ async function summarizeFromChatMessages(question, communityId) {
     // For solutions/recommendations, provide issues as a clean list
     const issuesList = messages
       .filter(m => !isLowSignalMessage(m.content))
-      .filter(m => isImportantMessage(m.content) || m.content.length > 15)
+      // Relaxed filter for time-specific summaries to ensure completeness
+      .filter(m => isImportantMessage(m.content) || m.content.length > 10)
       .map(m => `- ${normalizeIssueText(m.content)}`)
       .filter((v, i, a) => a.indexOf(v) === i) // Remove duplicates
       .join('\n');
@@ -1592,12 +1637,12 @@ async function summarizeFromChatMessages(question, communityId) {
     promptData = transcript;
     prompt = getPrompt(intent, promptData, question, { includeRecommendations });
 
-  } else if (['sentiment', 'toxicity', 'abuse', 'categorization', 'topics', 'duplication', 'duplicates', 'announcement', 'announcements'].includes(intent)) {
+  } else if (['sentiment', 'toxicity', 'abuse', 'categorization', 'topics', 'duplication', 'duplicates', 'announcement', 'announcements', 'list'].includes(intent)) {
     // For analysis tasks, provide messages as numbered list
     const messagesList = formatMessagesAsList(messages);
 
     promptData = messagesList;
-    prompt = getPrompt(intent, promptData, question);
+    prompt = getPrompt(intent, promptData, question, { showName });
 
   } else {
     // For general questions, provide transcript
@@ -1653,160 +1698,74 @@ async function summarizeFromChatMessages(question, communityId) {
 }
 
 async function summarizeFromComplaints(question, communityId) {
-  const messages = await fetchCommunityComplaints(communityId, question);
-
-  if (!messages.length) {
-    logger.info('No complaints found, using general LLM fallback');
-    const prompt = `You are an intelligent multilingual AI assistant for analyzing chats, complaints, and petitions.
-
-User's Request: "${question}"
-
-Task: Provide a helpful summary explaining that no specific complaints were found, and offer general solutions.
-
-Rules:
-1. Respond ONLY in English.
-2. NO BOLDING.
-3. Use the format below.
-
-Output Format:
-
-Item 1:
-Summary:
-[General summary explaining no complaints were found and giving context on complaint management]
-
-Solution:
-[Practical general advice for community management]`;
-    
-    try {
-      const result = await queryLLM(prompt, null, 0.4);
-      return {
-        answer: result.response,
-        sources: [],
-        confidence: 70,
-        sourceCount: 0,
-        status: 'no_complaints_llm_fallback',
-      };
-    } catch (err) {
-      return {
-        answer: 'No specific complaints found for the requested time range.',
-        sources: [],
-        confidence: 0,
-        sourceCount: 0,
-        status: 'error',
-      };
-    }
-  }
-
-  const transcript = messages.map(m => `[Complaint] Category: ${m.category}, Title: ${m.title}, Description: ${m.description}`).join('\n');
-
-  const prompt = PROMPT_MULTILINGUAL_ANALYSIS(transcript);
-
+  const complaints = await fetchCommunityComplaints(communityId, question);
+  const transcript = complaints.map(c => `[Complaint] Title: ${c.title}, Description: ${c.description}, Status: ${c.status}`).join('\n');
+  
+  const prompt = PROMPT_MULTILINGUAL_ANALYSIS(transcript || 'No specific complaints found in the database for this request.');
+  
   try {
     const result = await queryLLM(prompt, null, 0.3);
     const answer = String(result?.response || '').trim();
-
     if (answer && !isLimitMessage(answer)) {
       return {
         answer,
-        sources: messages.slice(0, 5).map((m, idx) => ({
+        sources: complaints.slice(0, 5).map((c, idx) => ({
           id: `complaint-${idx}`,
-          title: `${m.title} (${m.category})`,
-          similarity: null,
+          title: `Complaint: ${c.title}`,
+          similarity: null
         })),
-        confidence: 85,
-        sourceCount: messages.length,
-        status: 'llm_success',
+        confidence: transcript ? 85 : 60,
+        sourceCount: complaints.length,
+        status: 'complaint_summary_success',
       };
     }
-  } catch (error) {
-    logger.error('Complaint summarization failed', { error: error.message });
+  } catch (err) {
+    logger.error('summarizeFromComplaints failed', { error: err.message });
   }
 
+  // Final fallback
   return {
-    answer: `I found ${messages.length} complaints. Here are the main ones:\n\n` + transcript.split('\n').slice(0, 10).join('\n'),
+    answer: transcript ? `Found ${complaints.length} complaints:\n\n${transcript}` : "I couldn't find any specific complaints recorded for your request, but I'm here to help with general questions.",
     sources: [],
-    confidence: 50,
-    sourceCount: messages.length,
-    status: 'deterministic_fallback',
+    confidence: transcript ? 65 : 45,
+    sourceCount: complaints.length,
+    status: 'fallback',
   };
 }
 
 async function summarizeFromPetitions(question, communityId) {
-  const messages = await fetchCommunityPetitions(communityId, question);
-
-  if (!messages.length) {
-    logger.info('No petitions found, using general LLM fallback');
-    const prompt = `You are an intelligent multilingual AI assistant for analyzing chats, complaints, and petitions.
-
-User's Request: "${question}"
-
-Task: Provide a helpful summary explaining that no specific petitions were found, and offer general solutions.
-
-Rules:
-1. Respond ONLY in English.
-2. NO BOLDING.
-3. Use the format below.
-
-Output Format:
-
-Item 1:
-Summary:
-[General summary explaining no petitions were found and how petitions are typicaly handled]
-
-Solution:
-[Practical general advice for petition handling]`;
-    
-    try {
-      const result = await queryLLM(prompt, null, 0.4);
-      return {
-        answer: result.response,
-        sources: [],
-        confidence: 70,
-        sourceCount: 0,
-        status: 'no_petitions_llm_fallback',
-      };
-    } catch (err) {
-      return {
-        answer: 'No specific petitions found for the requested time range.',
-        sources: [],
-        confidence: 0,
-        sourceCount: 0,
-        status: 'error',
-      };
-    }
-  }
-
-  const transcript = messages.map(m => `[Petition] Title: ${m.title}, Summary: ${m.summary}`).join('\n');
-
-  const prompt = PROMPT_MULTILINGUAL_ANALYSIS(transcript);
-
+  const petitions = await fetchCommunityPetitions(communityId, question);
+  const transcript = petitions.map(p => `[Petition] Title: ${p.title}, Summary: ${p.summary}, Status: ${p.status}`).join('\n');
+  
+  const prompt = PROMPT_MULTILINGUAL_ANALYSIS(transcript || 'No specific petitions found in the database for this request.');
+  
   try {
     const result = await queryLLM(prompt, null, 0.3);
     const answer = String(result?.response || '').trim();
-
     if (answer && !isLimitMessage(answer)) {
       return {
         answer,
-        sources: messages.slice(0, 5).map((m, idx) => ({
+        sources: petitions.slice(0, 5).map((p, idx) => ({
           id: `petition-${idx}`,
-          title: m.title,
-          similarity: null,
+          title: `Petition: ${p.title}`,
+          similarity: null
         })),
-        confidence: 85,
-        sourceCount: messages.length,
-        status: 'llm_success',
+        confidence: transcript ? 85 : 60,
+        sourceCount: petitions.length,
+        status: 'petition_summary_success',
       };
     }
-  } catch (error) {
-    logger.error('Petition summarization failed', { error: error.message });
+  } catch (err) {
+    logger.error('summarizeFromPetitions failed', { error: err.message });
   }
 
+  // Final fallback
   return {
-    answer: `I found ${messages.length} petitions. Here are the titles:\n\n` + messages.map(m => `- ${m.title}`).join('\n'),
+    answer: transcript ? `Found ${petitions.length} petitions:\n\n${transcript}` : "I couldn't find any specific petitions recorded for your request, but I'm here to help with general questions.",
     sources: [],
-    confidence: 50,
-    sourceCount: messages.length,
-    status: 'deterministic_fallback',
+    confidence: transcript ? 65 : 45,
+    sourceCount: petitions.length,
+    status: 'fallback',
   };
 }
 
@@ -2009,9 +1968,9 @@ Summary:`;
     return 'Summary:\n\nNo significant discussion points found in the chat.';
   }
 
-  let output = 'Summary:\n\n';
+  let output = '';
   items.forEach((item, idx) => {
-    output += `${idx + 1}. ${item.categoryLabel}: ${item.issue}\n`;
+    output += `${idx + 1}. ${item.categoryLabel}: ${item.issue}\nSummary: Potential ${item.categoryLabel} issue reported in chat.\nSolution: ${recommendationForCategory(item.category, item.issue)}\n\n`;
   });
 
   return output.trim();
@@ -3104,7 +3063,8 @@ async function askBot(rawQuestion, communityId, userId, previousContext = null, 
       isToxicityRatingQuery(question) ||
       isSentimentQuery(question) ||
       isTranslationQuery(question) ||
-      isLanguageFilterQuery(question);
+      isLanguageFilterQuery(question) ||
+      isListQuery(question);
 
     const qLower = String(question || '').toLowerCase();
     const mentionsComplaint = qLower.includes('complaint') || qLower.includes('complain');
@@ -3114,23 +3074,38 @@ async function askBot(rawQuestion, communityId, userId, previousContext = null, 
     // If the user asks for chat-related intents (summary/announcements/sentiment/etc.),
     // prefer summarizing community chat even if the client passed item_context implicitly.
     // Only prefer item_context when the question explicitly mentions complaint/petition.
-    if (isIntentOrSummary && (!hasItemContext || !mentionsItem)) {
+    if (isIntentOrSummary) {
       const fallbackSessionHash = generateSessionHash(userId, communityId);
-      const chatSummary = await summarizeFromChatMessages(question, communityId);
+      let summaryResult;
+
+      if (mentionsComplaint) {
+        summaryResult = await summarizeFromComplaints(question, communityId);
+      } else if (mentionsPetition) {
+        summaryResult = await summarizeFromPetitions(question, communityId);
+      } else {
+        summaryResult = await summarizeFromChatMessages(question, communityId);
+      }
+      
+      const answerText = summaryResult?.answer || (typeof summaryResult === 'string' ? summaryResult : 'Unexpected response format.');
+      const finalStatus = summaryResult?.status || 'unknown';
+      const confidence = summaryResult?.confidence || 0;
+      const sourceCount = summaryResult?.sourceCount || 0;
+      const sources = summaryResult?.sources || [];
+
       await saveBotHistory({
         userId,
         communityId,
         question,
-        answer: chatSummary.answer,
+        answer: answerText,
         sessionHash: fallbackSessionHash,
-        confidence: chatSummary.confidence,
-        sourceCount: chatSummary.sourceCount,
-        status: chatSummary.status,
+        confidence: confidence,
+        sourceCount: sourceCount,
+        status: finalStatus,
       });
       return {
-        answer: chatSummary.answer,
-        sources: chatSummary.sources,
-        confidence: chatSummary.confidence,
+        answer: answerText,
+        sources: sources,
+        confidence: confidence,
         sessionHash: fallbackSessionHash,
       };
     }
