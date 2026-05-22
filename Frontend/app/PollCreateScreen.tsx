@@ -180,10 +180,10 @@ const PollCreateScreen: React.FC<PollCreateScreenProps> = ({
       const data = await response.json();
 
       if (response.ok) {
-        Alert.alert('Success', '🎉 Poll launched successfully!');
+        Alert.alert('Success', '🎉 Voting launched successfully!');
         onCreated(data);
       } else {
-        Alert.alert('Error', data.error || 'Failed to create poll');
+        Alert.alert('Error', data.error || 'Failed to create voting');
       }
     } catch (error) {
       console.error('Error creating poll:', error);
@@ -208,7 +208,7 @@ const PollCreateScreen: React.FC<PollCreateScreenProps> = ({
           </TouchableOpacity>
           <View style={styles.headerCenter}>
             <Text style={styles.headerEmoji}>🗳️</Text>
-            <Text style={styles.headerTitle}>Create Poll</Text>
+            <Text style={styles.headerTitle}>Create Voting</Text>
           </View>
           <View style={styles.placeholder} />
         </View>
@@ -261,7 +261,7 @@ const PollCreateScreen: React.FC<PollCreateScreenProps> = ({
                 <View style={styles.iconBadge}>
                   <Text style={styles.iconBadgeText}>📝</Text>
                 </View>
-                <Text style={styles.label}>Poll Question</Text>
+                <Text style={styles.label}>Voting Question</Text>
               </View>
               <View style={styles.inputWrapper}>
                 <TextInput
@@ -375,7 +375,7 @@ const PollCreateScreen: React.FC<PollCreateScreenProps> = ({
                 style={styles.settingCard}
                 onPress={() =>
                   Alert.alert(
-                    'Single Choice Poll',
+                    'Single Choice Voting',
                     'Each member can select exactly one option.'
                   )
                 }
@@ -399,7 +399,7 @@ const PollCreateScreen: React.FC<PollCreateScreenProps> = ({
                 onPress={() =>
                   Alert.alert(
                     'Vote Changes Disabled',
-                    'Each user can vote only once per poll.'
+                    'Each user can vote only once per voting session.'
                   )
                 }
               >
@@ -408,7 +408,7 @@ const PollCreateScreen: React.FC<PollCreateScreenProps> = ({
                   <View style={styles.settingInfo}>
                     <Text style={styles.settingLabel}>Allow Vote Changes</Text>
                     <Text style={styles.settingHint}>
-                      Each user can vote only once per poll.
+                      Each user can vote only once per voting session.
                     </Text>
                   </View>
                 </View>
@@ -440,7 +440,7 @@ const PollCreateScreen: React.FC<PollCreateScreenProps> = ({
                 <View style={styles.iconBadge}>
                   <Text style={styles.iconBadgeText}>⏱️</Text>
                 </View>
-                <Text style={styles.label}>Poll Duration</Text>
+                <Text style={styles.label}>Voting Duration</Text>
               </View>
               <View style={styles.durationGrid}>
                 {(['1h', '6h', '1d', '3d', '7d', '30d', 'unlimited'] as PollDuration[]).map((dur) => (
@@ -518,7 +518,7 @@ const PollCreateScreen: React.FC<PollCreateScreenProps> = ({
                   <Text style={styles.visibilityEmoji}>🔒</Text>
                   <Text style={styles.visibilityTitle}>After Close</Text>
                   <Text style={styles.visibilityDesc}>
-                    Show results when poll ends
+                    Show results when voting ends
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -688,8 +688,8 @@ const PollCreateScreen: React.FC<PollCreateScreenProps> = ({
             <Text style={styles.infoIcon}>💡</Text>
             <Text style={styles.infoText}>
               {activeTab === 'basic'
-                ? 'Tip: Use clear, unbiased language in your poll question'
-                : 'Pro tip: Combine settings to create engaging, fair polls'}
+                ? 'Tip: Use clear, unbiased language in your voting question'
+                : 'Pro tip: Combine settings to create engaging, fair voting sessions'}
             </Text>
           </LinearGradient>
         </View>
@@ -718,7 +718,7 @@ const PollCreateScreen: React.FC<PollCreateScreenProps> = ({
               ) : (
                 <>
                   <Text style={styles.submitButtonIcon}>🚀</Text>
-                  <Text style={styles.submitButtonText}>Launch Poll</Text>
+                  <Text style={styles.submitButtonText}>Launch Voting</Text>
                 </>
               )}
             </LinearGradient>

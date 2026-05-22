@@ -10,8 +10,8 @@ function getApiUrl(): string {
     // Follow project convention:
     // - Web should hit `localhost`.
     // - Mobile (Android/iOS) should hit the LAN IP provided via `.env`.
-    console.log('[API] Using URL:', envUrl || 'Fallback: http://10.189.20.57:3002/api');
-    return envUrl || 'http://10.189.20.57:3002/api';
+    console.log('[API] Using URL:', envUrl || 'Fallback: http://10.154.25.57:3002/api');
+    return envUrl || 'http://10.154.25.57:3002/api';
   } catch (_) {
     return 'http://localhost:3002/api';
   }

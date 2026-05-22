@@ -12,6 +12,7 @@ const OLLAMA_HOST =
   'http://127.0.0.1:11434';
 
 const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'llama3.2:1b';
+const OLLAMA_TRANSLATION_MODEL = process.env.OLLAMA_TRANSLATION_MODEL || 'aya:8b';
 const EMBEDDING_MODEL = process.env.EMBEDDING_MODEL || 'Xenova/all-MiniLM-L6-v2';
 const OLLAMA_TIMEOUT_MS = parseInt(process.env.OLLAMA_TIMEOUT_MS || '120000', 10);
 const AI_PROVIDER = (process.env.AI_PROVIDER || 'ollama').toLowerCase();
@@ -29,6 +30,10 @@ const {
   getPrompt,
   getGeneralQuestionPrompt,
   getSummaryPrompt,
+  getComplaintSummaryPrompt,
+  getPetitionSummaryPrompt,
+  PROMPT_SUMMARY_TRANSLATE_ENGLISH_TO_TAMIL,
+  PROMPT_SUMMARY_TRANSLATE_ENGLISH_TO_TAMIL_RETRY,
   getSolutionsPrompt,
   detectIntent,
   formatMessagesAsList,
@@ -38,7 +43,10 @@ const {
   PROMPT_TRANSLATE_AND_ANALYSE,
   PROMPT_SUMMARISE_IN_LANGUAGE,
   PROMPT_MULTILINGUAL_ANALYSIS,
+  PROMPT_MULTILINGUAL_COMPLAINT_ANALYSIS,
   PROMPT_NOTIFICATION_SUMMARY,
+  PROMPT_NORMALIZE_ENGLISH_FOR_TAMIL,
+  PROMPT_TRANSLATE_ENGLISH_TO_TAMIL,
 } = require('./prompt');
 
 function isMissingRelation(error, relationName) {
@@ -51,7 +59,11 @@ function isMissingRelation(error, relationName) {
 }
 
 function resolveProvider() {
-  return 'ollama';
+  if (AI_PROVIDER === 'openai') return 'openai';
+  if (AI_PROVIDER === 'ollama') return 'ollama';
+  // Auto mode: prefer OpenAI only when key exists, otherwise use Ollama.
+  if (AI_PROVIDER === 'auto') return OPENAI_API_KEY ? 'openai' : 'ollama';
+  return OPENAI_API_KEY ? 'openai' : 'ollama';
 }
 
 async function tableExists(tableName) {
@@ -83,18 +95,23 @@ function isTranslationQuery(question) {
     q.includes('in korean') ||
     q.includes('in portuguese') ||
     q.includes('in russian') ||
+    q.includes('tanglish') ||
+    q.includes('taenglish') ||
     /translate\s+(?:this|the|these|messages?|chat|text)?(?:\s+(?:to|into)\s+(\w+))?/i.test(q) ||
-    /(?:to|into)\s+(english|tamil|hindi|spanish|french|arabic|german|japanese|chinese|korean|portuguese|russian)\b/i.test(q)
+    /(?:to|into)\s+(english|tamil|tanglish|taenglish|hindi|spanish|french|arabic|german|japanese|chinese|korean|portuguese|russian)\b/i.test(q)
   );
 }
 
 function extractTargetLanguage(question) {
   const q = String(question || '').toLowerCase();
+  if (q.includes('taenglish') || q.includes('tanglish')) return 'Tanglish';
   const match = q.match(
-    /(?:translate|convert|in|into|to)\s+(english|tamil|hindi|spanish|french|arabic|german|japanese|chinese|korean|portuguese|russian|telugu|kannada|malayalam|bengali|marathi|punjabi|urdu|turkish|italian|dutch|greek|hebrew|thai|vietnamese|indonesian|malay|swahili)\b/i
+    /(?:translate|convert|in|into|to)\s+(english|tamil|tanglish|taenglish|hindi|spanish|french|arabic|german|japanese|chinese|korean|portuguese|russian|telugu|kannada|malayalam|bengali|marathi|punjabi|urdu|turkish|italian|dutch|greek|hebrew|thai|vietnamese|indonesian|malay|swahili)\b/i
   );
   if (match && match[1]) {
-    return match[1].charAt(0).toUpperCase() + match[1].slice(1);
+    const lang = match[1].toLowerCase();
+    if (lang === 'tanglish' || lang === 'taenglish') return 'Tanglish';
+    return lang.charAt(0).toUpperCase() + lang.slice(1);
   }
   // Default target language is English
   return 'English';
@@ -138,6 +155,34 @@ async function detectLanguageOfMessages(messages) {
 
 async function translateText(text, sourceLang, targetLang) {
   return safeTranslateText(text, sourceLang, targetLang);
+}
+
+/**
+ * Pre-translates a list of items to English if they contain Tamil script.
+ * Used to ensure small or English-centric models can process the content.
+ */
+async function preTranslateItems(items, fields = ['content', 'description', 'summary', 'title']) {
+  if (!items || !items.length) return items;
+  
+  return await Promise.all(items.map(async (item) => {
+    let hasTamil = false;
+    const itemCopy = { ...item };
+    
+    for (const field of fields) {
+      if (itemCopy[field] && containsTamilScript(itemCopy[field])) {
+        hasTamil = true;
+        try {
+          const translated = await translateText(itemCopy[field], 'Tamil', 'English');
+          if (translated && translated !== itemCopy[field]) {
+            itemCopy[field] = `[Translated from Tamil: ${translated}]`;
+          }
+        } catch (err) {
+          logger.warn('Pre-translation failed for field', { field, error: err.message });
+        }
+      }
+    }
+    return itemCopy;
+  }));
 }
 
 async function detectLanguageOfText(text) {
@@ -208,20 +253,323 @@ function detectLanguageHeuristic(text) {
   if (/[\u0C80-\u0CFF]/.test(t)) return 'Kannada';
   if (/[\u0D00-\u0D7F]/.test(t)) return 'Malayalam';
   if (/[\u0980-\u09FF]/.test(t)) return 'Bengali';
+
+  // Latin-heavy text is usually English in this product's chat flow.
+  // This avoids LLM false positives like Arabic/Italian for markdown text.
+  const latinLetters = (t.match(/[A-Za-z]/g) || []).length;
+  const nonSpaceChars = (t.match(/\S/g) || []).length;
+  if (latinLetters > 0 && nonSpaceChars > 0) {
+    const latinRatio = latinLetters / nonSpaceChars;
+    const commonEnglishWords = /\b(the|is|are|was|were|with|for|not|working|food|summary|solution|user|issue|please)\b/i;
+    if (latinRatio >= 0.45 || commonEnglishWords.test(t)) {
+      return 'English';
+    }
+  }
+
   return 'Unknown';
+}
+
+function containsTamilScript(text) {
+  return /[\u0B80-\u0BFF]/.test(String(text || ''));
+}
+
+function cleanTranslatedText(raw) {
+  return String(raw || '')
+    .trim()
+    .replace(/^(Translation|Translated|Tamil(\s+Translation)?|Tamil:|Tanglish:|Answer|விடை|Output)\s*:\s*/i, '')
+    .replace(/^(Here is|Here's|The translation is|In Tamil|In Tanglish)\s*[:.]?\s*/i, '')
+    .replace(/^\"|\"$/g, '')
+    .replace(/^'|'$/g, '')
+    .trim();
+}
+
+/**
+ * Validates the quality of a Tamil translation.
+ * Rejects if no Tamil script, too short, or missing structural markers.
+ */
+function validateTamilTranslation(source, translated) {
+  const src = String(source || '').trim();
+  const out = String(translated || '').trim();
+  
+  if (!out) return false;
+  
+  // 1. Must contain Tamil script
+  if (!containsTamilScript(out)) return false;
+  
+  // 2. Length check: should be reasonable relative to source
+  // Tamil usually takes more characters than English for same meaning.
+  if (out.length < src.length * 0.3) return false;
+  
+  // 3. Structural check: Ensure key markers are preserved, allowing for formatting variations
+  if (src.includes('**Summary:**') && !/சுருக்கம்|Summary/i.test(out)) return false;
+  if (src.includes('**Solution:**') && !/தீர்வு|Solution/i.test(out)) return false;
+
+  return true;
+}
+
+function extractSignificantWords(text) {
+  return new Set(
+    String(text || '')
+      .toLowerCase()
+      .match(/\b[a-z][a-z0-9_-]{3,}\b/g) || []
+  );
+}
+
+function extractEntityLikeTokens(text) {
+  const matches = String(text || '').match(/\b[A-Za-z][A-Za-z0-9._-]*\b/g) || [];
+  return new Set(
+    matches.filter((token) => {
+      const hasDigit = /\d/.test(token);
+      const hasSpecial = /[._-]/.test(token);
+      const hasCaps = /[A-Z]/.test(token);
+      return hasDigit || hasSpecial || hasCaps;
+    })
+  );
+}
+
+function hasPreservedStructure(original, clarified) {
+  const src = String(original || '');
+  const out = String(clarified || '');
+  if (!out) return false;
+
+  const markers = ['**Summary:**', '**Solution:**'];
+  for (const marker of markers) {
+    if (src.includes(marker) && !out.includes(marker)) return false;
+  }
+
+  const srcNumberCount = (src.match(/^\s*\d+\./gm) || []).length;
+  const outNumberCount = (out.match(/^\s*\d+\./gm) || []).length;
+  if (srcNumberCount && outNumberCount < srcNumberCount) return false;
+
+  return true;
+}
+
+function isSafeEnglishClarification(original, clarified) {
+  const src = String(original || '').trim();
+  const out = String(clarified || '').trim();
+  if (!src || !out) return false;
+  if (!hasPreservedStructure(src, out)) return false;
+
+  const srcWords = extractSignificantWords(src);
+  if (!srcWords.size) return true;
+  const outWords = extractSignificantWords(out);
+
+  let retained = 0;
+  for (const token of srcWords) {
+    if (outWords.has(token)) retained += 1;
+  }
+  const overlapRatio = retained / srcWords.size;
+  if (overlapRatio < 0.7) return false;
+
+  const srcEntities = extractEntityLikeTokens(src);
+  const outEntities = extractEntityLikeTokens(out);
+  for (const entity of srcEntities) {
+    if (!outEntities.has(entity)) return false;
+  }
+
+  // Guard against known harmful semantic jumps from "current" to UI terms.
+  if (/\bcurrent\b/i.test(src) && !/\bcurrent\b/i.test(out) && /\bscreen\b/i.test(out)) {
+    return false;
+  }
+
+  return true;
+}
+
+function countNumberedTopLevelLines(text) {
+  return (String(text || '').match(/^\s*\d+\./gm) || []).length;
+}
+
+/**
+ * Alignment check: Tamil must structurally mirror English summary (translation proxy for semantic match).
+ */
+function validateEnglishTamilSummaryAlignment(english, tamil) {
+  const src = String(english || '').trim();
+  const out = String(tamil || '').trim();
+  if (!src || !out) return false;
+  
+  // Basic sanity check: Must contain Tamil characters and not be identical to source
+  if (!/[\u0B80-\u0BFF]/.test(out)) return false;
+  if (out.toLowerCase() === src.toLowerCase()) return false;
+
+  // Lenient line count check
+  const enN = countNumberedTopLevelLines(src);
+  const taN = countNumberedTopLevelLines(out);
+  if (enN > 0 && Math.abs(taN - enN) > 1) return false;
+
+  // Check length ratio (very lenient)
+  if (out.length < src.length * 0.15 || out.length > src.length * 5.0) return false;
+
+  return true;
+}
+
+/**
+ * Tamil = translation of English summary only; temp 0; one retry with stricter prompt.
+ */
+async function translateEnglishSummaryToTamilStrict(englishAnswer) {
+  const english = String(englishAnswer || '').trim();
+  if (!english) return '';
+
+  const prompt = PROMPT_SUMMARY_TRANSLATE_ENGLISH_TO_TAMIL(english);
+
+  try {
+    // Use queryLLM to leverage the fastest available provider (e.g. Gemini/OpenAI)
+    // instead of forcing Ollama which might be slow.
+    const result = await queryLLM(prompt, null, 0);
+    const translated = cleanTranslatedText(result?.response || '');
+    if (validateEnglishTamilSummaryAlignment(english, translated)) {
+      return translated;
+    }
+  } catch (err) {
+    logger.warn('Summary Tamil translate failed', { error: err.message });
+  }
+
+  return '';
+}
+
+async function translateTamilReliably(text, sourceLang) {
+  let content = String(text || '').trim();
+  if (!content) return '';
+  
+  // Use explicit translation model (aya:8b)
+  const tamilModel = process.env.OLLAMA_TRANSLATION_MODEL || OLLAMA_TRANSLATION_MODEL;
+
+  // Step 0: Normalize English if it's the source language AND not already an AI-generated summary
+  if (String(sourceLang || '').trim().toLowerCase() === 'english' && !isStructuredIssueList(content)) {
+    try {
+      logger.info('Normalizing English input for better Tamil translation');
+      const normPrompt = PROMPT_NORMALIZE_ENGLISH_FOR_TAMIL(content);
+      // Use the standard model for normalization (llama3.1/3.2)
+      const normResult = await queryOllama(normPrompt, '', 0);
+      const clarified = (normResult?.response || '').trim();
+      if (clarified && clarified.length > 5 && clarified !== content && isSafeEnglishClarification(content, clarified)) {
+        logger.info('English normalization successful');
+        content = clarified;
+      }
+    } catch (normError) {
+      logger.warn('English normalization failed, proceeding with original text', { error: normError.message });
+    }
+  }
+
+  const strictPrompt = String(sourceLang || '').trim().toLowerCase() === 'english'
+    ? PROMPT_TRANSLATE_ENGLISH_TO_TAMIL(content)
+    : `You are a professional ${sourceLang}-to-Tamil translator specializing in technical and community issues.
+Translate the following ${sourceLang} text into simple, natural spoken Tamil used in daily conversation.
+
+STRICT RULES:
+- Use simple, natural spoken Tamil (colloquial yet polite).
+- AVOID literal or overly formal scientific translations (e.g., do NOT use "அறிவியல் ஆதாரம்" for "source" or "evidence").
+- CONTEXT-AWARE meaning is mandatory:
+  - Infer meaning from nearby words and sentence context before translating.
+- Preserve all formatting, bolding (**Summary:**, **Solution:**), and numbering.
+- Translate labels: "**Summary:**" becomes "**சுருக்கம்:**" and "**Solution:**" becomes "**தீர்வு:**".
+- Do NOT translate word-by-word; ensure the flow is natural.
+- Preserve exact meaning; do not add unrelated content.
+- Output ONLY the translated Tamil text.
+
+Text to translate:
+${content}
+
+Tamil Translation:`;
+
+  let attempt = 1;
+  let translated = '';
+  const models = [tamilModel, 'llama3.1:8b']; // one retry only
+  
+  while (attempt <= models.length) {
+    const currentModel = models[attempt - 1];
+    
+    try {
+      logger.info(`Starting Tamil translation attempt ${attempt}`, { model: currentModel });
+      const result = await queryOllama(
+        strictPrompt,
+        '',
+        0,
+        currentModel,
+        { top_p: 0.75, top_k: 24, repeat_penalty: 1.08 }
+      );
+      translated = cleanTranslatedText(result?.response || '');
+      
+      // Quality validation: must be real Tamil and preserve structure.
+      if (validateTamilTranslation(content, translated)) {
+        logger.info('Tamil block translation successful', { attempt, model: currentModel });
+        return translated;
+      }
+      
+      logger.warn(`Tamil translation failed quality check (attempt ${attempt})`, { 
+        model: currentModel,
+        sourceLength: content.length,
+        outputLength: translated.length
+      });
+    } catch (error) {
+      logger.error(`Tamil translation attempt ${attempt} failed`, { model: currentModel, error: error.message });
+    }
+    attempt++;
+  }
+
+  // Never return source English for a Tamil request.
+  logger.error('Tamil translation failed all quality checks. Returning empty translation.');
+  return '';
+}
+
+async function transliterateTamilToTanglish(text) {
+  const t = String(text || '').trim();
+  if (!t) return '';
+  const prompt = `Convert the following Tamil script text into readable Tanglish (Tamil in English letters).
+
+Rules:
+- Keep the same meaning
+- Keep numbering and markdown markers like ** unchanged
+- Return only Tanglish text, no explanation
+
+Text:
+${t}
+
+Tanglish:`;
+
+  const result = await queryOllama(prompt, '', 0.1);
+  return cleanTranslatedText(result?.response || '');
+}
+
+// Removed line-by-line translation in favor of block translation in translateTamilReliably
+
+function isStructuredIssueList(text) {
+  const t = String(text || '');
+  return /\*\*Summary:\*\*/i.test(t) || /\*\*Solution:\*\*/i.test(t) || /^\s*\d+\.\s+\*\*.+\*\*/m.test(t);
+}
+
+async function translateStructuredIssueListToTamil(text) {
+  // Now uses the block-based translateTamilReliably for better context and quality.
+  return await translateTamilReliably(text, 'English');
 }
 
 async function safeTranslateText(text, sourceLang, targetLang) {
   if (!text || !text.trim()) return '';
   if (sourceLang === targetLang) return text;
+  if (targetLang === 'Tanglish') {
+    const tamil = await translateTamilReliably(text, sourceLang);
+    const tanglish = await transliterateTamilToTanglish(tamil);
+    return tanglish || tamil;
+  }
+  if (targetLang === 'Tamil') {
+    if (isStructuredIssueList(text)) {
+      return translateStructuredIssueListToTamil(text);
+    }
+    return translateTamilReliably(text, sourceLang);
+  }
 
-  // Smaller chunks for non-Latin scripts to avoid Ollama 500
-  const isNonLatin = /[\u0900-\u097F\u0B80-\u0BFF\u0600-\u06FF\u4E00-\u9FFF\u3040-\u30FF\uAC00-\uD7AF]/.test(text);
-  const chunkSize = isNonLatin ? 400 : 800;
+  const isSmallModel = OLLAMA_MODEL.includes('1b') || OLLAMA_MODEL.includes('0.5b');
+  const isNonLatinTarget = ['Tamil', 'Hindi', 'Arabic', 'Chinese', 'Japanese', 'Korean'].includes(targetLang);
 
-  const chunks = chunkText(text, chunkSize);
+  // Smaller chunks for non-Latin targets to avoid Ollama 500
+  const isNonLatinSource = /[\u0900-\u097F\u0B80-\u0BFF\u0600-\u06FF\u4E00-\u9FFF\u3040-\u30FF\uAC00-\uD7AF]/.test(text);
+  const chunkSize = (isNonLatinSource || isNonLatinTarget) ? 400 : 1200;
+  const chunks = [];
+
+  for (let i = 0; i < text.length; i += chunkSize) {
+    chunks.push(text.substring(i, i + chunkSize));
+  }
+
   const translatedChunks = [];
-
   for (let i = 0; i < chunks.length; i++) {
     const chunk = chunks[i];
     let translated = null;
@@ -229,41 +577,32 @@ async function safeTranslateText(text, sourceLang, targetLang) {
     // Try up to 2 attempts per chunk
     for (let attempt = 1; attempt <= 2; attempt++) {
       try {
-        // Use simpler prompt for non-Latin to reduce Ollama confusion
-        const prompt = isNonLatin
-          ? `Translate this ${sourceLang} text to ${targetLang}. Output ONLY the ${targetLang} translation, nothing else:\n\n${chunk}`
-          : PROMPT_TRANSLATE(chunk, sourceLang, targetLang);
+        let prompt;
 
-        const result = await queryLLM(prompt, null, 0.1);
+        if (isSmallModel || isNonLatinSource || isNonLatinTarget) {
+          prompt = `Translate this ${sourceLang} text to ${targetLang}. Output ONLY the ${targetLang} translation:\n\n${chunk}`;
+        } else {
+          prompt = PROMPT_TRANSLATE(chunk, sourceLang, targetLang);
+        }
+
+        const result = await queryOllama(prompt, '', 0.2, (isNonLatinSource || isNonLatinTarget) ? OLLAMA_TRANSLATION_MODEL : null);
         const raw = String(result?.response || '').trim();
 
-        if (raw && !isLimitMessage(raw) && raw !== chunk) {
-          translated = raw;
+        if (raw && raw !== chunk) {
+          // Strip common garbage prefixes the small model outputs
+          translated = cleanTranslatedText(raw);
           break;
         }
-
-        // If model echoed back the source text, retry with even simpler prompt
-        if (attempt === 1) {
-          logger.warn('Model echoed source text, retrying with minimal prompt', {
-            chunkLength: chunk.length,
-            sourceLang,
-            targetLang,
-          });
-          await new Promise(r => setTimeout(r, 500));
-        }
       } catch (error) {
-        logger.error('Chunk translation error', {
-          error: error.message,
-          chunkLength: chunk.length,
-          attempt,
-        });
+        logger.error('Chunk translation error', { error: error.message, attempt });
         if (attempt < 2) await new Promise(r => setTimeout(r, 800));
       }
     }
 
-    translatedChunks.push(translated || chunk);
+    // If translation truly failed, push original chunk — caller will handle display
+    translatedChunks.push(translated ?? chunk);
 
-    // Delay between chunks to avoid overwhelming Ollama
+    // Delay between chunks
     if (chunks.length > 1 && i < chunks.length - 1) {
       await new Promise(r => setTimeout(r, 400));
     }
@@ -342,29 +681,49 @@ async function handleTranslationQuery(question, communityId) {
 
   const messagesList = formatMessagesAsList(messages);
 
-  try {
-    const prompt = PROMPT_TRANSLATE_AND_ANALYSE(messagesList, detectedLang, targetLang, question);
-    const result = await queryLLM(prompt, null, 0.25);
-    const answer = String(result?.response || '').trim();
+  // For Tamil: skip the complex analyse prompt (too long for small models) — go straight to line-by-line translation
+  if (targetLang !== 'Tamil') {
+    try {
+      const prompt = PROMPT_TRANSLATE_AND_ANALYSE(messagesList, detectedLang, targetLang, question);
+      const result = await queryLLM(prompt, null, 0.25);
+      const answer = String(result?.response || '').trim();
 
-    if (answer && !isLimitMessage(answer)) {
-      return {
-        answer,
-        sources: messages.slice(-5).map((m, idx) => ({
-          id: `chat-${idx}`,
-          title: `Chat message (${new Date(m.created_at).toLocaleString('en-US')})`,
-          similarity: null,
-        })),
-        confidence: 80,
-        sourceCount: messages.length,
-        status: 'translation_success',
-      };
+      if (answer && !isLimitMessage(answer)) {
+        return {
+          answer,
+          sources: messages.slice(-5).map((m, idx) => ({
+            id: `chat-${idx}`,
+            title: `Chat message (${new Date(m.created_at).toLocaleString('en-US')})`,
+            similarity: null,
+          })),
+          confidence: 80,
+          sourceCount: messages.length,
+          status: 'translation_success',
+        };
+      }
+    } catch (error) {
+      logger.error('Translate and analyse failed', { error: error.message });
     }
-  } catch (error) {
-    logger.error('Translate and analyse failed', { error: error.message });
   }
 
-  // Deterministic fallback: translate messages one by one
+  // For Tamil: translate as a block for better context and quality
+  if (targetLang === 'Tamil') {
+    const blockContent = messages.slice(0, 20).map((m, i) => `${i + 1}. ${m.content}`).join('\n');
+    const translated = await translateTamilReliably(blockContent, detectedLang);
+    return {
+      answer: `### Translated Messages (${detectedLang} → ${targetLang}):\n${translated}`,
+      sources: messages.slice(-5).map((m, idx) => ({
+        id: `chat-${idx}`,
+        title: `Chat message (${new Date(m.created_at).toLocaleString('en-US')})`,
+        similarity: null,
+      })),
+      confidence: 85,
+      sourceCount: messages.length,
+      status: 'translation_block_success',
+    };
+  }
+
+  // Deterministic fallback for other languages: translate messages one by one
   const translatedLines = [];
   for (let i = 0; i < Math.min(messages.length, 20); i++) {
     const m = messages[i];
@@ -404,11 +763,19 @@ async function handleLanguageFilterQuery(question, communityId) {
   const transcript = formatMessagesAsTranscript(messages);
 
   try {
-    const prompt = PROMPT_SUMMARISE_IN_LANGUAGE(transcript, targetLang, question);
+    const prompt = PROMPT_SUMMARISE_IN_LANGUAGE(transcript, 'English', question);
     const result = await queryLLM(prompt, null, 0.3);
-    const answer = String(result?.response || '').trim();
+    let answer = String(result?.response || '').trim();
 
     if (answer && !isLimitMessage(answer)) {
+      if (targetLang && targetLang !== 'English') {
+        try {
+          answer = await safeTranslateText(answer, 'English', targetLang);
+        } catch (translateError) {
+          logger.warn('Failed to translate summary to target language', { error: translateError.message });
+        }
+      }
+
       return {
         answer,
         sources: messages.slice(-5).map((m, idx) => ({
@@ -566,10 +933,18 @@ function getDateFilterConfig(question) {
   };
   const weekdayName = Object.keys(weekdays).find((d) => compactQ.includes(d));
   if (weekdayName) {
+    // Find the most recent occurrence of that weekday (within the last 7 days)
+    const targetDow = weekdays[weekdayName];
+    const todayDow = now.getDay();
+    let daysBack = todayDow - targetDow;
+    if (daysBack <= 0) daysBack += 7; // go to previous week if same or future day
+    const targetDate = new Date(now);
+    targetDate.setDate(now.getDate() - daysBack);
+    const isoDate = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, '0')}-${String(targetDate.getDate()).padStart(2, '0')}`;
     return {
-      mode: 'weekday',
-      weekday: weekdays[weekdayName],
-      label: weekdayName,
+      mode: 'calendar_date',
+      isoDate,
+      label: weekdayName.charAt(0).toUpperCase() + weekdayName.slice(1) + ' (' + isoDate + ')',
     };
   }
 
@@ -615,9 +990,23 @@ function getDateFilterConfig(question) {
     if (filter) return filter;
   }
 
-  // month name + day [+ year], e.g. "feb 4", "on february 4 2026"
+  // dd-mm-yyyy or dd/mm/yyyy, e.g. "29-04-2026", "29/04/2026"
+  const dayFirstDateMatch = compactQ.match(/\b(\d{1,2})[\/-](\d{1,2})[\/-](20\d{2})\b/);
+  if (dayFirstDateMatch) {
+    const first = parseInt(dayFirstDateMatch[1], 10);
+    const second = parseInt(dayFirstDateMatch[2], 10);
+    const year = parseInt(dayFirstDateMatch[3], 10);
+    // If first part cannot be a month, treat as DD-MM-YYYY. Otherwise prefer DD-MM as well for local usage.
+    const day = first;
+    const monthIndex = second - 1;
+    const filter = makeDateFilter(year, monthIndex, day);
+    if (filter) return filter;
+  }
+
+  // month name + day [+ year], supports ordinal day suffixes:
+  // e.g. "feb 4", "on february 4th 2026", "march 1st"
   const monthNameMatch = compactQ.match(
-    /\b(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+(\d{1,2})(?:,?\s*(20\d{2}))?\b/
+    /\b(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+(\d{1,2})(?:st|nd|rd|th)?(?:,?\s*(20\d{2}))?\b/
   );
   if (monthNameMatch) {
     const monthIndex = monthMap[monthNameMatch[1]];
@@ -737,7 +1126,8 @@ function isSummaryQuery(question) {
     q.includes('overview') ||
     q.includes('important content') ||
     q.includes('key points') ||
-    q.includes('highlights')
+    q.includes('highlights') ||
+    (q.includes('chat') && (q.includes('today') || q.includes('yesterday') || q.includes('day') || q.includes('ago') || /\b\d{4}-\d{2}-\d{2}\b/.test(q)))
   );
 }
 
@@ -1025,7 +1415,10 @@ function isImportantMessage(content) {
     'kedi', 'thonga', 'thiru', 'police', 'complaint', 'admin', 'help',
   ];
 
-  return importantKeywords.some((k) => lower.includes(k)) || /[:.!?]/.test(text);
+  // Include messages with Tamil script as important
+  const hasTamil = /[\u0B80-\u0BFF]/.test(text);
+
+  return hasTamil || importantKeywords.some((k) => lower.includes(k)) || /[:.!?]/.test(text);
 }
 
 function cleanSummaryText(text) {
@@ -1163,16 +1556,16 @@ Based on the following messages, identify the most recent and important announce
 Transcript to analyze:
 ${transcript}
 
-Task: List each announcement as a numbered Item in English.
+Task: List each announcement as a numbered Item in English. If any text is in Tamil or Tanglish, translate and provide the summary and solution in English.
 
 Output Format:
 
 Item <number>:
 Summary:
-<Clear summary of the announcement>
+<Clear summary of the announcement in perfect English>
 
 Solution:
-<Action required or next steps for members, if any>`;
+<Action required or next steps for members, if any, in perfect English>`;
 
   try {
     const result = await queryLLM(prompt, null, 0.3);
@@ -1326,19 +1719,11 @@ async function fetchCommunityChatMessages(communityId, question, limit = 50) {
   if (dateFilter.mode === 'day') {
     sql += ` AND DATE(cm.created_at) = CURRENT_DATE - $2::int`;
     params.push(dateFilter.daysAgo);
-    sql += ` ORDER BY cm.created_at DESC LIMIT $3`;
-    params.push(limit);
+    sql += ` ORDER BY cm.created_at DESC`;
   } else if (dateFilter.mode === 'calendar_date') {
     sql += ` AND DATE(cm.created_at) = $2::date`;
     params.push(dateFilter.isoDate);
-    sql += ` ORDER BY cm.created_at DESC LIMIT $3`;
-    params.push(limit);
-  } else if (dateFilter.mode === 'weekday') {
-    // PostgreSQL EXTRACT(DOW): Sunday=0 ... Saturday=6
-    sql += ` AND EXTRACT(DOW FROM cm.created_at) = $2`;
-    params.push(dateFilter.weekday);
-    sql += ` ORDER BY cm.created_at DESC LIMIT $3`;
-    params.push(limit);
+    sql += ` ORDER BY cm.created_at DESC`;
   } else if (dateFilter.mode === 'rolling_period') {
     sql += ` AND cm.created_at >= NOW() - ($2::int * ('1 ' || $3)::interval)`;
     params.push(dateFilter.amount);
@@ -1358,23 +1743,39 @@ async function fetchCommunityChatMessages(communityId, question, limit = 50) {
       isSentimentQuery(question) ||
       isAbuseQuery(question) ||
       isToxicityRatingQuery(question);
-    
+
     sql += wideIntentWindow
       ? ` AND cm.created_at >= NOW() - INTERVAL '90 days'`
       : ` AND cm.created_at >= NOW() - INTERVAL '24 hours'`;
     sql += ` ORDER BY cm.created_at DESC LIMIT $2`;
     params.push(limit);
+  } else if (dateFilter.mode === 'last24h') {
+    // Default fallback: last 24 hours
+    sql += ` AND cm.created_at >= NOW() - INTERVAL '24 hours'`;
+    sql += ` ORDER BY cm.created_at DESC LIMIT $2`;
+    params.push(limit);
   } else {
-    // Fallback for other modes we might have missed or just defaulting to 24h if mode exists but not handled
+    // Safety net for any unhandled mode
     sql += ` AND cm.created_at >= NOW() - INTERVAL '24 hours'`;
     sql += ` ORDER BY cm.created_at DESC LIMIT $2`;
     params.push(limit);
   }
 
   const result = await query(sql, params);
-  return result.rows
-    .reverse()
-    .filter((m) => !isLowSignalMessage(m.content));
+  const uniqueMessages = [];
+  const seenContent = new Set();
+  
+  result.rows.reverse().forEach((m) => {
+    if (!isLowSignalMessage(m.content)) {
+      const normalized = String(m.content).trim().toLowerCase();
+      if (!seenContent.has(normalized)) {
+        seenContent.add(normalized);
+        uniqueMessages.push(m);
+      }
+    }
+  });
+  
+  return uniqueMessages;
 }
 
 async function fetchCommunityComplaints(communityId, question, limit = 50) {
@@ -1393,18 +1794,11 @@ async function fetchCommunityComplaints(communityId, question, limit = 50) {
   if (dateFilter.mode === 'day') {
     sql += ` AND DATE(c.created_at) = CURRENT_DATE - $2::int`;
     params.push(dateFilter.daysAgo);
-    sql += ` ORDER BY c.created_at DESC LIMIT $3`;
-    params.push(limit);
+    sql += ` ORDER BY c.created_at DESC`;
   } else if (dateFilter.mode === 'calendar_date') {
     sql += ` AND DATE(c.created_at) = $2::date`;
     params.push(dateFilter.isoDate);
-    sql += ` ORDER BY c.created_at DESC LIMIT $3`;
-    params.push(limit);
-  } else if (dateFilter.mode === 'weekday') {
-    sql += ` AND EXTRACT(DOW FROM c.created_at) = $2`;
-    params.push(dateFilter.weekday);
-    sql += ` ORDER BY c.created_at DESC LIMIT $3`;
-    params.push(limit);
+    sql += ` ORDER BY c.created_at DESC`;
   } else if (dateFilter.mode === 'rolling_period') {
     sql += ` AND c.created_at >= NOW() - ($2::int * ('1 ' || $3)::interval)`;
     params.push(dateFilter.amount);
@@ -1423,8 +1817,8 @@ async function fetchCommunityComplaints(communityId, question, limit = 50) {
     sql += ` ORDER BY c.created_at DESC LIMIT $2`;
     params.push(limit);
   } else {
-    // Other mode present but not handled explicitly for complaints
-    sql += ` AND c.created_at >= NOW() - INTERVAL '7 days'`;
+    // last24h or any unhandled mode
+    sql += ` AND c.created_at >= NOW() - INTERVAL '24 hours'`;
     sql += ` ORDER BY c.created_at DESC LIMIT $2`;
     params.push(limit);
   }
@@ -1452,18 +1846,11 @@ async function fetchCommunityPetitions(communityId, question, limit = 50) {
   if (dateFilter.mode === 'day') {
     sql += ` AND DATE(p.created_at) = CURRENT_DATE - $2::int`;
     params.push(dateFilter.daysAgo);
-    sql += ` ORDER BY p.created_at DESC LIMIT $3`;
-    params.push(limit);
+    sql += ` ORDER BY p.created_at DESC`;
   } else if (dateFilter.mode === 'calendar_date') {
     sql += ` AND DATE(p.created_at) = $2::date`;
     params.push(dateFilter.isoDate);
-    sql += ` ORDER BY p.created_at DESC LIMIT $3`;
-    params.push(limit);
-  } else if (dateFilter.mode === 'weekday') {
-    sql += ` AND EXTRACT(DOW FROM p.created_at) = $2`;
-    params.push(dateFilter.weekday);
-    sql += ` ORDER BY p.created_at DESC LIMIT $3`;
-    params.push(limit);
+    sql += ` ORDER BY p.created_at DESC`;
   } else if (dateFilter.mode === 'rolling_period') {
     sql += ` AND p.created_at >= NOW() - ($2::int * ('1 ' || $3)::interval)`;
     params.push(dateFilter.amount);
@@ -1482,8 +1869,8 @@ async function fetchCommunityPetitions(communityId, question, limit = 50) {
     sql += ` ORDER BY p.created_at DESC LIMIT $2`;
     params.push(limit);
   } else {
-    // Mode present but not explicitly handled for petitions
-    sql += ` AND p.created_at >= NOW() - INTERVAL '7 days'`;
+    // last24h or any unhandled mode
+    sql += ` AND p.created_at >= NOW() - INTERVAL '24 hours'`;
     sql += ` ORDER BY p.created_at DESC LIMIT $2`;
     params.push(limit);
   }
@@ -1504,11 +1891,11 @@ async function generateLLMSolutions(issues, mode = 'solutions') {
     ? `You are an intelligent multilingual AI assistant for analyzing chats, complaints, and petitions.
 
 Below is a list of items for analysis.
-For each item, provide:
+For each item, provide a response in perfect, grammatical English:
 
 Item <number>:
 Summary:
-[Brief assessment of the issue]
+[Brief assessment of the issue in high-quality English]
 
 Solution:
 - Immediate Action (next 24-48 hrs): [specific action]
@@ -1516,7 +1903,7 @@ Solution:
 - Long-term (1-6 months): [strategic fix]
 - Prevention: [how to avoid recurrence]
 
-Be specific, practical, and respond ONLY in English. NO BOLDING.
+Be specific, practical, and respond ONLY in natural English. NO BOLDING.
 
 Items:
 ${issuesList}
@@ -1525,11 +1912,11 @@ Recommendations:`
     : `You are an intelligent multilingual AI assistant for analyzing chats, complaints, and petitions.
 
 Below is a list of items for analysis.
-For each item, provide:
+For each item, provide a response in perfect, grammatical English:
 
 Item <number>:
 Summary:
-[Brief assessment of the issue]
+[Brief assessment of the issue in high-quality English]
 
 Solution:
 - Immediate Action: [what to do right now]
@@ -1537,7 +1924,7 @@ Solution:
 - Timeline: [time estimate]
 - Priority: [HIGH / MEDIUM / LOW]
 
-Be specific, practical, and respond ONLY in English. NO BOLDING.
+Be specific, practical, and respond ONLY in natural English. NO BOLDING.
 
 Items:
 ${issuesList}
@@ -1554,6 +1941,105 @@ Solutions:`;
   return null;
 }
 
+// Helper: get a human-readable label for a specific-day date filter
+function getDateFilterLabel(dateFilter) {
+  if (!dateFilter) return null;
+  const { mode } = dateFilter;
+
+  if (mode === 'day') {
+    if (dateFilter.daysAgo === 0) return 'today';
+    if (dateFilter.daysAgo === 1) return 'yesterday';
+    return `${dateFilter.daysAgo} days ago`;
+  }
+  if (mode === 'calendar_date') return dateFilter.label || dateFilter.isoDate;
+  return null;
+}
+
+// Helper: is this a specific-day query (not a period/range)?
+function isSpecificDayQuery(dateFilter) {
+  if (!dateFilter) return false;
+  return ['day', 'calendar_date'].includes(dateFilter.mode);
+}
+
+async function generateSpecificDaySummaryAndSolution(items, type, dayLabel, question) {
+  if (!items || items.length === 0) return `No ${type}s found for ${dayLabel}.`;
+
+  // Format list of items to pass to LLM
+  let itemsList = '';
+  if (type === 'chat message') {
+    itemsList = items.map((item, idx) => `Item #${idx + 1} (Sender: ${item.sender_name}): "${item.content}"`).join('\n\n');
+  } else if (type === 'complaint') {
+    itemsList = items.map((item, idx) => `Item #${idx + 1} (Title: ${item.title}): "${item.description}"`).join('\n\n');
+  } else {
+    itemsList = items.map((item, idx) => `Item #${idx + 1} (Title: ${item.title}): "${item.summary}"`).join('\n\n');
+  }
+
+  const prompt = `You are a professional community assistant.
+The user is asking for a summary of community ${type}s for ${dayLabel}.
+Below is a list of all ${type}s recorded on ${dayLabel}:
+
+${itemsList}
+
+For EACH non-trivial ${type} item above, you MUST generate a clear, professional Summary and a practical, actionable Solution.
+If an item is in Tamil or Tanglish, translate it first and output the summary and solution in English.
+
+STRICT OUTPUT FORMAT (repeat for each item):
+[Item index or description]
+**Summary:** [Concise 1-2 sentence summary of this item]
+**Solution:** [Practical, actionable solution for this item]
+
+Provide the summary and solution for every item listed above. Output ONLY the numbered list with Summary and Solution pairs, nothing else.`;
+
+  try {
+    const result = await queryLLM(prompt, null, 0.2);
+    const answer = String(result?.response || '').trim();
+    if (answer && !isLimitMessage(answer)) {
+      return answer;
+    }
+  } catch (error) {
+    logger.error(`Failed to generate specific day summary for ${type}`, { error: error.message });
+  }
+
+  // Fallback if LLM fails
+  return items.map((item, idx) => {
+    const desc = type === 'chat message' ? item.content : (item.description || item.summary || item.title);
+    return `${idx + 1}. Item: "${desc}"\n**Summary:** [Generated Fallback Summary] Community ${type} reported on ${dayLabel}.\n**Solution:** [Generated Fallback Solution] Review details and contact ${type === 'chat message' ? item.sender_name : 'author'} for further action.`;
+  }).join('\n\n');
+}
+
+
+function compactSingleLine(text, maxLen = 180) {
+  const cleaned = String(text || '')
+    .replace(/\s+/g, ' ')
+    .replace(/^[\-\*\d\.\)\s]+/, '')
+    .trim();
+  if (cleaned.length <= maxLen) return cleaned;
+  return `${cleaned.slice(0, maxLen - 3).trim()}...`;
+}
+
+function buildSingleItemSummaryResponse(kind, rawText) {
+  const normalizedKind = String(kind || 'item').toLowerCase();
+  const label = normalizedKind === 'chat'
+    ? 'Chat'
+    : normalizedKind === 'complaint'
+      ? 'Complaint'
+      : normalizedKind === 'petition'
+        ? 'Petition'
+        : 'Item';
+  const core = compactSingleLine(rawText, 190) || 'No details available.';
+  const summary = normalizedKind === 'chat'
+    ? `A resident request needs timely follow-up to improve safety and daily discipline in the community.`
+    : normalizedKind === 'complaint'
+      ? `A resident complaint highlights a specific problem that needs ownership and quick closure.`
+      : normalizedKind === 'petition'
+        ? `A resident petition requests formal action and clear progress communication from management.`
+        : `This item needs follow-up action and clear ownership.`;
+
+  return `${core}
+Summary: ${summary}
+Solution: Assign a responsible admin or security staff for immediate action and confirm completion today. Also, set a nightly checklist/reminder process to prevent the same issue from repeating.`;
+}
+
 async function summarizeFromChatMessages(question, communityId) {
   // Handle translation queries FIRST — they fetch messages internally
   if (isTranslationQuery(question)) {
@@ -1565,14 +2051,48 @@ async function summarizeFromChatMessages(question, communityId) {
     return await handleLanguageFilterQuery(question, communityId);
   }
 
-  const isListing = isListQuery(question);
   const questionLower = question.toLowerCase();
   const showName = questionLower.includes('name') || questionLower.includes('sender') || questionLower.includes('who');
-  // Fetch messages using existing function
-  const messages = await fetchCommunityChatMessages(communityId, question);
 
-  // If no messages found, we still proceed to LLM using the general assistant answer
+  // Determine date context BEFORE fetching messages so we can give a proper response
+  const dateFilter = getDateFilterConfig(question);
+  const specificDay = isSpecificDayQuery(dateFilter);
+  const dayLabel = specificDay ? getDateFilterLabel(dateFilter) : null;
+
+  // Fetch messages using higher limit for specific days to ensure we get "all" chat
+  const fetchLimit = specificDay ? 200 : 50;
+  const rawMessages = await fetchCommunityChatMessages(communityId, question, fetchLimit);
+  const messages = await preTranslateItems(rawMessages, ['content']);
+
+  if (specificDay && isSummaryQuery(question) && messages.length > 0) {
+    const filtered = messages.filter(m => !isLowSignalMessage(m.content) && m.content.length > 3);
+    if (filtered.length > 0) {
+      const result = await generateSpecificDaySummaryAndSolution(filtered, 'chat message', dayLabel, question);
+      return {
+        answer: result,
+        sources: filtered.slice(0, 5).map((m, i) => ({ id: `chat-${i}`, title: `Chat message (${m.sender_name})` })),
+        confidence: 90,
+        sourceCount: filtered.length,
+        status: 'specific_day_summary_chat_success'
+      };
+    }
+  }
+
+  // If no messages found
   if (!messages.length) {
+    // For specific-day queries: clearly say no messages for that day — don't give a generic AI answer
+    if (specificDay && dayLabel) {
+      logger.info('No messages found for specific day query', { dayLabel });
+      return {
+        answer: `No chat messages were found for ${dayLabel}.`,
+        sources: [],
+        confidence: 0,
+        sourceCount: 0,
+        status: 'no_messages_for_day',
+      };
+    }
+
+    // For non-day queries: fall back to general assistant
     logger.info('No messages found, using general assistant fallback');
     try {
       const generalAnswer = await generateGeneralAssistantAnswer(question);
@@ -1594,81 +2114,106 @@ async function summarizeFromChatMessages(question, communityId) {
     }
   }
 
-
   // Detect user intent
   const intent = detectIntent(question);
+  logger.info('Detected intent', { intent, question: question.substring(0, 100), specificDay, dayLabel });
 
-  logger.info('Detected intent', { intent, question: question.substring(0, 100) });
+  const singleMessageCompactFallback =
+    messages.length === 1 &&
+    ['summary', 'general', 'recommendations', 'solutions'].includes(intent);
+
+  // For specific-day queries: scope the question to that day so LLM doesn't hallucinate beyond it
+  const scopedQuestion = specificDay && dayLabel
+    ? `${question} (Answer based ONLY on messages from ${dayLabel}. Do not include information from other days.)`
+    : question;
 
   // Prepare data based on intent
   let promptData;
   let prompt;
 
-  if (intent === 'solutions' || intent === 'recommendations') {
-    // For solutions/recommendations, provide issues as a clean list
+  if (singleMessageCompactFallback && (intent === 'summary' || intent === 'general')) {
+    promptData = messages[0].content;
+    prompt = `You are a helpful community assistant.
+User request: ${scopedQuestion}
+
+Analyze the following single chat message. Provide a brief summary and a single practical solution for it.
+Do NOT split into multiple items. Respond ONLY in English. Use **Summary:** and **Solution:** labels exactly once.
+If the message is in Tamil or Tanglish, translate and provide the summary and solution in English.
+
+Message: "${promptData}"`;
+  } else if (intent === 'solutions' || intent === 'recommendations') {
     const issuesList = messages
       .filter(m => !isLowSignalMessage(m.content))
-      // Relaxed filter for time-specific summaries to ensure completeness
       .filter(m => isImportantMessage(m.content) || m.content.length > 10)
       .map(m => `- ${normalizeIssueText(m.content)}`)
-      .filter((v, i, a) => a.indexOf(v) === i) // Remove duplicates
+      .filter((v, i, a) => a.indexOf(v) === i)
       .join('\n');
 
     promptData = issuesList || '- No specific issues found';
-    prompt = getPrompt(intent, promptData, question);
+    prompt = getPrompt(intent, promptData, scopedQuestion);
+
   } else if (intent === 'per_message_recommendations') {
-    // For per-message recommendation solutions, keep each message as a separate item.
     const msgItems = messages
       .filter(m => !isLowSignalMessage(m.content))
       .map(m => normalizeIssueText(m.content))
       .filter(Boolean)
       .filter((v, i, a) => a.indexOf(v) === i)
-      .slice(0, 12);
+      .slice(0, 15);
 
     const messagesList = msgItems.map((t, i) => `${i + 1}. ${t}`).join('\n');
     promptData = messagesList || '1. No specific messages found';
-    prompt = getPrompt(intent, promptData, question);
+    prompt = getPrompt(intent, promptData, scopedQuestion);
 
   } else if (intent === 'summary') {
-    // For summary, provide full transcript with timestamps
     const transcript = formatMessagesAsTranscript(messages);
     const includeRecommendations = shouldIncludeRecommendationsInSummary(question);
 
     promptData = transcript;
-    prompt = getPrompt(intent, promptData, question, { includeRecommendations });
+    prompt = getPrompt(intent, promptData, scopedQuestion, { includeRecommendations });
 
   } else if (['sentiment', 'toxicity', 'abuse', 'categorization', 'topics', 'duplication', 'duplicates', 'announcement', 'announcements', 'list'].includes(intent)) {
-    // For analysis tasks, provide messages as numbered list
     const messagesList = formatMessagesAsList(messages);
 
     promptData = messagesList;
-    prompt = getPrompt(intent, promptData, question, { showName });
+    prompt = getPrompt(intent, promptData, scopedQuestion, { showName });
 
   } else {
-    // For general questions, provide transcript
     const transcript = formatMessagesAsTranscript(messages);
 
     promptData = transcript;
-    prompt = getPrompt('general', promptData, question);
+    prompt = getPrompt('general', promptData, scopedQuestion);
   }
 
-  // Query LLM with the constructed prompt
+  // Query LLM
   let answer = '';
+  let tamilSummary = '';
   let llmSuccess = false;
 
   try {
     logger.info('Querying LLM', { intent, promptLength: prompt.length });
 
-    const llmResponse = await queryLLM(prompt, null, 0.3);
-    answer = String(llmResponse?.response || '').trim();
+    if (intent === 'summary') {
+      const llmResponse = await queryLLM(prompt, null, 0.2);
+      answer = String(llmResponse?.response || '').trim();
 
-    // Check if LLM returned a valid response
-    if (answer && !isLimitMessage(answer)) {
-      llmSuccess = true;
-      answer = cleanLLMOutput(answer, intent);
-      logger.info('LLM response received', { answerLength: answer.length, intent });
+      if (answer && !isLimitMessage(answer)) {
+        llmSuccess = true;
+        answer = cleanLLMOutput(answer, intent);
+        logger.info('English summary LLM ok', { answerLength: answer.length, intent });
+      } else {
+        logger.warn('LLM returned empty or limit message (English summary)', { intent });
+      }
     } else {
-      logger.warn('LLM returned empty or limit message', { intent });
+      const llmResponse = await queryLLM(prompt, null, 0.3);
+      answer = String(llmResponse?.response || '').trim();
+
+      if (answer && !isLimitMessage(answer)) {
+        llmSuccess = true;
+        answer = cleanLLMOutput(answer, intent);
+        logger.info('LLM response received', { answerLength: answer.length, intent });
+      } else {
+        logger.warn('LLM returned empty or limit message', { intent });
+      }
     }
   } catch (error) {
     logger.error('LLM query failed', { error: error.message, intent });
@@ -1677,15 +2222,30 @@ async function summarizeFromChatMessages(question, communityId) {
   // Fallback to deterministic answer if LLM failed
   if (!llmSuccess || !answer) {
     logger.info('Using deterministic fallback', { intent });
-    answer = await buildDeterministicAnswer(intent, messages, question);
+    if (singleMessageCompactFallback) {
+      // When only one message exists, keep output concise but still use this
+      // as fallback only (do not bypass LLM success path).
+      answer = buildSingleItemSummaryResponse('chat', messages[0]?.content);
+    } else {
+      answer = await buildDeterministicAnswer(intent, messages, question);
+    }
   }
 
-  // Calculate confidence
+  tamilSummary = '';
+  try {
+    if (answer && !isLimitMessage(answer)) {
+      tamilSummary = await translateEnglishSummaryToTamilStrict(answer);
+    }
+  } catch (err) {
+    logger.warn('Failed to generate Tamil summary', { error: err.message });
+  }
+
   const importantCount = messages.filter(m => isImportantMessage(m.content)).length;
   const confidence = llmSuccess ? (importantCount > 0 ? 82 : 65) : (importantCount > 0 ? 68 : 45);
 
   return {
     answer,
+    tamilSummary,
     sources: messages.slice(-5).map((m, idx) => ({
       id: `chat-${idx}`,
       title: `Chat message (${new Date(m.created_at).toLocaleString('en-US')})`,
@@ -1697,75 +2257,278 @@ async function summarizeFromChatMessages(question, communityId) {
   };
 }
 
+/**
+ * Ensures the word "petition" (case-insensitive) is never mentioned in complaint AI chat.
+ * Replaces any references to petitions with complaints or issues.
+ */
+function sanitizeComplaintAnswer(text) {
+  if (!text) return '';
+  return text
+    .replace(/\bpetitions\b/g, 'complaints')
+    .replace(/\bPetitions\b/g, 'Complaints')
+    .replace(/\bpetition\b/g, 'complaint')
+    .replace(/\bPetition\b/g, 'Complaint');
+}
+
 async function summarizeFromComplaints(question, communityId) {
-  const complaints = await fetchCommunityComplaints(communityId, question);
-  const transcript = complaints.map(c => `[Complaint] Title: ${c.title}, Description: ${c.description}, Status: ${c.status}`).join('\n');
-  
-  const prompt = PROMPT_MULTILINGUAL_ANALYSIS(transcript || 'No specific complaints found in the database for this request.');
-  
-  try {
-    const result = await queryLLM(prompt, null, 0.3);
-    const answer = String(result?.response || '').trim();
-    if (answer && !isLimitMessage(answer)) {
-      return {
-        answer,
-        sources: complaints.slice(0, 5).map((c, idx) => ({
-          id: `complaint-${idx}`,
-          title: `Complaint: ${c.title}`,
-          similarity: null
-        })),
-        confidence: transcript ? 85 : 60,
-        sourceCount: complaints.length,
-        status: 'complaint_summary_success',
-      };
-    }
-  } catch (err) {
-    logger.error('summarizeFromComplaints failed', { error: err.message });
+  const dateFilter = getDateFilterConfig(question);
+  const specificDay = isSpecificDayQuery(dateFilter);
+  const dayLabel = specificDay ? getDateFilterLabel(dateFilter) : null;
+
+  const rawComplaints = await fetchCommunityComplaints(communityId, question);
+  const complaints = await preTranslateItems(rawComplaints, ['title', 'description']);
+
+  if (specificDay && isSummaryQuery(question) && complaints.length > 0) {
+    const result = await generateSpecificDaySummaryAndSolution(complaints, 'complaint', dayLabel, question);
+    return {
+      answer: sanitizeComplaintAnswer(result),
+      sources: complaints.map((c, i) => ({ id: `complaint-${i}`, title: c.title || 'Complaint' })),
+      confidence: 90,
+      sourceCount: complaints.length,
+      status: 'specific_day_summary_complaints_success'
+    };
   }
 
-  // Final fallback
+  if (!complaints.length) {
+    if (specificDay && dayLabel) {
+      return {
+        answer: `No complaints were found for ${dayLabel}.`,
+        sources: [],
+        confidence: 0,
+        sourceCount: 0,
+        status: 'no_complaints_for_day',
+      };
+    }
+
+    try {
+      const generalAnswer = await generateGeneralAssistantAnswer(question);
+      return {
+        answer: generalAnswer || 'I could not find any specific complaints, but I am here to help with general questions.',
+        sources: [],
+        confidence: 60,
+        sourceCount: 0,
+        status: 'no_complaints_llm_fallback',
+      };
+    } catch (err) {
+      return {
+        answer: "I couldn't find any specific complaints recorded for your request, but I'm here to help with general questions.",
+        sources: [],
+        confidence: 45,
+        sourceCount: 0,
+        status: 'error',
+      };
+    }
+  }
+
+  const intent = detectIntent(question);
+  const scopedQuestion = specificDay && dayLabel
+    ? `${question} (Answer based ONLY on complaints from ${dayLabel}. Do not include information from other days.)`
+    : question;
+
+  const singleComplaintCompactFallback =
+    complaints.length === 1 &&
+    ['summary', 'general', 'solutions'].includes(intent);
+
+  let prompt;
+  if (singleComplaintCompactFallback) {
+    const only = complaints[0];
+    const promptData = `Title: ${only.title}, Description: ${only.description}, Status: ${only.status}`;
+    prompt = `You are a helpful community assistant.
+User request: ${scopedQuestion}
+
+Analyze the following single complaint. Provide a brief summary and a single practical solution for it.
+Do NOT split into multiple items. Respond ONLY in English.
+
+You MUST format your output exactly as follows:
+1. Complaint #1: [Short Title]
+Summary: [Brief detailed summary]
+Solution: [Authoritative, action-oriented fix]
+
+Complaint: "${promptData}"`;
+  } else {
+    const transcript = complaints.map((c, i) => `Complaint #${i + 1}: Title: ${c.title}, Description: ${c.description}, Status: ${c.status}`).join('\n');
+    const scopedTranscript = specificDay && dayLabel
+      ? `Only complaints from ${dayLabel} are included below. Do not include details from any other day.\n\n${transcript}`
+      : transcript;
+    
+    prompt = getComplaintSummaryPrompt(scopedTranscript, scopedQuestion);
+  }
+
+  let answer = '';
+  let tamilSummary = '';
+  let llmSuccess = false;
+
+  try {
+    const llmResponse = await queryLLM(prompt, null, 0.3);
+    answer = String(llmResponse?.response || '').trim();
+    if (answer && !isLimitMessage(answer)) {
+      llmSuccess = true;
+      answer = cleanLLMOutput(answer, 'summary');
+      answer = sanitizeComplaintAnswer(answer);
+    }
+  } catch (err) {
+    logger.warn('Complaint LLM query failed', { error: err.message });
+  }
+
+  if (!llmSuccess) {
+    // Beautiful structured deterministic fallback
+    answer = complaints.map((c, i) => {
+      const title = c.title || 'Untitled Complaint';
+      const desc = c.description || 'No description provided.';
+      const solution = `Assign a responsible admin to investigate and resolve this complaint (Status: ${c.status}).`;
+      return `${i + 1}. [Complaint] ${title}\nSummary: ${desc}\nSolution: ${solution}`;
+    }).join('\n\n');
+  }
+
+  // Always generate Tamil translation if requested or for multilingual flow
+  try {
+    tamilSummary = await translateEnglishSummaryToTamilStrict(answer);
+    tamilSummary = sanitizeComplaintAnswer(tamilSummary);
+  } catch (err) {
+    logger.warn('Failed to generate Tamil summary for complaints', { error: err.message });
+  }
+
   return {
-    answer: transcript ? `Found ${complaints.length} complaints:\n\n${transcript}` : "I couldn't find any specific complaints recorded for your request, but I'm here to help with general questions.",
-    sources: [],
-    confidence: transcript ? 65 : 45,
+    answer,
+    tamilSummary,
+    sources: complaints.slice(0, 5).map((c, idx) => ({
+      id: `complaint-${idx}`,
+      title: `Complaint: ${c.title}`,
+      similarity: null
+    })),
+    confidence: llmSuccess ? 85 : 65,
     sourceCount: complaints.length,
-    status: 'fallback',
+    status: llmSuccess ? 'complaint_summary_success' : 'deterministic_fallback',
   };
 }
 
 async function summarizeFromPetitions(question, communityId) {
-  const petitions = await fetchCommunityPetitions(communityId, question);
-  const transcript = petitions.map(p => `[Petition] Title: ${p.title}, Summary: ${p.summary}, Status: ${p.status}`).join('\n');
-  
-  const prompt = PROMPT_MULTILINGUAL_ANALYSIS(transcript || 'No specific petitions found in the database for this request.');
-  
-  try {
-    const result = await queryLLM(prompt, null, 0.3);
-    const answer = String(result?.response || '').trim();
-    if (answer && !isLimitMessage(answer)) {
-      return {
-        answer,
-        sources: petitions.slice(0, 5).map((p, idx) => ({
-          id: `petition-${idx}`,
-          title: `Petition: ${p.title}`,
-          similarity: null
-        })),
-        confidence: transcript ? 85 : 60,
-        sourceCount: petitions.length,
-        status: 'petition_summary_success',
-      };
-    }
-  } catch (err) {
-    logger.error('summarizeFromPetitions failed', { error: err.message });
+  const dateFilter = getDateFilterConfig(question);
+  const specificDay = isSpecificDayQuery(dateFilter);
+  const dayLabel = specificDay ? getDateFilterLabel(dateFilter) : null;
+
+  const rawPetitions = await fetchCommunityPetitions(communityId, question);
+  const petitions = await preTranslateItems(rawPetitions, ['title', 'summary']);
+
+  if (specificDay && isSummaryQuery(question) && petitions.length > 0) {
+    const result = await generateSpecificDaySummaryAndSolution(petitions, 'petition', dayLabel, question);
+    return {
+      answer: result,
+      sources: petitions.map((p, i) => ({ id: `petition-${i}`, title: p.title || 'Petition' })),
+      confidence: 90,
+      sourceCount: petitions.length,
+      status: 'specific_day_summary_petitions_success'
+    };
   }
 
-  // Final fallback
+  if (!petitions.length) {
+    if (specificDay && dayLabel) {
+      return {
+        answer: `No petitions were found for ${dayLabel}.`,
+        sources: [],
+        confidence: 0,
+        sourceCount: 0,
+        status: 'no_petitions_for_day',
+      };
+    }
+
+    try {
+      const generalAnswer = await generateGeneralAssistantAnswer(question);
+      return {
+        answer: generalAnswer || 'I could not find any specific petitions, but I am here to help with general questions.',
+        sources: [],
+        confidence: 60,
+        sourceCount: 0,
+        status: 'no_petitions_llm_fallback',
+      };
+    } catch (err) {
+      return {
+        answer: "I couldn't find any specific petitions recorded for your request, but I'm here to help with general questions.",
+        sources: [],
+        confidence: 45,
+        sourceCount: 0,
+        status: 'error',
+      };
+    }
+  }
+
+  const intent = detectIntent(question);
+  const scopedQuestion = specificDay && dayLabel
+    ? `${question} (Answer based ONLY on petitions from ${dayLabel}. Do not include information from other days.)`
+    : question;
+
+  const singlePetitionCompactFallback =
+    petitions.length === 1 &&
+    ['summary', 'general', 'solutions'].includes(intent);
+
+  let prompt;
+  if (singlePetitionCompactFallback) {
+    const only = petitions[0];
+    const promptData = `Title: ${only.title}, Summary: ${only.summary}, Status: ${only.status}`;
+    prompt = `You are a helpful community assistant.
+User request: ${scopedQuestion}
+
+Analyze the following single petition. Provide a brief summary and a single practical solution for it.
+Do NOT split into multiple items. Respond ONLY in English.
+
+You MUST format your output exactly as follows:
+1. Petition #1: [Short Title]
+Summary: [Brief detailed summary]
+Solution: [Authoritative, action-oriented suggested action]
+
+Petition: "${promptData}"`;
+  } else {
+    const transcript = petitions.map((p, i) => `Petition #${i + 1}: Title: ${p.title}, Summary: ${p.summary}, Status: ${p.status}`).join('\n');
+    const scopedTranscript = specificDay && dayLabel
+      ? `Only petitions from ${dayLabel} are included below. Do not include details from any other day.\n\n${transcript}`
+      : transcript;
+    
+    prompt = getPetitionSummaryPrompt(scopedTranscript, scopedQuestion);
+  }
+
+  let answer = '';
+  let tamilSummary = '';
+  let llmSuccess = false;
+
+  try {
+    const llmResponse = await queryLLM(prompt, null, 0.3);
+    answer = String(llmResponse?.response || '').trim();
+    if (answer && !isLimitMessage(answer)) {
+      llmSuccess = true;
+      answer = cleanLLMOutput(answer, 'summary');
+    }
+  } catch (err) {
+    logger.warn('Petition LLM query failed', { error: err.message });
+  }
+
+  if (!llmSuccess) {
+    // Beautiful structured deterministic fallback
+    answer = petitions.map((p, i) => {
+      const title = p.title || 'Untitled Petition';
+      const summary = p.summary || 'No summary provided.';
+      const solution = `Review this petition (Status: ${p.status}) and schedule a formal discussion with resident representatives.`;
+      return `${i + 1}. [Petition] ${title}\nSummary: ${summary}\nSolution: ${solution}`;
+    }).join('\n\n');
+  }
+
+  // Always generate Tamil translation if requested or for multilingual flow
+  try {
+    tamilSummary = await translateEnglishSummaryToTamilStrict(answer);
+  } catch (err) {
+    logger.warn('Failed to generate Tamil summary for petitions', { error: err.message });
+  }
+
   return {
-    answer: transcript ? `Found ${petitions.length} petitions:\n\n${transcript}` : "I couldn't find any specific petitions recorded for your request, but I'm here to help with general questions.",
-    sources: [],
-    confidence: transcript ? 65 : 45,
+    answer,
+    tamilSummary,
+    sources: petitions.slice(0, 5).map((p, idx) => ({
+      id: `petition-${idx}`,
+      title: `Petition: ${p.title}`,
+      similarity: null
+    })),
+    confidence: llmSuccess ? 85 : 65,
     sourceCount: petitions.length,
-    status: 'fallback',
+    status: llmSuccess ? 'petition_summary_success' : 'deterministic_fallback',
   };
 }
 
@@ -1779,9 +2542,9 @@ function cleanLLMOutput(text, intent) {
   cleaned = cleaned.replace(/^(Here (is|are)|Here's|This is|Based on|According to)\s*/i, '');
   cleaned = cleaned.replace(/^(I understand|I analyzed|I reviewed|Let me provide)\s*[^.!?]*[.!?]\s*/i, '');
 
-  // Remove sender name patterns (but keep structured labels like "Message:", "Summary:", etc.)
+  // Remove sender name patterns (but keep structured labels like "Message:", "Summary:", "Solution:", etc.)
   cleaned = cleaned.replace(
-    /^(?!(Message|Summary|Recommendations?|Recommendation|Solutions?|Topics?|Announcements?|Duplicate|Duplicates|Toxicity|Sentiment)\b)[A-Za-z][A-Za-z0-9 _.-]{0,30}:\s*/gm,
+    /^(?!(Message|Summary|Solutions?|Recommendations?|Recommendation|Topics?|Announcements?|Duplicate|Duplicates|Toxicity|Sentiment|Action|Timeline|Priority|Justification|Remarks|Results?|Analysis)\b)[A-Z][A-Za-z0-9 _.-]{0,30}:\s*/gm,
     ''
   );
 
@@ -1796,6 +2559,9 @@ function cleanLLMOutput(text, intent) {
     // Remove "Query:" or "Title:" sections
     cleaned = cleaned.replace(/^(Query|Title|User Request)\s*:[\s\S]*?\n\n/im, '');
   }
+
+  // Remove markdown bold asterisks that look ugly in UI
+  cleaned = cleaned.replace(/\*\*/g, '');
 
   return cleaned;
 }
@@ -1970,7 +2736,7 @@ Summary:`;
 
   let output = '';
   items.forEach((item, idx) => {
-    output += `${idx + 1}. ${item.categoryLabel}: ${item.issue}\nSummary: Potential ${item.categoryLabel} issue reported in chat.\nSolution: ${recommendationForCategory(item.category, item.issue)}\n\n`;
+    output += `${idx + 1}. ${item.categoryLabel}\nSummary: ${item.issue}\nSolution: ${recommendationForCategory(item.category, item.issue)}\n\n`;
   });
 
   return output.trim();
@@ -2312,36 +3078,44 @@ module.exports = {
   summarizeFromChatMessages,
 };
 
+let ensureBotHistoryTablePromise = null;
+
 async function ensureBotHistoryTable() {
   if (botHistoryTableReady) return;
 
-  await query(`
-    CREATE TABLE IF NOT EXISTS bot_chat_history (
-      id BIGSERIAL PRIMARY KEY,
-      user_id BIGINT NOT NULL,
-      community_id BIGINT NOT NULL,
-      question TEXT NOT NULL,
-      answer TEXT NOT NULL,
-      session_hash VARCHAR(64),
-      confidence INTEGER,
-      source_count INTEGER DEFAULT 0,
-      status VARCHAR(32) NOT NULL DEFAULT 'success',
-      error_message TEXT,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    )
-  `);
+  if (!ensureBotHistoryTablePromise) {
+    ensureBotHistoryTablePromise = (async () => {
+      await query(`
+        CREATE TABLE IF NOT EXISTS bot_chat_history (
+          id BIGSERIAL PRIMARY KEY,
+          user_id BIGINT NOT NULL,
+          community_id BIGINT NOT NULL,
+          question TEXT NOT NULL,
+          answer TEXT NOT NULL,
+          session_hash VARCHAR(64),
+          confidence INTEGER,
+          source_count INTEGER DEFAULT 0,
+          status VARCHAR(32) NOT NULL DEFAULT 'success',
+          error_message TEXT,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+      `);
 
-  await query(`
-    CREATE INDEX IF NOT EXISTS idx_bot_chat_history_community_created
-    ON bot_chat_history(community_id, created_at DESC)
-  `);
+      await query(`
+        CREATE INDEX IF NOT EXISTS idx_bot_chat_history_community_created
+        ON bot_chat_history(community_id, created_at DESC)
+      `);
 
-  await query(`
-    CREATE INDEX IF NOT EXISTS idx_bot_chat_history_user_created
-    ON bot_chat_history(user_id, created_at DESC)
-  `);
+      await query(`
+        CREATE INDEX IF NOT EXISTS idx_bot_chat_history_user_created
+        ON bot_chat_history(user_id, created_at DESC)
+      `);
 
-  botHistoryTableReady = true;
+      botHistoryTableReady = true;
+    })();
+  }
+
+  await ensureBotHistoryTablePromise;
 }
 
 async function getHistoryTableName(type) {
@@ -2564,22 +3338,40 @@ function sanitizePromptForOllama(prompt) {
 /**
  * Query Ollama LLM
  */
-async function queryOllama(prompt, context = '', temperature = 0.7) {
+const http = require('http');
+const https = require('https');
+
+const ollamaHttpAgent = new http.Agent({ keepAlive: true, timeout: OLLAMA_TIMEOUT_MS });
+const ollamaHttpsAgent = new https.Agent({ keepAlive: true, timeout: OLLAMA_TIMEOUT_MS });
+
+async function queryOllama(prompt, context = '', temperature = 0.7, modelOverride = null, ollamaExtraOptions = null) {
   const startTime = Date.now();
   const sanitizedPrompt = sanitizePromptForOllama(prompt);
+  const modelName = modelOverride || OLLAMA_MODEL;
   logger.info('Querying Ollama', {
-    model: OLLAMA_MODEL,
+    model: modelName,
     promptLength: sanitizedPrompt.length,
     host: OLLAMA_HOST
   });
 
   try {
     const payload = {
-      model: OLLAMA_MODEL,
+      model: modelName,
       prompt: sanitizedPrompt,
       temperature: temperature,
       stream: false,
     };
+
+    if (ollamaExtraOptions && typeof ollamaExtraOptions === 'object' && Object.keys(ollamaExtraOptions).length > 0) {
+      payload.options = {
+        num_predict: 1200, // Default cap for speed
+        ...ollamaExtraOptions
+      };
+    } else {
+      payload.options = {
+        num_predict: 1200, // Default cap for speed
+      };
+    }
 
     if (Array.isArray(context) && context.length > 0) {
       payload.context = context;
@@ -2590,19 +3382,20 @@ async function queryOllama(prompt, context = '', temperature = 0.7) {
       payload,
       {
         timeout: OLLAMA_TIMEOUT_MS,
+        httpAgent: ollamaHttpAgent,
+        httpsAgent: ollamaHttpsAgent,
         headers: {
           'Content-Type': 'application/json; charset=utf-8',
         },
-        transformRequest: [(data) => JSON.stringify(data)],
       }
     );
 
     const duration = Date.now() - startTime;
     logger.info('Ollama Response Received', {
       duration: `${duration}ms`,
-      model: OLLAMA_MODEL
+      model: modelName
     });
-    
+
     // DEBUG LOGGING
     console.log('================ LLM DEBUG ================');
     console.log('PROMPT SENT:');
@@ -2611,7 +3404,7 @@ async function queryOllama(prompt, context = '', temperature = 0.7) {
     console.log('RESPONSE RECEIVED:');
     console.log(response.data.response);
     console.log('===========================================');
-    
+
     logPerformance('Ollama query', duration);
 
     return {
@@ -2625,10 +3418,16 @@ async function queryOllama(prompt, context = '', temperature = 0.7) {
     }
     // 404 = model not found in Ollama (e.g. not pulled in Docker)
     if (error.response && error.response.status === 404) {
-      logger.warn('Ollama model not found (404). Pull the model in Docker: docker exec ollama-local ollama pull ' + OLLAMA_MODEL, {
-        model: OLLAMA_MODEL,
+      logger.error('Ollama model not found (404)', {
+        model: modelName,
         host: OLLAMA_HOST,
       });
+      
+      // DO NOT silently fallback to llama3.2:1b if a specific model was requested
+      if (modelOverride) {
+        throw new Error(`Required model "${modelName}" not found in Ollama. Please pull it first (e.g. ollama pull ${modelName}).`);
+      }
+
       try {
         const tagsRes = await axios.get(`${OLLAMA_HOST}/api/tags`, { timeout: 5000 });
         const models = tagsRes.data?.models || [];
@@ -2641,8 +3440,15 @@ async function queryOllama(prompt, context = '', temperature = 0.7) {
             temperature: temperature,
             stream: false,
           };
+          if (ollamaExtraOptions && typeof ollamaExtraOptions === 'object' && Object.keys(ollamaExtraOptions).length > 0) {
+            retryPayload.options = ollamaExtraOptions;
+          }
           if (Array.isArray(context) && context.length > 0) retryPayload.context = context;
-          const retryRes = await axios.post(`${OLLAMA_HOST}/api/generate`, retryPayload, { timeout: OLLAMA_TIMEOUT_MS });
+          const retryRes = await axios.post(`${OLLAMA_HOST}/api/generate`, retryPayload, { 
+            timeout: OLLAMA_TIMEOUT_MS,
+            httpAgent: ollamaHttpAgent,
+            httpsAgent: ollamaHttpsAgent,
+          });
           return {
             response: retryRes.data.response,
             context: retryRes.data.context,
@@ -2651,7 +3457,7 @@ async function queryOllama(prompt, context = '', temperature = 0.7) {
       } catch (fallbackErr) {
         logger.warn('Fallback model attempt failed', { error: fallbackErr.message });
       }
-      throw new Error(`Ollama model "${OLLAMA_MODEL}" not found. Pull it: docker exec ollama-local ollama pull ${OLLAMA_MODEL}`);
+      throw new Error(`Ollama model "${modelName}" not found. Please pull it first.`);
     }
     logger.error('Ollama query error', { error: error.message });
     throw error;
@@ -2710,11 +3516,44 @@ async function queryOpenAI(prompt, context = '', temperature = 0.7) {
 }
 
 async function queryLLM(prompt, context = '', temperature = 0.7) {
-  const res = await queryOllama(prompt, context, temperature);
-  if (isLimitMessage(res?.response)) {
-    return { response: '', context: res?.context || '' };
+  const provider = resolveProvider();
+
+  // Build provider order with safe fallback so transient outages don't force
+  // deterministic/static responses.
+  const providers = provider === 'openai'
+    ? ['openai', 'ollama']
+    : ['ollama', 'openai'];
+
+  let lastError = null;
+
+  for (const p of providers) {
+    if (p === 'openai' && !OPENAI_API_KEY) {
+      continue;
+    }
+
+    try {
+      const res = p === 'openai'
+        ? await queryOpenAI(prompt, context, temperature)
+        : await queryOllama(prompt, context, temperature, null, { num_predict: 1024 }); // Cap general queries for speed
+
+      if (isLimitMessage(res?.response)) {
+        return { response: '', context: res?.context || '' };
+      }
+      return res;
+    } catch (error) {
+      lastError = error;
+      logger.warn('LLM provider failed, trying next provider if available', {
+        provider: p,
+        error: error.message,
+      });
+    }
   }
-  return res;
+
+  if (lastError) {
+    throw lastError;
+  }
+
+  return { response: '', context: '' };
 }
 
 /**
@@ -2958,7 +3797,18 @@ async function fetchLatestPetitionItemContext(communityId) {
  */
 async function askBot(rawQuestion, communityId, userId, previousContext = null, itemContext = null) {
   const startTime = Date.now();
-  const question = String(rawQuestion || '').trim();
+  let question = String(rawQuestion || '').trim();
+  if (containsTamilScript(question)) {
+    try {
+      const translated = await translateText(question, 'Tamil', 'English');
+      if (translated && translated !== question) {
+        logger.info('Translated Tamil question to English', { original: question, translated });
+        question = translated;
+      }
+    } catch (err) {
+      logger.warn('Question pre-translation failed', { error: err.message });
+    }
+  }
   const questionLower = question.toLowerCase();
 
   try {
@@ -3030,12 +3880,18 @@ async function askBot(rawQuestion, communityId, userId, previousContext = null, 
       hasItemContext = !!(itemContext && itemContext.type && itemContext.data);
     }
 
+    // Pre-translate item context (petition/complaint) if it contains Tamil
+    if (hasItemContext) {
+      const translatedData = await preTranslateItems([itemContext.data], ['title', 'description', 'summary', 'proposed_action']);
+      itemContext.data = translatedData[0];
+    }
+
     if (isSmallTalkQuery(question)) {
       const sessionHash = generateSessionHash(userId, communityId);
       const smallTalkAnswer = await generateGeneralAssistantAnswer(question);
       const answer =
         smallTalkAnswer ||
-        "Summary:\nI am your community AI assistant, here to help with your questions and concerns.\n\nSolutions:\nYou can ask me about community issues, complaints, petitions, or for a summary of recent discussions. I will always respond in English.";
+        "Summary:\nI am your community AI assistant, here to help with your questions and concerns.\n\nSolution:\nYou can ask me about community issues, complaints, petitions, or for a summary of recent discussions. I will always respond in English.";
 
       await saveBotHistory({
         userId,
@@ -3076,23 +3932,69 @@ async function askBot(rawQuestion, communityId, userId, previousContext = null, 
     // Only prefer item_context when the question explicitly mentions complaint/petition.
     if (isIntentOrSummary) {
       const fallbackSessionHash = generateSessionHash(userId, communityId);
+      const qLower = String(question || '').toLowerCase();
+      const mentionsComplaint = qLower.includes('complaint') || qLower.includes('complain');
+      const mentionsPetition = qLower.includes('petition');
+      const mentionsChat = qLower.includes('chat') || qLower.includes('message');
+      const mentionsDetails = qLower.includes('details') || qLower.includes('everything') || qLower.includes('all');
+      
       let summaryResult;
 
-      if (mentionsComplaint) {
+      if (mentionsComplaint && !mentionsPetition && !mentionsDetails) {
         summaryResult = await summarizeFromComplaints(question, communityId);
-      } else if (mentionsPetition) {
+      } else if (mentionsPetition && !mentionsComplaint && !mentionsDetails) {
         summaryResult = await summarizeFromPetitions(question, communityId);
+      } else if (mentionsDetails) {
+        // Fetch everything for "details" or "all": Chat, Complaints, Petitions, AND Documents
+        const [rawChat, rawComplaints, rawPetitions, docData] = await Promise.all([
+          fetchCommunityChatMessages(communityId, question, 500),
+          fetchCommunityComplaints(communityId, question, 100),
+          fetchCommunityPetitions(communityId, question, 100),
+          searchDocuments(question, communityId, 20)
+        ]);
+        
+        const [chatData, complaintsData, petitionsData] = await Promise.all([
+          preTranslateItems(rawChat, ['content']),
+          preTranslateItems(rawComplaints, ['title', 'description']),
+          preTranslateItems(rawPetitions, ['title', 'summary'])
+        ]);
+        
+        const combinedTranscript = [
+          chatData.length ? "### RECENT CHAT MESSAGES:\n" + formatMessagesAsTranscript(chatData) : "",
+          complaintsData.length ? "### COMMUNITY COMPLAINTS:\n" + complaintsData.map(c => c.content).join('\n') : "",
+          petitionsData.length ? "### COMMUNITY PETITIONS:\n" + petitionsData.map(p => p.content).join('\n') : "",
+          docData.length ? "### RELEVANT COMMUNITY DOCUMENTS:\n" + docData.map(d => `Title: ${d.title}\nContent: ${d.content}`).join('\n\n') : ""
+        ].filter(Boolean).join('\n\n');
+
+        const intent = detectIntent(question);
+        const prompt = (intent === 'general' || intent === 'summary') 
+          ? PROMPT_MULTILINGUAL_ANALYSIS(combinedTranscript || "No community activity or documents found.", question)
+          : getPrompt(intent, combinedTranscript || "No community activity or documents found.", question);
+        
+        const result = await queryLLM(prompt, null, 0.3);
+        summaryResult = {
+          answer: String(result?.response || '').trim(),
+          sources: [
+            ...chatData.slice(0, 2).map(m => ({ id: 'chat', title: 'Chat message' })),
+            ...complaintsData.slice(0, 2).map(c => ({ id: 'complaint', title: c.title })),
+            ...docData.slice(0, 2).map(d => ({ id: 'doc', title: d.title }))
+          ],
+          confidence: 90,
+          sourceCount: chatData.length + complaintsData.length + petitionsData.length + docData.length,
+          status: 'unified_full_summary_success'
+        };
       } else {
         summaryResult = await summarizeFromChatMessages(question, communityId);
       }
-      
+
       const answerText = summaryResult?.answer || (typeof summaryResult === 'string' ? summaryResult : 'Unexpected response format.');
+      const extraTamil = summaryResult?.tamilSummary || '';
       const finalStatus = summaryResult?.status || 'unknown';
       const confidence = summaryResult?.confidence || 0;
       const sourceCount = summaryResult?.sourceCount || 0;
       const sources = summaryResult?.sources || [];
 
-      await saveBotHistory({
+      const historyId = await saveBotHistory({
         userId,
         communityId,
         question,
@@ -3104,9 +4006,11 @@ async function askBot(rawQuestion, communityId, userId, previousContext = null, 
       });
       return {
         answer: answerText,
+        tamilSummary: extraTamil,
         sources: sources,
         confidence: confidence,
         sessionHash: fallbackSessionHash,
+        historyId,
       };
     }
 
@@ -3116,7 +4020,7 @@ async function askBot(rawQuestion, communityId, userId, previousContext = null, 
       const fallbackSessionHash = generateSessionHash(userId, communityId);
       const chatSummary = await summarizeFromChatMessages(question, communityId);
 
-      await saveBotHistory({
+      const historyId = await saveBotHistory({
         userId,
         communityId,
         question,
@@ -3129,9 +4033,11 @@ async function askBot(rawQuestion, communityId, userId, previousContext = null, 
 
       return {
         answer: chatSummary.answer,
+        tamilSummary: chatSummary.tamilSummary || '',
         sources: chatSummary.sources,
         confidence: chatSummary.confidence,
         sessionHash: fallbackSessionHash,
+        historyId,
       };
     }
 
@@ -3147,7 +4053,7 @@ async function askBot(rawQuestion, communityId, userId, previousContext = null, 
         const itemContextBlock = formatItemContext(itemContext);
         const itemPrompt = `You are a helpful assistant for petitions and complaints across ALL community types. 
         
-        Analyze the details below and respond ONLY in English.
+        Analyze the details below and respond ONLY in English. If any text is in Tamil or Tanglish, translate and provide the summary and solution in English.
         
         ${itemContextBlock}
         
@@ -3158,25 +4064,33 @@ async function askBot(rawQuestion, communityId, userId, previousContext = null, 
         Summary:
         <Brief English summary of the item and the question. CRITICAL: NO BOLDING. No asterisks (**)>
         
-        Solutions:
+        Solution:
         <Clear, actionable solutions or guidance in English. CRITICAL: NO BOLDING. No asterisks (**)>`;
         try {
           const llmResponse = await queryLLM(itemPrompt, null, 0.3);
           const answer = String(llmResponse?.response || '').trim();
           if (answer && !isLimitMessage(answer)) {
+            const cleanedAnswer = cleanLLMOutput(answer, 'summary');
+            let tamilSummary = '';
+            try {
+              tamilSummary = await translateEnglishSummaryToTamilStrict(cleanedAnswer);
+            } catch (err) {
+              logger.warn('Failed to generate Tamil summary (fast path)', { error: err.message });
+            }
             const fallbackSessionHash = generateSessionHash(userId, communityId);
             await saveBotHistory({
               userId,
               communityId,
               question,
-              answer,
+              answer: cleanedAnswer,
               sessionHash: fallbackSessionHash,
               confidence: 85,
               sourceCount: 0,
               status: 'item_context_answer',
             });
             return {
-              answer,
+              answer: cleanedAnswer,
+              tamilSummary,
               sources: [],
               confidence: 85,
               sessionHash: fallbackSessionHash,
@@ -3188,7 +4102,7 @@ async function askBot(rawQuestion, communityId, userId, previousContext = null, 
       }
       const fallbackSessionHash = generateSessionHash(userId, communityId);
       const chatSummary = await summarizeFromChatMessages(question, communityId);
-      await saveBotHistory({
+      const historyId = await saveBotHistory({
         userId,
         communityId,
         question,
@@ -3200,9 +4114,11 @@ async function askBot(rawQuestion, communityId, userId, previousContext = null, 
       });
       return {
         answer: chatSummary.answer,
+        tamilSummary: chatSummary.tamilSummary || '',
         sources: chatSummary.sources,
         confidence: chatSummary.confidence,
         sessionHash: fallbackSessionHash,
+        historyId,
       };
     }
 
@@ -3212,7 +4128,7 @@ async function askBot(rawQuestion, communityId, userId, previousContext = null, 
       logger.info('Proactive summary intent detected', { communityId, userId });
       const fallbackSessionHash = generateSessionHash(userId, communityId);
       const chatSummary = await summarizeFromChatMessages(question, communityId);
-      await saveBotHistory({
+      const historyId = await saveBotHistory({
         userId,
         communityId,
         question,
@@ -3224,9 +4140,11 @@ async function askBot(rawQuestion, communityId, userId, previousContext = null, 
       });
       return {
         answer: chatSummary.answer,
+        tamilSummary: chatSummary.tamilSummary || '',
         sources: chatSummary.sources,
         confidence: chatSummary.confidence,
         sessionHash: fallbackSessionHash,
+        historyId,
       };
     }
 
@@ -3238,7 +4156,7 @@ async function askBot(rawQuestion, communityId, userId, previousContext = null, 
       const itemContextBlock = formatItemContext(itemContext);
       const itemPrompt = `You are a helpful assistant for community petitions and complaints.
       
-      Respond ONLY in English regardless of input language.
+      Respond ONLY in English regardless of input language. If any text is in Tamil or Tanglish, translate and provide the summary and solution in English.
       
       ${itemContextBlock}
       
@@ -3249,25 +4167,33 @@ async function askBot(rawQuestion, communityId, userId, previousContext = null, 
       Summary:
       <Clear English summary of the petition/complaint and user query. CRITICAL: NO BOLDING. No asterisks (**)>
       
-      Solutions:
+      Solution:
       <Practical, meaningful solutions or next steps in English. CRITICAL: NO BOLDING. No asterisks (**)>`;
       try {
         const llmResponse = await queryLLM(itemPrompt, null, 0.3);
         const answer = String(llmResponse?.response || '').trim();
         if (answer && !isLimitMessage(answer)) {
+          const cleanedAnswer = cleanLLMOutput(answer, 'summary');
+          let tamilSummary = '';
+          try {
+            tamilSummary = await translateEnglishSummaryToTamilStrict(cleanedAnswer);
+          } catch (err) {
+            logger.warn('Failed to generate Tamil summary (item context)', { error: err.message });
+          }
           const noInfoSessionHash = generateSessionHash(userId, communityId);
           await saveBotHistory({
             userId,
             communityId,
             question,
-            answer,
+            answer: cleanedAnswer,
             sessionHash: noInfoSessionHash,
             confidence: 85,
             sourceCount: 0,
             status: 'item_context_answer',
           });
           return {
-            answer,
+            answer: cleanedAnswer,
+            tamilSummary,
             sources: [],
             confidence: 85,
             sessionHash: noInfoSessionHash,
@@ -3329,22 +4255,23 @@ ${itemContextBlock}
 
 Question: ${question}
 
-Task: Answer accurately in English based on the provided context.
+Task: Answer accurately in perfect, grammatical English based on the provided context. If any text is in Tamil or Tanglish, translate and provide the summary and solution in English.
 
 Instructions:
 1. Provide the information as a numbered Item.
-2. Respond ONLY in English.
+2. Respond ONLY in high-quality English. Avoid any literal translations or broken grammar.
 3. Translate internally if needed, but do not show translations.
-4. NO BOLDING. Use plain text only.
+4. NO BOLDING in the content text. Use plain text only.
+5. Ensure the answer is professional, clear, and direct.
 
 Output Format:
 
 Item 1:
 Summary:
-<Concise answer summary in English>
+<Clear answer summary in perfect English>
 
 Solution:
-<Meaningful and practical solution in English>`;
+<Practical and meaningful solution in perfect English>`;
 
     // Query Ollama
     const llmResponse = await queryLLM(prompt, previousContext, 0.25);
@@ -3352,7 +4279,7 @@ Solution:
     if (isLimitMessage(llmAnswer)) {
       const fallbackSessionHash = generateSessionHash(userId, communityId);
       const chatSummary = await summarizeFromChatMessages(question, communityId);
-      await saveBotHistory({
+      const historyId = await saveBotHistory({
         userId,
         communityId,
         question,
@@ -3364,9 +4291,11 @@ Solution:
       });
       return {
         answer: chatSummary.answer,
+        tamilSummary: chatSummary.tamilSummary || '',
         sources: chatSummary.sources,
         confidence: chatSummary.confidence,
         sessionHash: fallbackSessionHash,
+        historyId,
       };
     }
 
@@ -3400,11 +4329,22 @@ Solution:
       duration: `${duration}ms`,
     });
 
+    const cleanedAnswer = cleanLLMOutput(llmAnswer, intent);
+
+    let tamilSummary = '';
+    try {
+      if (cleanedAnswer && !isLimitMessage(cleanedAnswer)) {
+        tamilSummary = await translateEnglishSummaryToTamilStrict(cleanedAnswer);
+      }
+    } catch (err) {
+      logger.warn('Failed to generate Tamil summary (full RAG)', { error: err.message });
+    }
+
     const historyId = await saveBotHistory({
       userId,
       communityId,
       question,
-      answer: llmAnswer,
+      answer: cleanedAnswer,
       sessionHash,
       confidence,
       sourceCount: relevantDocs.length,
@@ -3412,7 +4352,8 @@ Solution:
     });
 
     return {
-      answer: llmAnswer,
+      answer: cleanedAnswer,
+      tamilSummary,
       sources: relevantDocs.map(doc => ({
         id: doc.id,
         title: doc.title,
@@ -3430,7 +4371,7 @@ Solution:
       });
       const fallbackSessionHash = generateSessionHash(userId, communityId);
       const chatSummary = await summarizeFromChatMessages(question, communityId);
-      await saveBotHistory({
+      const historyId = await saveBotHistory({
         userId,
         communityId,
         question,
@@ -3443,9 +4384,11 @@ Solution:
       });
       return {
         answer: chatSummary.answer,
+        tamilSummary: chatSummary.tamilSummary || '',
         sources: chatSummary.sources,
         confidence: chatSummary.confidence,
         sessionHash: fallbackSessionHash,
+        historyId,
       };
     }
     if (String(error.message || '').includes('status code 400')) {
@@ -3501,12 +4444,18 @@ async function getBotHistory(communityId, userId, limit = 50, type = 'chat') {
     const tableName = await getHistoryTableName(type);
     await ensureBotHistoryTable(); // Ensures chat history table, but we assume other tables exist if type is specified
 
+    const isSharedChatTable = (type !== 'complaints' && type !== 'complaint' && type !== 'petitions' && type !== 'petition');
+    const selectFields = isSharedChatTable
+      ? 'b.id, b.user_id, b.community_id, b.question, b.answer, b.session_hash, b.confidence, b.source_count, b.status, b.created_at, b.reaction_count'
+      : "b.id, b.user_id, b.community_id, b.question, b.answer, NULL as session_hash, b.confidence, b.source_count, b.status, b.created_at, '{}'::jsonb as reaction_count";
+
     const boundedLimit = Math.min(Math.max(parseInt(limit, 10) || 50, 1), 200);
     const result = await query(
-      `SELECT id, user_id, community_id, question, answer, session_hash, confidence, source_count, status, created_at
-       FROM ${tableName}
-       WHERE community_id = $1 AND user_id = $2
-       ORDER BY created_at DESC
+      `SELECT ${selectFields}, r.emoji as user_reaction
+       FROM ${tableName} b
+       LEFT JOIN bot_history_reactions r ON r.history_id = b.id AND r.user_id = $2
+       WHERE b.community_id = $1 AND b.user_id = $2
+       ORDER BY b.created_at DESC
        LIMIT $3`,
       [communityId, userId, boundedLimit]
     );
@@ -3514,12 +4463,13 @@ async function getBotHistory(communityId, userId, limit = 50, type = 'chat') {
 
     // Fallback: show community history even if user_id changed between logins.
     const fallback = await query(
-      `SELECT id, user_id, community_id, question, answer, session_hash, confidence, source_count, status, created_at
-       FROM ${tableName}
-       WHERE community_id = $1
-       ORDER BY created_at DESC
-       LIMIT $2`,
-      [communityId, boundedLimit]
+      `SELECT ${selectFields}, r.emoji as user_reaction
+       FROM ${tableName} b
+       LEFT JOIN bot_history_reactions r ON r.history_id = b.id AND r.user_id = $2
+       WHERE b.community_id = $1
+       ORDER BY b.created_at DESC
+       LIMIT $3`,
+      [communityId, userId, boundedLimit]
     );
     return fallback.rows.reverse();
   } catch (error) {
@@ -3627,6 +4577,34 @@ async function deleteDocument(docId, communityId) {
 }
 
 /**
+ * Validate Ollama models at startup
+ */
+async function validateOllamaModels() {
+  try {
+    const response = await axios.get(`${OLLAMA_HOST}/api/tags`, { timeout: 5000 });
+    const models = response.data.models || [];
+    const modelNames = models.map(m => m.name);
+    
+    logger.info('Available Ollama models:', { models: modelNames });
+    
+    const required = [OLLAMA_MODEL, OLLAMA_TRANSLATION_MODEL];
+    const missing = required.filter(m => !modelNames.includes(m) && !modelNames.some(mn => mn.startsWith(m + ':')));
+    
+    if (missing.length > 0) {
+      logger.error('CRITICAL: Missing required Ollama models', { missing });
+      console.error(`\x1b[31m[NLP] CRITICAL: Missing models: ${missing.join(', ')}\x1b[0m`);
+      console.error(`\x1b[33m[NLP] Please run: ollama pull ${missing[0]}\x1b[0m`);
+    } else {
+      logger.info('✅ All required Ollama models are available');
+    }
+    return { available: modelNames, missing };
+  } catch (error) {
+    logger.error('Failed to validate Ollama models', { error: error.message });
+    return { error: error.message };
+  }
+}
+
+/**
  * Check Ollama health
  */
 async function checkOllamaHealth() {
@@ -3714,6 +4692,7 @@ module.exports = {
   getDocumentCount,
   deleteDocument,
   checkOllamaHealth,
+  validateOllamaModels,
   queryLLM,
   queryOllama,
   getBotHistory,

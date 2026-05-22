@@ -17,6 +17,8 @@ import { Platform } from 'react-native';
 import nlpService from '../lib/nlpService';
 import { AppContext } from './_layout';
 
+import { jwtDecode } from 'jwt-decode';
+
 interface Complaint {
   complaint_id: number;
   title: string;
@@ -76,15 +78,48 @@ export default function ComplaintDetailsScreen() {
   const [aiAnalysis, setAiAnalysis] = useState<{ summary: string; suggestion: string } | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
+  // Follow-up state
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+  const [followUpMessages, setFollowUpMessages] = useState<any[]>([]);
+  const [newFollowUp, setNewFollowUp] = useState('');
+  const [sendingFollowUp, setSendingFollowUp] = useState(false);
+  const followUpInputRef = React.useRef<TextInput>(null);
+
   useEffect(() => {
     fetchComplaintDetails();
     fetchUserRole();
+    fetchFollowUpMessages();
   }, []);
+
+  const fetchFollowUpMessages = async () => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      if (!token) return;
+      const response = await fetch(`${BASE_URL}/follow-up-messages?complaintId=${complaintId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setFollowUpMessages(data);
+      }
+    } catch (err) {
+      console.error('Error fetching follow-up messages:', err);
+    }
+  };
 
   const fetchUserRole = async () => {
     try {
       const token = await AsyncStorage.getItem('authToken');
       if (!token) return;
+
+      try {
+        const decoded: any = jwtDecode(token);
+        if (decoded && decoded.user_id) {
+          setCurrentUserId(decoded.user_id);
+        }
+      } catch (e) {
+        console.error('Error decoding token:', e);
+      }
 
       const response = await fetch(`${BASE_URL}/community/${communityId}/my-role`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -187,12 +222,58 @@ export default function ComplaintDetailsScreen() {
         throw new Error('Failed to update complaint status');
       }
 
-      Alert.alert('Success', `Complaint ${newStatus.toLowerCase()} successfully`);
-      // Refresh the complaint details
+      Alert.alert(
+        'Success', 
+        `Complaint ${newStatus.toLowerCase()} successfully!`,
+        [
+          {
+            text: 'Send Follow-up Message',
+            onPress: () => {
+              setTimeout(() => {
+                followUpInputRef.current?.focus();
+              }, 300);
+            }
+          },
+          { text: 'OK', style: 'cancel' }
+        ]
+      );
+      // Refresh details
       fetchComplaintDetails();
+      fetchFollowUpMessages();
     } catch (err: any) {
       Alert.alert('Error', err.message || 'Failed to update complaint status');
       console.error('Error updating complaint status:', err);
+    }
+  };
+
+  const handleSendFollowUp = async () => {
+    if (!newFollowUp.trim()) return;
+    try {
+      setSendingFollowUp(true);
+      const token = await AsyncStorage.getItem('authToken');
+      if (!token) return;
+      const response = await fetch(`${BASE_URL}/follow-up-messages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          complaintId,
+          message: newFollowUp.trim()
+        })
+      });
+      if (response.ok) {
+        setNewFollowUp('');
+        fetchFollowUpMessages();
+      } else {
+        const data = await response.json().catch(() => ({}));
+        Alert.alert('Error', data.error || 'Failed to send follow-up message');
+      }
+    } catch (err: any) {
+      Alert.alert('Error', err.message || 'Failed to send follow-up message');
+    } finally {
+      setSendingFollowUp(false);
     }
   };
 
@@ -563,6 +644,70 @@ export default function ComplaintDetailsScreen() {
             )}
           </View>
 
+          {/* Follow-up messages section */}
+          {(userRole === 'HEAD' || userRole === 'ADMIN' || currentUserId === complaint.author_id) && (
+            <View style={[styles.followUpCard, themeStyles.card, { marginTop: 20 }]}>
+              <Text style={[styles.followUpTitle, themeStyles.text]}>📬 Official Follow-Up Messages</Text>
+              
+              {followUpMessages.length === 0 ? (
+                <Text style={styles.followUpEmpty}>No follow-up messages sent yet.</Text>
+              ) : (
+                <View style={styles.followUpTimeline}>
+                  {followUpMessages.map((msg, index) => {
+                    const isSenderAdmin = msg.sender_id !== complaint.author_id;
+                    return (
+                      <View 
+                        key={msg.follow_up_id || index} 
+                        style={[
+                          styles.followUpBubble,
+                          isSenderAdmin ? styles.followUpBubbleAdmin : styles.followUpBubbleMember
+                        ]}
+                      >
+                        <View style={styles.followUpBubbleHeader}>
+                          <Text style={styles.followUpSenderName}>
+                            {msg.sender_name || 'Community Leader'}
+                          </Text>
+                          <Text style={styles.followUpTime}>
+                            {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </Text>
+                        </View>
+                        <Text style={styles.followUpTextContent}>{msg.message}</Text>
+                      </View>
+                    );
+                  })}
+                </View>
+              )}
+
+              {/* Text box for Heads/Admins to type and send messages */}
+              {(userRole === 'HEAD' || userRole === 'ADMIN') && (
+                <View style={styles.followUpInputContainer}>
+                  <TextInput
+                    ref={followUpInputRef}
+                    style={styles.followUpInput}
+                    placeholder="Type follow-up next steps, reasons, or updates..."
+                    placeholderTextColor="#94a3b8"
+                    value={newFollowUp}
+                    onChangeText={setNewFollowUp}
+                    multiline
+                  />
+                  <TouchableOpacity
+                    style={[
+                      styles.followUpSendBtn,
+                      (!newFollowUp.trim() || sendingFollowUp) && styles.followUpSendBtnDisabled
+                    ]}
+                    onPress={handleSendFollowUp}
+                    disabled={!newFollowUp.trim() || sendingFollowUp}
+                  >
+                    {sendingFollowUp ? (
+                      <ActivityIndicator size="small" color="#fff" />
+                    ) : (
+                      <Text style={styles.followUpSendBtnText}>Send Message</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          )}
 
         </View>
       </ScrollView>
@@ -1176,6 +1321,98 @@ const styles = StyleSheet.create({
     color: '#818cf8',
     fontSize: 14,
     fontWeight: '600',
+  },
+  followUpCard: {
+    padding: 20,
+    borderRadius: 20,
+    backgroundColor: 'rgba(30, 41, 59, 0.7)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+  },
+  followUpTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    marginBottom: 16,
+  },
+  followUpEmpty: {
+    color: '#64748b',
+    fontSize: 14,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    paddingVertical: 12,
+  },
+  followUpTimeline: {
+    gap: 12,
+    marginBottom: 20,
+  },
+  followUpBubble: {
+    padding: 14,
+    borderRadius: 16,
+    maxWidth: '90%',
+  },
+  followUpBubbleAdmin: {
+    backgroundColor: 'rgba(99, 102, 241, 0.15)',
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: 'rgba(99, 102, 241, 0.25)',
+  },
+  followUpBubbleMember: {
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    alignSelf: 'flex-end',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+  },
+  followUpBubbleHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+    gap: 12,
+  },
+  followUpSenderName: {
+    color: '#818cf8',
+    fontWeight: '700',
+    fontSize: 13,
+  },
+  followUpTime: {
+    color: '#64748b',
+    fontSize: 11,
+  },
+  followUpTextContent: {
+    color: '#f8fafc',
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  followUpInputContainer: {
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.08)',
+    paddingTop: 16,
+    gap: 12,
+  },
+  followUpInput: {
+    backgroundColor: 'rgba(15, 23, 42, 0.5)',
+    color: '#f8fafc',
+    borderRadius: 12,
+    padding: 12,
+    fontSize: 14,
+    minHeight: 80,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    textAlignVertical: 'top',
+  },
+  followUpSendBtn: {
+    backgroundColor: '#6366f1',
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  followUpSendBtnDisabled: {
+    backgroundColor: 'rgba(99, 102, 241, 0.5)',
+  },
+  followUpSendBtnText: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: 14,
   },
 });
 const lightTheme = StyleSheet.create({

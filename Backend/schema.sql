@@ -27,6 +27,8 @@ CREATE TABLE users (
     voice_support BOOLEAN DEFAULT FALSE,
     accept_terms BOOLEAN DEFAULT FALSE,
     profile_type VARCHAR(50) DEFAULT 'transparent',
+    role VARCHAR(50) DEFAULT 'MEMBER',
+    can_create_community BOOLEAN DEFAULT FALSE,
     registration_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_login TIMESTAMP
 );
@@ -177,6 +179,7 @@ ALTER TABLE communities ADD COLUMN petitions_enabled BOOLEAN DEFAULT TRUE;
 ALTER TABLE communities ADD COLUMN voting_enabled BOOLEAN DEFAULT TRUE;
 ALTER TABLE communities ADD COLUMN group_chat_enabled BOOLEAN DEFAULT FALSE;
 ALTER TABLE communities ADD COLUMN anonymous_enabled BOOLEAN DEFAULT FALSE;
+ALTER TABLE communities ADD COLUMN events_enabled BOOLEAN DEFAULT TRUE;
 
 -- =====================================================
 -- INDEXES FOR PERFORMANCE

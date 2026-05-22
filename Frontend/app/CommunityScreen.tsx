@@ -45,7 +45,12 @@ export default function CommunityScreen() {
   const route = useRoute<any>();
 
   // User info
-  const [currentUser, setCurrentUser] = useState<{ user_id: number | null; full_name: string }>({ user_id: null, full_name: 'Guest' });
+  const [currentUser, setCurrentUser] = useState<{
+    user_id: number | null;
+    full_name: string;
+    role?: string;
+    can_create_community?: boolean;
+  }>({ user_id: null, full_name: 'Guest', role: 'MEMBER', can_create_community: false });
 
   // Screen states
   const [activeTab, setActiveTab] = useState<'created' | 'joined'>('created');
@@ -59,13 +64,16 @@ export default function CommunityScreen() {
   const [newCommunityName, setNewCommunityName] = useState('');
   const [joinCode, setJoinCode] = useState('');
   const [description, setDescription] = useState('');
+  const [communityType, setCommunityType] = useState('Club');
 
   // Feature toggles
   const [complaintsEnabled, setComplaintsEnabled] = useState(true);
   const [petitionsEnabled, setPetitionsEnabled] = useState(true);
   const [votingEnabled, setVotingEnabled] = useState(true);
-  const [groupChatEnabled, setGroupChatEnabled] = useState(false);
-  const [anonymousEnabled, setAnonymousEnabled] = useState(false);
+  const [groupChatEnabled, setGroupChatEnabled] = useState(true);
+  const [eventsEnabled, setEventsEnabled] = useState(true);
+
+  const isAllowedToCreate = currentUser?.role === 'ADMIN' || currentUser?.role === 'HEAD' || currentUser?.can_create_community === true;
 
   const createdCommunities = communities.filter(c => c.role === 'HEAD' && !c.is_archived && c.status !== 'ARCHIVED');
   const joinedCommunities = communities.filter(c => c.role === 'MEMBER' && !c.is_archived && c.status !== 'ARCHIVED');
@@ -82,7 +90,12 @@ export default function CommunityScreen() {
           const token = await AsyncStorage.getItem('authToken');
           if (token) {
             const decodedToken: any = jwtDecode(token);
-            setCurrentUser({ user_id: decodedToken.user_id, full_name: decodedToken.full_name || decodedToken.email });
+            setCurrentUser({
+              user_id: decodedToken.user_id,
+              full_name: decodedToken.full_name || decodedToken.email,
+              role: decodedToken.role || 'MEMBER',
+              can_create_community: decodedToken.can_create_community || false
+            });
           }
         } catch (error) {
           console.error('Failed to load user data from AsyncStorage', error);
@@ -92,9 +105,41 @@ export default function CommunityScreen() {
     loadUserData();
   }, [route.params?.user]); // Re-run effect if route.params.user changes
 
+  // Synchronize latest user permissions from Backend profile endpoint
+  useEffect(() => {
+    const fetchLatestUserProfile = async () => {
+      try {
+        const token = await AsyncStorage.getItem('authToken');
+        if (!token) return;
+
+        const response = await fetch(`${BASE_URL}/profile`, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          }
+        });
+
+        if (response.ok) {
+          const profile = await response.json();
+          setCurrentUser(prev => ({
+            ...prev,
+            role: profile.role || 'MEMBER',
+            can_create_community: profile.can_create_community || false
+          }));
+        }
+      } catch (error) {
+        console.error('Failed to fetch latest user profile in CommunityScreen:', error);
+      }
+    };
+
+    if (currentUser?.user_id) {
+      fetchLatestUserProfile();
+    }
+  }, [currentUser?.user_id]);
+
   useEffect(() => {
     if (currentUser?.user_id) fetchCommunities(currentUser.user_id);
-  }, [currentUser]);
+  }, [currentUser?.user_id]);
 
   useFocusEffect(
     useCallback(() => {
@@ -195,6 +240,9 @@ export default function CommunityScreen() {
   // 🔹 Create Community
   async function handleCreateCommunity() {
     if (!currentUser?.user_id) return Alert.alert('Error', 'Please login first');
+    if (!isAllowedToCreate) {
+      return Alert.alert('Error', 'Only authorized admins can create communities.');
+    }
     if (!newCommunityName.trim()) return Alert.alert('Error', 'Enter a community name');
 
     const token = await AsyncStorage.getItem('authToken');
@@ -213,13 +261,13 @@ export default function CommunityScreen() {
         body: JSON.stringify({
           name: newCommunityName,
           description,
-          community_type: 'Club', // Assuming 'Club' as a default type, can be dynamic later
+          community_type: communityType,
           created_by: currentUser.user_id,
           complaints_enabled: complaintsEnabled,
           petitions_enabled: petitionsEnabled,
           voting_enabled: votingEnabled,
           group_chat_enabled: groupChatEnabled,
-          anonymous_enabled: anonymousEnabled
+          events_enabled: eventsEnabled
         })
       });
 
@@ -245,8 +293,8 @@ export default function CommunityScreen() {
       setComplaintsEnabled(true);
       setPetitionsEnabled(true);
       setVotingEnabled(true);
-      setGroupChatEnabled(false);
-      setAnonymousEnabled(false);
+      setGroupChatEnabled(true);
+      setEventsEnabled(true);
       setView('shareDetails');
       fetchCommunities(currentUser.user_id); // Refresh with current user's ID
     } catch (error: any) {
@@ -443,9 +491,11 @@ export default function CommunityScreen() {
             <TouchableOpacity onPress={() => setView('joinCommunity')} style={styles.headerButton}>
               <Text style={styles.headerButtonText}>Join</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => setView('create')} style={[styles.headerButton, styles.createHeaderButton]}>
-              <Text style={styles.createButtonText}>Create</Text>
-            </TouchableOpacity>
+            {isAllowedToCreate && (
+              <TouchableOpacity onPress={() => setView('create')} style={[styles.headerButton, styles.createHeaderButton]}>
+                <Text style={styles.createButtonText}>Create</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
 
@@ -462,7 +512,14 @@ export default function CommunityScreen() {
           <View style={styles.content}>
             {activeTab === 'created' && (
               createdCommunities.length === 0
-                ? <View style={styles.emptyState}><Text style={{ color: '#94a3b8' }}>No Created Communities</Text></View>
+                ? <View style={styles.emptyState}>
+                    <Text style={{ color: '#94a3b8', fontSize: 15, fontWeight: '600' }}>No Created Communities</Text>
+                    {!isAllowedToCreate && (
+                      <Text style={{ color: '#ef4444', marginTop: 10, fontSize: 13, fontWeight: '600', textAlign: 'center', paddingHorizontal: 16 }}>
+                        ⚠️ Only authorized admins can create communities.
+                      </Text>
+                    )}
+                  </View>
                 : createdCommunities.map((community, index) => (
                   <TouchableOpacity key={community.id} style={[styles.communityCard, index > 0 && styles.communityCardMargin]} onPress={() => openCommunityApp(community)}>
                     <Text style={styles.communityName}>{community.name}</Text>
@@ -517,6 +574,27 @@ export default function CommunityScreen() {
 
   // ================= CREATE COMMUNITY SCREEN =================
   if (view === 'create') {
+    if (!isAllowedToCreate) {
+      return (
+        <View style={styles.safeArea}>
+          <View style={[styles.container, { paddingTop: insets.top, flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0f172a' }]}>
+            <View style={styles.accessDeniedCard}>
+              <View style={styles.accessDeniedIconContainer}>
+                <Icon name="shield-off" size={48} color="#ef4444" />
+              </View>
+              <Text style={styles.accessDeniedTitle}>Access Denied</Text>
+              <Text style={styles.accessDeniedText}>
+                Only authorized admins can create communities. If you believe this is an error, please contact support or a head administrator.
+              </Text>
+              <TouchableOpacity onPress={() => setView('main')} style={styles.primaryButton}>
+                <Text style={styles.primaryButtonText}>Return to Main</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      );
+    }
+
     return (
       <View style={styles.safeArea}>
         <View
@@ -539,6 +617,32 @@ export default function CommunityScreen() {
             onChangeText={setNewCommunityName}
           />
 
+          <Text style={styles.label}>Community Type</Text>
+          <View style={styles.chipsContainer}>
+            {['Club', 'Apartment', 'Hostel', 'Organization', 'Neighborhood', 'School'].map((type) => {
+              const isSelected = communityType === type;
+              return (
+                <TouchableOpacity
+                  key={type}
+                  onPress={() => setCommunityType(type)}
+                  style={[
+                    styles.chip,
+                    isSelected ? styles.selectedChip : styles.unselectedChip
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.chipText,
+                      isSelected ? styles.selectedChipText : styles.unselectedChipText
+                    ]}
+                  >
+                    {type}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
           <Text style={styles.label}>Description</Text>
           <TextInput
             style={[styles.input, { height: 80 }]}
@@ -555,47 +659,23 @@ export default function CommunityScreen() {
               { title: 'Complaints', desc: 'Submit and track complaints', state: complaintsEnabled, set: setComplaintsEnabled },
               { title: 'Petitions', desc: 'Create or sign community petitions', state: petitionsEnabled, set: setPetitionsEnabled },
               { title: 'Voting', desc: 'Participate in tamper-proof voting', state: votingEnabled, set: setVotingEnabled },
-              { title: 'Group Chat', desc: 'Real-time chat between all members and admins', state: groupChatEnabled, set: setGroupChatEnabled },
-              { title: 'Anonymous Message', desc: 'Send anonymous messages within the community', state: anonymousEnabled, set: setAnonymousEnabled },
+              { title: 'Events', desc: 'Organize and manage community events', state: eventsEnabled, set: setEventsEnabled },
             ].map((item, i) => (
               <View key={i} style={styles.featureItem}>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.featureTitle}>{item.title}</Text>
                   <Text style={styles.featureDesc}>{item.desc}</Text>
                   <Text style={styles.featureStatus}>
-                    {item.title === 'Anonymous Message'
-                      ? 'Private'
-                      : item.title === 'Group Chat'
-                        ? (item.state ? 'Enabled' : 'Disabled')
-                        : (item.state ? 'Private' : 'Public')}
+                    {item.state ? 'Enabled' : 'Disabled'}
                   </Text>
                 </View>
-                {item.title === 'Anonymous Message' ? (
-                  <View style={styles.privateBadge}>
-                    <Text style={styles.privateBadgeText}>Private</Text>
-                  </View>
-                ) : item.title === 'Group Chat' ? (
-                  <TouchableOpacity
-                    style={[styles.chatButton, { backgroundColor: item.state ? '#10b981' : '#9ca3af' }]}
-                    onPress={() => {
-                      if (item.state) {
-                        navigation.navigate('ChatScreen', { communityId: selectedCommunity?.id });
-                      } else {
-                        Alert.alert('Chat Disabled', 'Group chat is currently disabled for this community.');
-                      }
-                    }}
-                  >
-                    <Text style={styles.chatButtonText}>Open Chat</Text>
-                  </TouchableOpacity>
-                ) : (
-                  <Switch
-                    trackColor={{ false: '#d1d5db', true: '#6366f1' }}
-                    thumbColor="#ffffff"
-                    ios_backgroundColor="#e5e7eb"
-                    onValueChange={item.set}
-                    value={item.state}
-                  />
-                )}
+                <Switch
+                  trackColor={{ false: '#d1d5db', true: '#6366f1' }}
+                  thumbColor="#ffffff"
+                  ios_backgroundColor="#e5e7eb"
+                  onValueChange={item.set}
+                  value={item.state}
+                />
               </View>
             ))}
           </View>
@@ -1105,5 +1185,79 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     fontWeight: '700',
+  },
+  accessDeniedCard: {
+    backgroundColor: 'rgba(30, 41, 59, 0.7)',
+    borderRadius: 24,
+    padding: 32,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.2)',
+    width: '90%',
+    maxWidth: 400,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+  },
+  accessDeniedIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.3)',
+  },
+  accessDeniedTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#ef4444',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  accessDeniedText: {
+    fontSize: 15,
+    color: '#94a3b8',
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 24,
+  },
+  chipsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 20,
+  },
+  chip: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  selectedChip: {
+    backgroundColor: '#6366f1',
+    borderColor: '#818cf8',
+  },
+  unselectedChip: {
+    backgroundColor: 'rgba(15, 23, 42, 0.4)',
+    borderColor: 'rgba(255,255,255,0.08)',
+  },
+  chipText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  selectedChipText: {
+    color: '#ffffff',
+    fontWeight: '700',
+  },
+  unselectedChipText: {
+    color: '#94a3b8',
   },
 });

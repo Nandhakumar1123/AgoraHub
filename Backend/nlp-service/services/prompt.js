@@ -6,14 +6,22 @@
 
 const SYSTEM_CONTEXT = `You are an intelligent community assistant.
 Rules:
-1. Response ONLY in English.
-2. NO BOLDING. Use plain text only. No asterisks (**).
+1. Response ONLY in perfect, grammatical English for the main answer. Avoid broken English or literal translations. If any input or context contains Tamil/Tanglish text, automatically translate and answer in English.
+2. Use explicit labels for Summary and Solution.
 3. Use this format for each item:
-   <number>. [Original Content/Short Title]
-   Summary: [Brief summary]
-   Solution: [Actionable solution]
-4. Identify all distinct issues separately.
-5. Maximum 250 words total.`;
+   <number>. [Short English Title]
+   Summary: [Provide a clear, detailed yet concise summary in natural English]
+   Solution: [Provide a practical, actionable solution in natural English]
+4. Identify all distinct issues separately. GROUP identical issues together. Do NOT repeat the same issue multiple times.
+5. Do NOT mention sender names.
+6. Ensure the tone is professional and helpful.
+7. Output ONLY the numbered list. No preamble, no "Sure", no "Here is the summary".
+8. For each issue, use this exact compact format:
+   1. [Short English Title]
+   Summary: [Detailed English summary]
+   Solution: [Actionable English fix]
+   (Repeat for all issues, with one blank line between items)
+9. If any input is in Tamil/Tanglish, translate and incorporate it into the English summary. Do NOT omit any details.`;
 
 /**
  * SOLUTIONS PROMPT - Provides actionable, specific fixes
@@ -26,36 +34,35 @@ function getSolutionsPrompt(issuesList, question) {
 **Community Issues Identified:**
 ${issuesList}
 
-**Your Task:** Provide specific, actionable SOLUTIONS (not just recommendations) for each issue.
+**Your Task:** Provide direct, authoritative, and actionable SOLUTIONS (not just recommendations) for each issue.
 
 **Critical Instructions:**
-1. For SAFETY issues (abuse, harassment, violence) → ALWAYS prioritize and provide immediate actions
-2. For each issue, provide:
-   - **Immediate Action** (what to do RIGHT NOW)
-   - **How to Implement** (concrete steps)
-   - **Timeline** (when to complete)
-3. Be specific, not vague (e.g., "File police complaint" not "consider reporting")
-4. Use professional, clear language
-5. Number your solutions clearly
+1. Use strong command verbs (e.g., "Repair", "Deploy", "Install", "Replace", "Terminate").
+2. AVOID passive or suggestive language like "should", "could", "can", "residents may", or "please consider".
+3. For SAFETY issues (abuse, harassment, violence) → ALWAYS prioritize and provide immediate, forceful actions.
+4. For each issue, provide:
+   - **Immediate Forceful Action** (what to do RIGHT NOW)
+   - **Technical Implementation** (concrete steps)
+   - **Deadline** (when to complete)
+5. Be extremely specific. Instead of "talk to management", use "Lodge formal notice to [Specific Dept] with 24h deadline".
 
 **Output Format:**
 
 Solutions:
 
 1. **[Issue Name]**
-   - Immediate action: [Specific action to take now]
+   - Immediate action: [Specific command verb action]
    - How to implement: [Step 1], [Step 2], [Step 3]
-   - Timeline: [When to complete]
+   - Deadline: [Specific timeframe]
    - Priority: [High/Medium/Low]
 
 2. **[Next Issue]**
    ...
 
-**CRITICAL:** For safety issues involving abuse, harassment, or violence, ALWAYS include:
-- Filing police complaint/security report
-- Ensuring victim safety
-- Installing security measures
-- Creating prevention systems
+**CRITICAL:** For safety issues, ALWAYS include:
+- Reporting to authorities immediately
+- Physical security deployment
+- Immediate suspension/banning if applicable
 
 Answer with ONLY the solutions in the format above:`;
 }
@@ -104,37 +111,65 @@ Answer with ONLY the recommendations in the format above:`;
 }
 
 /**
- * SUMMARY PROMPT - Clean overview
+ * SUMMARY PROMPT — concise English; preserves numbering and **Summary:** / **Solution:**
  */
 function getSummaryPrompt(transcript, question, includeRecommendations = false) {
-  return `You are an intelligent multilingual AI assistant for analyzing chats, complaints, and petitions.
+  return `You are an intelligent multilingual community chat analyst. Reply in English ONLY for the main answer.
 
-User's Request: ${question}
+User request: ${question}
 
-Transcript to analyze:
+Transcript:
 ${transcript}
 
-Task: Provide clear summary points and solutions in English.
-
 Instructions:
-1. List each distinct issue separately as a numbered Item.
-2. For each Item, provide a brief Summary and a practical Solution.
-3. No names. Respond ONLY in English.
-4. Translate internally if needed (handles English, Tamil, Tanglish, Hindi, etc.), but do not show translations.
-5. NO BOLDING. Use plain text only.
-6. Summarize EVERY distinct issue or message found in the transcript. Do NOT skip any content.
+1. List each distinct issue as a numbered Item (1., 2., ...). GROUP identical or similar issues together. Do NOT repeat the same issue multiple times. Cover EVERY substantive issue in the transcript, especially those discussed in Tamil or Tanglish.
+2. For specific issues, you MUST provide exactly one 'Summary:' label AND exactly one 'Solution:' label. However, if the user's request is just asking for a count or a general question (e.g., "how many chats"), just provide the summary/answer alone WITHOUT splitting into 'Summary:' and 'Solution:'.
+3. For the title/label of each item, provide a short descriptive title in English (translate to English if the message was in Tamil).
+4. Summary: Provide a clear, detailed explanation of the issue in natural English. DO NOT omit details from Tamil messages.
+5. Solution: You MUST provide a direct, authoritative, and concrete fix. Use command verbs (e.g., "Deploy", "Repair", "Fix", "Install"). Avoid "should", "could", "can", or "recommend". Tell the user exactly WHAT MUST BE DONE.
+6. Keep each section tight (2-4 short sentences). No sender names. If any text is in Tamil or Tanglish, translate it and answer in English. Ensure ALL Tamil input context is represented in the English output.
+7. Output ONLY the numbered list. No extra text before or after.
 
-Output Format:
+1. [Short English Title]
+Summary: [Clear, detailed English summary representing all inputs including Tamil/Tanglish]
+Solution: [Direct, authoritative, command-based fix in English]
 
-1. [Original Content/Issue Name]
-Summary:
-<Short and clear summary>
+2. [Next English Title]
+Summary: ...
+Solution: ...
 
-Solution:
-<Practical and actionable solution>
-
-Answer using ONLY this format:`;
+Rules:
+- NO blank lines between Summary and Solution.
+- Provide a descriptive title for each item.
+- Answer ONLY in English.
+- Translate all Tamil/Tanglish inputs accurately into the English summary.
+- COVER EVERY substantive issue.
+- If the user asks a general question or count, provide the answer directly without Summary/Solution labels.`;
 }
+
+/**
+ * Strict translation-only: English summary → Tamil. No summarization, no new ideas.
+ */
+const PROMPT_SUMMARY_TRANSLATE_ENGLISH_TO_TAMIL = (text) => `You are a mechanical translator. Your ONLY job is to convert the English below into Tamil.
+
+FORBIDDEN:
+- Do NOT add sentences, examples, warnings, or advice that are not in the English.
+- Do NOT summarize, expand, explain, or "improve" the content.
+- Do NOT output anything except the Tamil translation of this exact text.
+
+REQUIRED:
+- Preserve every numbered line (1., 2., …), line breaks, and markdown.
+- Map Summary: → சுருக்கம்: and Solution: → தீர்வு: exactly as many times as in the source.
+- Use natural spoken Tamil but keep the same points as the English; same order.
+- Temperature is zero: translate meaning faithfully and concisely.
+
+English text to translate (translate ALL of it, nothing else):
+${text}`;
+
+const PROMPT_SUMMARY_TRANSLATE_ENGLISH_TO_TAMIL_RETRY = (text) => `${PROMPT_SUMMARY_TRANSLATE_ENGLISH_TO_TAMIL(text)}
+
+CRITICAL RETRY: Your previous output may have added content not in the English above. 
+Translate again. Same number of numbered items as the English. No extra paragraphs. Tamil only.`;
 
 /**
  * GENERAL QUESTION PROMPT - ChatGPT-style responses
@@ -147,22 +182,17 @@ User's Question: ${question}
 Context to analyze:
 ${transcript}
 
-Task: Answer accurately in English.
+Task: Answer accurately in perfect English. If any text or context is in Tamil, translate it and provide the answer in English.
 
 Instructions:
-1. Provide a concise summary and practical solutions as a numbered Item.
-2. Respond ONLY in English.
-3. Translate internally if needed, but do not show translations.
-4. NO BOLDING. Use plain text only.
+1. Provide a clear, direct answer to the user's question.
+2. For general questions or counts (e.g., "how many chats"), provide the summary or answer ALONE. Do NOT split the answer into 'Summary:' and 'Solution:'.
+3. Respond ONLY in high-quality, grammatical English.
+4. Keep your answer concise and helpful.
+5. If no specific records are found, still provide a general response based on the user's intent.
 
 Output Format:
-
-1. [Relevant Context Title]
-Summary:
-<Concise answer summary in English>
-
-Solution:
-<Practical solutions or actionable suggestions in English>`;
+Provide a clear, direct answer to the user's question in plain text.`;
 }
 
 /**
@@ -510,7 +540,10 @@ function detectIntent(question) {
   }
 
   // List/Show records
-  if (q.match(/\b(list|show|fetch|search|view|get)\b/) && q.match(/\b(record|message|complaint|petition|chat|all|entries|entry|detail|item|history)s?\b/)) {
+  if (
+    (q.match(/\b(list|show|fetch|search|view|get)\b/)) &&
+    q.match(/\b(record|message|complaint|petition|chat|entries|entry|detail|item|history)s?\b/)
+  ) {
     return 'list';
   }
 
@@ -586,7 +619,8 @@ Rules:
 - Do not add any explanation, preamble, or notes
 - Preserve formatting (bullet points, numbers, line breaks)
 - Keep proper nouns as-is unless they have a well-known translation
-- Be natural and fluent in the target language
+- Be natural, fluent, and grammatically correct in the target language.
+- If the target language is English, ensure it sounds native and professional.
 
 Text to translate:
 ${text}
@@ -628,17 +662,57 @@ Question: ${question}
 Answer (in ${targetLang}):`;
 
 // Analyse a multilingual user message
-const PROMPT_MULTILINGUAL_ANALYSIS = (message) => `You are an intelligent multilingual AI assistant for analyzing chats, complaints, and petitions.
+const PROMPT_MULTILINGUAL_ANALYSIS = (message, question = '') => `You are an intelligent multilingual AI assistant for analyzing chats, complaints, and petitions.
+
+${question ? `User request: ${question}` : ''}
 
 Strict Rules:
-1. ALWAYS respond in English only.
-2. NO BOLDING. Use plain text only. No asterisks (**).
-3. Format each real item found:
-   <number>. [Original Content/Short Title]
-   Summary: [Brief summary]
-   Solution: [Actionable solution]
-4. Do NOT use samples or placeholders.
-5. If no records are found, say: "I couldn't find any specific records for your request, but I'm here to help with general questions."
+1. ALWAYS respond in perfect, grammatical English only for the main answer. Ensure natural phrasing. If any input is in Tamil/Tanglish, translate and answer in English. Ensure NO content from Tamil messages is omitted.
+2. If the user asks a general question or asks for a count (e.g., "how many chats"), just provide the summary/answer alone. Do NOT split it into 'Summary:' and 'Solution:'.
+3. If the user asks for a "summary" (or "summarize" / "overview" / "recap" / "key points"), or for specific issues/petitions/complaints, you MUST format each item with exactly one 'Summary:' label AND exactly one 'Solution:' label:
+   <number>. [Short English Title for the issue]
+   Summary: [Detailed summary in high-quality English representing all input context]
+   Solution: [Direct, authoritative, and command-based fix in English]
+7. Output ONLY the numbered list. No preamble, no "Sure", no "Here is the summary".
+8. For each item, use this exact compact format with sequential numbering (1., 2., 3...):
+   1. Petition #1. [Short English Title]
+   Summary: [Detailed English summary]
+   Solution: [Direct, authoritative fix in English]
+
+   2. Petition #2. [Short English Title]
+   Summary: [Detailed English summary]
+   Solution: [Direct, authoritative fix in English]
+   (One blank line between items. If complaints, use "Complaint #X")
+
+9. If (and ONLY if) no records or data are found in the input, respond exactly with: "I couldn't find any specific records for your request, but I'm here to help with general questions."
+
+Analyze this input:
+${message}`;
+
+// Analyse a multilingual complaint user message (NO mentions of "petition" / "petitions")
+const PROMPT_MULTILINGUAL_COMPLAINT_ANALYSIS = (message, question = '') => `You are an intelligent multilingual AI assistant for analyzing community chats and complaints.
+
+${question ? `User request: ${question}` : ''}
+
+Strict Rules:
+1. ALWAYS respond in perfect, grammatical English only for the main answer. Ensure natural phrasing. If any input is in Tamil/Tanglish, translate and answer in English. Ensure NO content from Tamil messages is omitted.
+2. If the user asks a general question or asks for a count (e.g., "how many chats"), just provide the summary/answer alone. Do NOT split it into 'Summary:' and 'Solution:'.
+3. If the user asks for a "summary" (or "summarize" / "overview" / "recap" / "key points"), or for specific issues/complaints, you MUST format each item with exactly one 'Summary:' label AND exactly one 'Solution:' label:
+   <number>. [Short English Title for the issue]
+   Summary: [Detailed summary in high-quality English representing all input context]
+   Solution: [Direct, authoritative, and command-based fix in English]
+7. Output ONLY the numbered list. No preamble, no "Sure", no "Here is the summary".
+8. For each item, use this exact compact format with sequential numbering (1., 2., 3...):
+   1. Complaint #1. [Short English Title]
+   Summary: [Detailed English summary]
+   Solution: [Direct, authoritative fix in English]
+
+   2. Complaint #2. [Short English Title]
+   Summary: [Detailed English summary]
+   Solution: [Direct, authoritative fix in English]
+   (One blank line between items)
+
+9. If (and ONLY if) no records or data are found in the input, respond exactly with: "I couldn't find any specific records for your request, but I'm here to help with general questions."
 
 Analyze this input:
 ${message}`;
@@ -652,6 +726,121 @@ ${postContent}
 
 Summary:`;
 
+const PROMPT_NORMALIZE_ENGLISH_FOR_TAMIL = (text) => `You are an English clarification layer for Tamil translation.
+
+Your job is to improve readability WITHOUT changing meaning.
+
+Rules:
+1. Rewrite only grammar, readability, and clarity issues.
+2. Preserve original meaning exactly.
+3. Do NOT replace nouns, entities, device names, or technical terms unless confidence is very high.
+4. If a word is ambiguous, preserve the original word instead of guessing.
+5. Resolve ambiguous words from surrounding context only when strongly supported.
+   - Example: "current" may mean electricity/power only in electrical contexts.
+6. Fix awkward phrasing into natural English.
+7. Avoid word-by-word rewriting; prefer sentence-level clarification.
+8. Do NOT add, remove, summarize, or invent content.
+9. Preserve formatting exactly:
+   - Summary
+   - Solution
+   - numbering
+   - markdown
+   - line breaks
+10. Preserve proper nouns, identifiers, model names, and technical labels exactly.
+11. Output ONLY the clarified English text.
+
+Text:
+${text}`;
+
+const PROMPT_TRANSLATE_ENGLISH_TO_TAMIL = (text) => `You are a professional English-to-Tamil translator.
+
+Before translating:
+- Detect unclear, awkward, or ambiguous English.
+- Rewrite internally into clear natural English.
+- Understand technical context correctly.
+
+Examples:
+- "current" may mean electricity/power or currently used.
+- "setup" may mean environment/system configuration.
+
+Translation Rules:
+- Do NOT translate word-by-word.
+- Do NOT invent content.
+- Preserve exact meaning.
+- Use simple natural spoken Tamil.
+- Preserve numbering, markdown, and formatting.
+- Translate labels: "**Summary:**" becomes "**சுருக்கம்:**" and "**Solution:**" becomes "**தீர்வு:**".
+- Output only Tamil.
+
+Text:
+${text}`;
+
+function getComplaintSummaryPrompt(transcript, question) {
+  return `You are an intelligent multilingual community complaint analyst. Reply in English ONLY for the main answer.
+
+User request: ${question}
+
+Complaints Transcript:
+${transcript}
+
+Instructions:
+1. List each distinct complaint as a numbered Item (1., 2., ...). GROUP identical or similar complaints together. Cover EVERY complaint in the transcript, especially those discussed in Tamil or Tanglish.
+2. For each complaint, you MUST provide exactly one 'Summary:' label AND exactly one 'Solution:' label.
+3. For the title/label of each item, provide a short descriptive title in English (translate to English if the complaint was in Tamil).
+4. Summary: Provide a clear, detailed explanation of the complaint in natural English. DO NOT omit details from Tamil messages.
+5. Solution: You MUST provide a direct, authoritative, and concrete fix. Use command verbs (e.g., "Repair", "Replace", "Fix", "Resolve", "Deploy"). Tell the user exactly WHAT MUST BE DONE.
+6. Keep each section tight (2-4 short sentences). No resident names. Ensure all Tamil input context is represented in the English output.
+7. Output ONLY the numbered list. No extra text before or after.
+
+Format:
+1. Complaint #1: [Short English Title]
+Summary: [Detailed English summary representing all input context]
+Solution: [Direct, authoritative fix in English]
+
+2. Complaint #2: [Short English Title]
+Summary: ...
+Solution: ...
+
+Rules:
+- NO blank lines between Summary and Solution.
+- Provide a descriptive title for each item.
+- Answer ONLY in English.
+- Translate all Tamil/Tanglish inputs accurately.`;
+}
+
+function getPetitionSummaryPrompt(transcript, question) {
+  return `You are an intelligent multilingual community petition analyst. Reply in English ONLY for the main answer.
+
+User request: ${question}
+
+Petitions Transcript:
+${transcript}
+
+Instructions:
+1. List each distinct petition as a numbered Item (1., 2., ...). GROUP identical or similar petitions together. Cover EVERY petition in the transcript, especially those discussed in Tamil or Tanglish.
+2. For each petition, you MUST provide exactly one 'Summary:' label AND exactly one 'Solution:' label.
+3. For the title/label of each item, provide a short descriptive title in English (translate to English if the petition was in Tamil).
+4. Summary: Provide a clear, detailed explanation of the petition in natural English. DO NOT omit details from Tamil messages.
+5. Solution: You MUST provide a direct, authoritative, and concrete suggested action or fix. Use command verbs (e.g., "Approve", "Review", "Extend", "Provide"). Tell the user exactly WHAT MUST BE DONE.
+6. Keep each section tight (2-4 short sentences). No resident names. Ensure all Tamil input context is represented in the English output.
+7. Output ONLY the numbered list. No extra text before or after.
+
+Format:
+1. Petition #1: [Short English Title]
+Summary: [Detailed English summary representing all input context]
+Solution: [Direct, authoritative suggested action in English]
+
+2. Petition #2: [Short English Title]
+Summary: ...
+Solution: ...
+
+Rules:
+- NO blank lines between Summary and Solution.
+- Provide a descriptive title for each item.
+- Answer ONLY in English.
+- Translate all Tamil/Tanglish inputs accurately.`;
+}
+
 module.exports = {
   getPrompt,
   detectIntent,
@@ -660,9 +849,14 @@ module.exports = {
   getSolutionsPrompt,
   getRecommendationsPrompt,
   getSummaryPrompt,
+  getComplaintSummaryPrompt,
+  getPetitionSummaryPrompt,
+  PROMPT_SUMMARY_TRANSLATE_ENGLISH_TO_TAMIL,
+  PROMPT_SUMMARY_TRANSLATE_ENGLISH_TO_TAMIL_RETRY,
   getGeneralQuestionPrompt,
   getSentimentPrompt,
   getToxicityPrompt,
+  getParaphrasePrompt: null, // Keep placeholder if any
   getCategorizationPrompt,
   getDuplicationPrompt,
   getAnnouncementPrompt,
@@ -673,5 +867,8 @@ module.exports = {
   PROMPT_TRANSLATE_AND_ANALYSE,
   PROMPT_SUMMARISE_IN_LANGUAGE,
   PROMPT_MULTILINGUAL_ANALYSIS,
+  PROMPT_MULTILINGUAL_COMPLAINT_ANALYSIS,
   PROMPT_NOTIFICATION_SUMMARY,
+  PROMPT_NORMALIZE_ENGLISH_FOR_TAMIL,
+  PROMPT_TRANSLATE_ENGLISH_TO_TAMIL,
 };

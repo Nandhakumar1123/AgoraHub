@@ -47,7 +47,7 @@ export default function PollVoteScreen() {
     if (!communityId || !pollId) {
         return (
             <View style={[styles.centered, { paddingTop: insets.top }]}>
-                <Text style={styles.err}>Missing poll information.</Text>
+                <Text style={styles.err}>Missing voting information.</Text>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
                     <Text style={styles.back}>Go back</Text>
                 </TouchableOpacity>
@@ -62,7 +62,7 @@ export default function PollVoteScreen() {
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
                     <Text style={styles.backArrow}>←</Text>
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Poll</Text>
+                <Text style={styles.headerTitle}>Vote</Text>
                 <View style={{ width: 40 }} />
             </View>
             <ScrollView

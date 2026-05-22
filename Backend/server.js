@@ -16,7 +16,7 @@ const { redis } = require('./nlp-service/config/redis');
 const { preloadModels } = require('./nlp-service/services/nlp.service');
 const { moderateContent: nlpModerateContent } = require('./nlp-service/services/moderation.service');
 const { analyzeContentWithLLM } = require('./nlp-service/services/content-analysis.service');
-const { queryOllama, generateNotificationSummary } = require('./nlp-service/services/rag.service');
+const { queryOllama, generateNotificationSummary, validateOllamaModels } = require('./nlp-service/services/rag.service');
 console.log('moderateContent is:', nlpModerateContent);
 
 // Import NLP routes
@@ -122,7 +122,8 @@ function generateToken(user) {
       full_name: user.full_name,
       email: user.email,
       profile_type: user.profile_type,
-      role: user.role || 'user',
+      role: user.role || 'MEMBER',
+      can_create_community: user.can_create_community || false,
       communityId: user.community_id || null,
     },
     JWT_SECRET,
@@ -156,9 +157,9 @@ async function registerUser(
 
   const result = await pool.query(
     `INSERT INTO users 
-     (full_name, email, mobile_number, password_hash, preferred_language, voice_support, accept_terms, profile_type)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
-     RETURNING user_id, full_name, email, profile_type, registration_date`,
+     (full_name, email, mobile_number, password_hash, preferred_language, voice_support, accept_terms, profile_type, role, can_create_community)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+     RETURNING user_id, full_name, email, profile_type, role, can_create_community, registration_date`,
     [
       fullName,
       email,
@@ -168,6 +169,8 @@ async function registerUser(
       voiceSupport || false,
       acceptTerms || false,
       profileType,
+      'MEMBER',
+      false,
     ]
   );
   return result.rows[0];
@@ -363,7 +366,7 @@ app.post("/api/login", async (req, res) => {
 
     const trimmed = String(emailOrUsername).trim();
     const userResult = await pool.query(
-      `SELECT user_id, full_name, email, password_hash, profile_type
+      `SELECT user_id, full_name, email, password_hash, profile_type, role, can_create_community
        FROM users
        WHERE LOWER(TRIM(email)) = LOWER($1) OR LOWER(TRIM(full_name)) = LOWER($1)`,
       [trimmed]
@@ -396,6 +399,8 @@ app.post("/api/login", async (req, res) => {
         full_name: user.full_name,
         email: user.email,
         profile_type: user.profile_type,
+        role: user.role,
+        can_create_community: user.can_create_community,
       },
     });
   } catch (error) {
@@ -415,7 +420,7 @@ app.get("/api/profile", authenticateToken, async (req, res) => {
     
     // Fetch from users and user_profiles (if exists)
     const result = await pool.query(
-      `SELECT u.user_id, u.full_name, u.email, u.mobile_number, u.profile_type, 
+      `SELECT u.user_id, u.full_name, u.email, u.mobile_number, u.profile_type, u.role, u.can_create_community,
               up.bio, up.profile_image, up.description
        FROM users u
        LEFT JOIN user_profiles up ON u.user_id = up.user_id
@@ -641,13 +646,72 @@ app.post("/api/create_community", authenticateToken, async (req, res) => {
       complaints_enabled = true,
       petitions_enabled = true,
       voting_enabled = true,
-      group_chat_enabled = false,
+      events_enabled = true,
       anonymous_enabled = false,
     } = req.body;
+    const group_chat_enabled = true; // Group Chat must always be enabled by default and cannot be disabled
     const created_by = req.user.user_id;
 
-    if (!name || !community_type || !created_by) {
-      return res.status(400).json({ error: "Missing required fields" });
+    if (!created_by) {
+      return res.status(401).json({ error: "Unauthorized: Missing user authentication context" });
+    }
+
+    // 1. Role-Based Restriction and JWT Enforcement (database lookup to verify latest permissions)
+    const userQuery = await pool.query(
+      `SELECT role, can_create_community FROM users WHERE user_id = $1`,
+      [created_by]
+    );
+
+    if (userQuery.rows.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const { role, can_create_community } = userQuery.rows[0];
+
+    // Permit only ADMIN or HEAD, or if can_create_community is true
+    const isAuthorized = role === 'ADMIN' || role === 'HEAD' || can_create_community === true;
+    if (!isAuthorized) {
+      return res.status(403).json({ error: "You are not authorized to create a community" });
+    }
+
+    // 2. Input Validation Rules
+    if (!name || typeof name !== 'string' || !name.trim()) {
+      return res.status(400).json({ error: "Community name is required and must be a non-empty text" });
+    }
+    if (name.length > 255) {
+      return res.status(400).json({ error: "Community name cannot exceed 255 characters" });
+    }
+
+    if (description && (typeof description !== 'string' || description.length > 1000)) {
+      return res.status(400).json({ error: "Description must be a valid text up to 1000 characters" });
+    }
+
+    if (!community_type || typeof community_type !== 'string' || !community_type.trim()) {
+      return res.status(400).json({ error: "Community type is required and must be a valid text" });
+    }
+    if (community_type.length > 50) {
+      return res.status(400).json({ error: "Community type cannot exceed 50 characters" });
+    }
+
+    const allowedTypes = ['Hostel', 'Apartment', 'Club', 'Organization', 'Neighborhood', 'School'];
+    const formattedType = community_type.trim();
+    if (!allowedTypes.some(type => type.toLowerCase() === formattedType.toLowerCase())) {
+      return res.status(400).json({ 
+        error: `Invalid community type. Allowed types are: ${allowedTypes.join(', ')}` 
+      });
+    }
+
+    // Normalize type case to standard array capitalization
+    const matchedType = allowedTypes.find(type => type.toLowerCase() === formattedType.toLowerCase());
+
+    // 3. Prevent duplicate community names per user
+    const duplicateCheck = await pool.query(
+      `SELECT 1 FROM communities WHERE LOWER(TRIM(name)) = LOWER(TRIM($1)) AND created_by = $2`,
+      [name, created_by]
+    );
+
+    if (duplicateCheck.rows.length > 0) {
+      return res.status(400).json({ error: "You have already created a community with this name" });
     }
 
     let code;
@@ -660,12 +724,12 @@ app.post("/api/create_community", authenticateToken, async (req, res) => {
     const communityResult = await pool.query(
       `INSERT INTO communities 
       (code, name, description, community_type, created_by,
-       complaints_enabled, petitions_enabled, voting_enabled, group_chat_enabled, anonymous_enabled)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+       complaints_enabled, petitions_enabled, voting_enabled, group_chat_enabled, anonymous_enabled, events_enabled)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
        RETURNING community_id, code, name, description, community_type,
-                 complaints_enabled, petitions_enabled, voting_enabled, group_chat_enabled, anonymous_enabled, created_at`,
-      [code, name, description || "", community_type, created_by,
-        complaints_enabled, petitions_enabled, voting_enabled, group_chat_enabled, anonymous_enabled]
+                 complaints_enabled, petitions_enabled, voting_enabled, group_chat_enabled, anonymous_enabled, events_enabled, created_at`,
+      [code, name.trim(), description ? description.trim() : "", matchedType, created_by,
+        complaints_enabled, petitions_enabled, voting_enabled, group_chat_enabled, anonymous_enabled, events_enabled]
     );
 
     const community = communityResult.rows[0];
@@ -697,6 +761,12 @@ app.get("/api/community/:code", async (req, res) => {
          c.code,
          c.name,
          c.description,
+         c.complaints_enabled,
+         c.petitions_enabled,
+         c.voting_enabled,
+         c.group_chat_enabled,
+         c.anonymous_enabled,
+         c.events_enabled,
          u.full_name AS head_name,
          c.created_at
        FROM communities c
@@ -753,6 +823,12 @@ app.post("/api/join_community", authenticateToken, async (req, res) => {
          c.code,
          c.name,
          c.description,
+         c.complaints_enabled,
+         c.petitions_enabled,
+         c.voting_enabled,
+         c.group_chat_enabled,
+         c.anonymous_enabled,
+         c.events_enabled,
          u.full_name AS head_name,
          c.created_at
        FROM communities c
@@ -875,13 +951,19 @@ app.get("/api/created_communities/:user_id", authenticateToken, async (req, res)
          c.code,
          c.name,
          c.description,
+         c.complaints_enabled,
+         c.petitions_enabled,
+         c.voting_enabled,
+         c.group_chat_enabled,
+         c.anonymous_enabled,
+         c.events_enabled,
          COUNT(DISTINCT m_all.user_id) AS member_count,
          c.created_at
        FROM communities c
        LEFT JOIN memberships m_all ON c.community_id = m_all.community_id AND m_all.status = 'ACTIVE'
        JOIN memberships m_user ON c.community_id = m_user.community_id
        WHERE m_user.user_id = $1 AND m_user.role = 'HEAD' AND m_user.status = 'ACTIVE'
-       GROUP BY c.community_id, c.code, c.name, c.description, c.created_at
+       GROUP BY c.community_id, c.code, c.name, c.description, c.complaints_enabled, c.petitions_enabled, c.voting_enabled, c.group_chat_enabled, c.anonymous_enabled, c.events_enabled, c.created_at
        ORDER BY c.created_at DESC`,
       [authenticated_user_id]
     );
@@ -928,13 +1010,19 @@ app.get("/api/joined_communities/:user_id", authenticateToken, async (req, res) 
          c.code,
          c.name,
          c.description,
+         c.complaints_enabled,
+         c.petitions_enabled,
+         c.voting_enabled,
+         c.group_chat_enabled,
+         c.anonymous_enabled,
+         c.events_enabled,
          COUNT(DISTINCT m_all.user_id) AS member_count,
          c.created_at
        FROM communities c
        LEFT JOIN memberships m_all ON c.community_id = m_all.community_id AND m_all.status = 'ACTIVE'
        JOIN memberships m_user ON c.community_id = m_user.community_id
        WHERE m_user.user_id = $1 AND m_user.role = 'MEMBER' AND m_user.status = 'ACTIVE'
-       GROUP BY c.community_id, c.code, c.name, c.description, c.created_at
+       GROUP BY c.community_id, c.code, c.name, c.description, c.complaints_enabled, c.petitions_enabled, c.voting_enabled, c.group_chat_enabled, c.anonymous_enabled, c.events_enabled, c.created_at
        ORDER BY c.created_at DESC`,
       [authenticated_user_id]
     );
@@ -981,6 +1069,12 @@ app.get("/api/archived_communities/:user_id", authenticateToken, async (req, res
          c.code,
          c.name,
          c.description,
+         c.complaints_enabled,
+         c.petitions_enabled,
+         c.voting_enabled,
+         c.group_chat_enabled,
+         c.anonymous_enabled,
+         c.events_enabled,
          COUNT(DISTINCT m_all.user_id) AS member_count,
          c.created_at,
          c.is_archived,
@@ -989,7 +1083,7 @@ app.get("/api/archived_communities/:user_id", authenticateToken, async (req, res
        LEFT JOIN memberships m_all ON c.community_id = m_all.community_id AND m_all.status = 'ACTIVE'
        JOIN memberships m_user ON c.community_id = m_user.community_id
        WHERE m_user.user_id = $1 AND m_user.status = 'ARCHIVED'
-       GROUP BY c.community_id, c.code, c.name, c.description, c.created_at, c.is_archived, m_user.status
+       GROUP BY c.community_id, c.code, c.name, c.description, c.complaints_enabled, c.petitions_enabled, c.voting_enabled, c.group_chat_enabled, c.anonymous_enabled, c.events_enabled, c.created_at, c.is_archived, m_user.status
        ORDER BY c.created_at DESC`,
       [authenticated_user_id]
     );
@@ -1377,9 +1471,10 @@ app.put("/api/update_community_features/:id", authenticateToken, async (req, res
       complaints_enabled,
       petitions_enabled,
       voting_enabled,
-      group_chat_enabled,
       anonymous_enabled,
+      events_enabled,
     } = req.body;
+    const group_chat_enabled = true; // Group Chat must always be enabled and cannot be disabled
 
     const communityCheck = await pool.query(
       `SELECT created_by FROM communities WHERE community_id = $1`,
@@ -1400,9 +1495,10 @@ app.put("/api/update_community_features/:id", authenticateToken, async (req, res
            petitions_enabled = $2,
            voting_enabled = $3,
            group_chat_enabled = $4,
-           anonymous_enabled = $5
-       WHERE community_id = $6`,
-      [complaints_enabled, petitions_enabled, voting_enabled, group_chat_enabled, anonymous_enabled, id]
+           anonymous_enabled = $5,
+           events_enabled = $6
+       WHERE community_id = $7`,
+      [complaints_enabled, petitions_enabled, voting_enabled, group_chat_enabled, anonymous_enabled, events_enabled, id]
     );
 
     res.json({ message: "✅ Community feature settings updated successfully" });
@@ -1746,13 +1842,16 @@ app.get('/api/communities/:communityId/messages', authenticateToken, async (req,
               u.full_name,
               u.profile_type,
               m.role,
-              (SELECT COUNT(*) FROM chat_messages WHERE parent_message_id = cm.message_id) as reply_count
+              (SELECT COUNT(*) FROM chat_messages WHERE parent_message_id = cm.message_id) as reply_count,
+              cm.reaction_count,
+              mr.emoji as user_reaction
           FROM chat_messages cm
           LEFT JOIN users u ON cm.sender_id = u.user_id
           LEFT JOIN memberships m ON u.user_id = m.user_id AND m.community_id = cm.community_id
+          LEFT JOIN message_reactions mr ON cm.message_id = mr.message_id AND mr.user_id = $2
           WHERE cm.community_id = $1
       `;
-    const params = [communityId];
+    const params = [communityId, req.user.user_id];
 
     if (before) {
       query += ` AND cm.created_at < $2`;
@@ -1769,7 +1868,8 @@ app.get('/api/communities/:communityId/messages', authenticateToken, async (req,
       message_id: parseInt(msg.message_id),
       community_id: parseInt(msg.community_id),
       sender_id: msg.sender_id ? parseInt(msg.sender_id) : null,
-      reply_count: parseInt(msg.reply_count || 0)
+      reply_count: parseInt(msg.reply_count || 0),
+      reaction_count: msg.reaction_count || {}
     }));
 
     res.json(messages.reverse());
@@ -1909,6 +2009,133 @@ app.delete('/api/communities/:communityId/messages/:messageId', authenticateToke
     res.status(500).json({ error: 'Failed to delete message' });
   }
 });
+
+// React to a message
+app.post('/api/communities/:communityId/messages/:messageId/react', authenticateToken, async (req, res) => {
+  try {
+    const communityId = parseInt(req.params.communityId, 10);
+    const messageId = parseInt(req.params.messageId, 10);
+    const userId = req.user.user_id;
+    const { emoji } = req.body;
+
+    if (isNaN(communityId) || isNaN(messageId) || !emoji) {
+      return res.status(400).json({ error: 'Invalid parameters' });
+    }
+
+    if (emoji !== '👍' && emoji !== '👎') {
+      return res.status(400).json({ error: 'Only 👍 and 👎 reactions are allowed' });
+    }
+
+    // Validate membership
+    const membershipCheck = await pool.query(
+      `SELECT role FROM memberships
+       WHERE user_id = $1 AND community_id = $2 AND status = 'ACTIVE'`,
+      [userId, communityId]
+    );
+    if (membershipCheck.rows.length === 0) {
+      return res.status(403).json({ error: 'Not a community member' });
+    }
+
+    // Toggle reaction
+    const existing = await pool.query(
+      `SELECT reaction_id FROM message_reactions 
+       WHERE message_id = $1 AND user_id = $2 AND emoji = $3`,
+      [messageId, userId, emoji]
+    );
+
+    if (existing.rows.length > 0) {
+      // Remove it
+      await pool.query(`DELETE FROM message_reactions WHERE reaction_id = $1`, [existing.rows[0].reaction_id]);
+    } else {
+      // Add it (and remove the opposite one if it exists)
+      const opposite = emoji === '👍' ? '👎' : '👍';
+      await pool.query(`DELETE FROM message_reactions WHERE message_id = $1 AND user_id = $2 AND emoji = $3`, [messageId, userId, opposite]);
+      await pool.query(
+        `INSERT INTO message_reactions (message_id, user_id, emoji) VALUES ($1, $2, $3)`,
+        [messageId, userId, emoji]
+      );
+    }
+
+    // Recalculate counts
+    const countsResult = await pool.query(
+      `SELECT emoji, COUNT(*) as count 
+       FROM message_reactions 
+       WHERE message_id = $1 
+       GROUP BY emoji`,
+      [messageId]
+    );
+
+    const reaction_count = {};
+    countsResult.rows.forEach(row => {
+      reaction_count[row.emoji] = parseInt(row.count, 10);
+    });
+
+    // Update message
+    await pool.query(
+      `UPDATE chat_messages SET reaction_count = $1 WHERE message_id = $2`,
+      [JSON.stringify(reaction_count), messageId]
+    );
+
+    // Get updated message data to broadcast
+    const updatedMsgResult = await pool.query(
+      `SELECT 
+          cm.*, 
+          u.full_name, 
+          u.profile_type, 
+          m.role,
+          (SELECT emoji FROM message_reactions WHERE message_id = cm.message_id AND user_id = $2 LIMIT 1) as user_reaction
+       FROM chat_messages cm
+       LEFT JOIN users u ON cm.sender_id = u.user_id
+       LEFT JOIN memberships m ON u.user_id = m.user_id AND m.community_id = cm.community_id
+       WHERE cm.message_id = $1`,
+      [messageId, userId]
+    );
+
+    const msg = updatedMsgResult.rows[0];
+    const fullMessage = {
+      ...msg,
+      message_id: parseInt(msg.message_id, 10),
+      community_id: parseInt(msg.community_id, 10),
+      sender_id: msg.sender_id ? parseInt(msg.sender_id, 10) : null,
+      reaction_count: msg.reaction_count || {},
+    };
+
+    io.to(`community_${communityId}`).emit('message_updated', fullMessage);
+    res.json(fullMessage);
+
+  } catch (error) {
+    console.error('❌ Error reacting to message:', error);
+    res.status(500).json({ error: 'Failed to react to message' });
+  }
+});
+
+// Get users who reacted to a message
+app.get('/api/communities/:communityId/messages/:messageId/reactions', authenticateToken, async (req, res) => {
+  try {
+    const messageId = parseInt(req.params.messageId, 10);
+    const { emoji } = req.query;
+    
+    let query = `
+      SELECT r.emoji, u.full_name as name
+      FROM message_reactions r
+      JOIN users u ON r.user_id = u.user_id
+      WHERE r.message_id = $1
+    `;
+    let params = [messageId];
+    
+    if (emoji) {
+      query += ` AND r.emoji = $2`;
+      params.push(emoji);
+    }
+    
+    const result = await pool.query(query, params);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('❌ Error fetching reactions:', error);
+    res.status(500).json({ error: 'Failed to fetch reactions' });
+  }
+});
+
 
 // Anonymous messages
 app.post("/api/anonymous_messages", authenticateToken, async (req, res) => {
@@ -2598,7 +2825,6 @@ app.put("/api/petitions/:petitionId/status", authenticateToken, async (req, res)
         error: `Invalid status. Must be one of: ${Array.from(allowedStatuses).join(", ")}`,
       });
     }
-    Joseph
 
     const petitionRes = await pool.query(
       `SELECT petition_id, community_id FROM petitions WHERE petition_id = $1`,
@@ -3004,6 +3230,150 @@ app.put("/api/complaints/:complaintId/status", authenticateToken, async (req, re
   } catch (error) {
     console.error("Error updating complaint status:", error);
     res.status(500).json({ error: error.message });
+  }
+});
+
+// Create follow-up message for complaints or petitions
+app.post("/api/follow-up-messages", authenticateToken, async (req, res) => {
+  try {
+    const { complaintId, petitionId, message } = req.body;
+    const senderId = req.user.user_id;
+
+    if (!message || typeof message !== 'string' || message.trim() === '') {
+      return res.status(400).json({ error: "Message content is required" });
+    }
+
+    let receiverId = null;
+    let communityId = null;
+
+    if (complaintId) {
+      const compRes = await pool.query(
+        `SELECT created_by, community_id FROM complaints WHERE complaint_id = $1`,
+        [complaintId]
+      );
+      if (compRes.rows.length === 0) {
+        return res.status(404).json({ error: "Complaint not found" });
+      }
+      receiverId = compRes.rows[0].created_by;
+      communityId = compRes.rows[0].community_id;
+    } else if (petitionId) {
+      const petRes = await pool.query(
+        `SELECT author_id, community_id FROM petitions WHERE petition_id = $1`,
+        [petitionId]
+      );
+      if (petRes.rows.length === 0) {
+        return res.status(404).json({ error: "Petition not found" });
+      }
+      receiverId = petRes.rows[0].author_id;
+      communityId = petRes.rows[0].community_id;
+    } else {
+      return res.status(400).json({ error: "Either complaintId or petitionId is required" });
+    }
+
+    // Check if sender is HEAD or ADMIN in the community
+    const membershipRes = await pool.query(
+      `SELECT role FROM memberships WHERE user_id = $1 AND community_id = $2 AND status = 'ACTIVE' LIMIT 1`,
+      [senderId, communityId]
+    );
+
+    if (membershipRes.rows.length === 0) {
+      return res.status(403).json({ error: "You must be an active member of this community" });
+    }
+
+    const role = membershipRes.rows[0].role;
+    if (!["HEAD", "ADMIN"].includes(role)) {
+      return res.status(403).json({ error: "Only admins/heads can send follow-up messages" });
+    }
+
+    // Store follow-up message
+    const insertRes = await pool.query(
+      `INSERT INTO follow_up_messages (complaint_id, petition_id, sender_id, receiver_id, message)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING *`,
+      [complaintId || null, petitionId || null, senderId, receiverId, message.trim()]
+    );
+
+    const completeMessage = {
+      ...insertRes.rows[0],
+      sender_name: req.user.full_name
+    };
+
+    res.status(201).json(completeMessage);
+  } catch (err) {
+    console.error("Error creating follow-up message:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Fetch follow-up messages for a complaint or petition
+app.get("/api/follow-up-messages", authenticateToken, async (req, res) => {
+  try {
+    const { complaintId, petitionId } = req.query;
+    const userId = req.user.user_id;
+
+    if (!complaintId && !petitionId) {
+      return res.status(400).json({ error: "Either complaintId or petitionId query parameter is required" });
+    }
+
+    let communityId = null;
+    let targetCreatorId = null;
+
+    if (complaintId) {
+      const compRes = await pool.query(
+        `SELECT created_by, community_id FROM complaints WHERE complaint_id = $1`,
+        [complaintId]
+      );
+      if (compRes.rows.length === 0) {
+        return res.status(404).json({ error: "Complaint not found" });
+      }
+      targetCreatorId = compRes.rows[0].created_by;
+      communityId = compRes.rows[0].community_id;
+    } else {
+      const petRes = await pool.query(
+        `SELECT author_id, community_id FROM petitions WHERE petition_id = $1`,
+        [petitionId]
+      );
+      if (petRes.rows.length === 0) {
+        return res.status(404).json({ error: "Petition not found" });
+      }
+      targetCreatorId = petRes.rows[0].author_id;
+      communityId = petRes.rows[0].community_id;
+    }
+
+    // Check membership and role
+    const membershipRes = await pool.query(
+      `SELECT role FROM memberships WHERE user_id = $1 AND community_id = $2 AND status = 'ACTIVE' LIMIT 1`,
+      [userId, communityId]
+    );
+
+    if (membershipRes.rows.length === 0) {
+      return res.status(403).json({ error: "You must be an active member of this community" });
+    }
+
+    const role = membershipRes.rows[0].role;
+    const isCreator = userId === targetCreatorId;
+    const isAdmin = ["HEAD", "ADMIN"].includes(role);
+
+    // Only the related member or community heads/admins can access
+    if (!isCreator && !isAdmin) {
+      return res.status(403).json({ error: "Access denied. Only the related member or community heads/admins can access these follow-ups." });
+    }
+
+    // Fetch messages with sender name
+    const messagesRes = await pool.query(
+      `SELECT f.*, u.full_name AS sender_name
+       FROM follow_up_messages f
+       JOIN users u ON u.user_id = f.sender_id
+       WHERE f.complaint_id ${complaintId ? '= $1' : 'IS NULL'}
+         AND f.petition_id ${petitionId ? '= ' + (complaintId ? '$2' : '$1') : 'IS NULL'}
+       ORDER BY f.created_at ASC`,
+      complaintId && petitionId ? [complaintId, petitionId] : [complaintId || petitionId]
+    );
+
+    res.json(messagesRes.rows);
+  } catch (err) {
+    console.error("Error fetching follow-up messages:", err);
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -4001,6 +4371,16 @@ async function startServer() {
       ADD COLUMN IF NOT EXISTS notification_enabled BOOLEAN DEFAULT TRUE
     `);
 
+    // Ensure role and can_create_community columns exist for strict access control.
+    await pool.query(`
+      ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS role VARCHAR(50) DEFAULT 'MEMBER'
+    `);
+    await pool.query(`
+      ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS can_create_community BOOLEAN DEFAULT FALSE
+    `);
+
     // Test Redis connection (if NLP service enabled)
     try {
       await redis.ping();
@@ -4013,6 +4393,13 @@ async function startServer() {
     if (process.env.PRELOAD_MODELS === 'true') {
       logger.info('Preloading NLP models...');
       await preloadModels();
+    }
+
+    // Validate Ollama models at startup
+    try {
+      await validateOllamaModels();
+    } catch (ollamaErr) {
+      logger.warn('Ollama model validation skipped or failed', { error: ollamaErr.message });
     }
 
     // Start server

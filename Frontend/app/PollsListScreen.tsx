@@ -87,14 +87,14 @@ const PollsListScreen = () => {
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                     <Text style={styles.backArrow}>←</Text>
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Polling</Text>
+                <Text style={styles.headerTitle}>Voting</Text>
                 <View style={{ width: 40 }} />
             </LinearGradient>
 
             {loading && !refreshing ? (
                 <View style={styles.centered}>
                     <ActivityIndicator size="large" color="#128C7E" />
-                    <Text style={styles.loadingText}>Fetching polls...</Text>
+                    <Text style={styles.loadingText}>Fetching votes...</Text>
                 </View>
             ) : (
                 <FlatList
@@ -107,7 +107,7 @@ const PollsListScreen = () => {
                     }
                     ListEmptyComponent={
                         <View style={styles.emptyContainer}>
-                            <Text style={styles.emptyText}>No polls available in this community yet.</Text>
+                            <Text style={styles.emptyText}>No votes available in this community yet.</Text>
                         </View>
                     }
                 />

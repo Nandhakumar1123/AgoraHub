@@ -19,7 +19,7 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
 } from 'react-native';
-import { Bot, PlusCircle, Plus, Sparkles } from 'lucide-react-native';
+import { Bot, PlusCircle, Plus, Sparkles, X } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import io, { Socket } from 'socket.io-client';
 import { API_BASE_URL, SOCKET_BASE_URL } from '../lib/api';
@@ -35,6 +35,11 @@ interface Community {
   community_id?: number | string;
   name?: string;
   member_count?: number;
+  complaints_enabled?: boolean;
+  petitions_enabled?: boolean;
+  events_enabled?: boolean;
+  voting_enabled?: boolean;
+  group_chat_enabled?: boolean;
 }
 
 interface RouteParams {
@@ -59,6 +64,8 @@ interface Message {
   created_at?: string;
   profile_type?: string;
   reply_count?: number;
+  reaction_count?: Record<string, number>;
+  user_reaction?: string;
 }
 
 const { width, height } = Dimensions.get('window');
@@ -271,6 +278,12 @@ const useCommunityMessages = (communityId: number, currentUserId: number | null)
       setMessages([]);
     });
 
+    socket.on('message_updated', (updatedMsg: Message) => {
+      setMessages(prev => prev.map(msg => 
+        msg.message_id === updatedMsg.message_id ? { ...msg, ...updatedMsg } : msg
+      ));
+    });
+
     return () => {
       socket.emit('leave_community', communityId);
       socket.disconnect();
@@ -376,9 +389,8 @@ const SendIcon = () => (
 const memberFeatures = [
   { id: 1, title: 'Raise Complaint', icon: '⚠️', color: '#FF6B6B' },
   { id: 2, title: 'Raise Petition', icon: '📝', color: '#4ECDC4' },
-  { id: 4, title: 'Anonymous Chat', icon: '💬', color: '#45B7D1' },
   { id: 5, title: 'Community Events', icon: '📅', color: '#96CEB4' },
-  { id: 7, title: 'Poll', icon: '🗳️', color: '#667eea' },
+  { id: 7, title: 'Vote', icon: '🗳️', color: '#667eea' },
 ];
 
 // Media options
@@ -405,6 +417,9 @@ const MemberCommunityApp: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [mediaModalVisible, setMediaModalVisible] = useState(false);
   const [pollModalVisible, setPollModalVisible] = useState(false);
+  const [selectedMessageId, setSelectedMessageId] = useState<number | null>(null);
+  const [reactionUsers, setReactionUsers] = useState<{name: string, emoji: string}[]>([]);
+  const [showReactionUsersModal, setShowReactionUsersModal] = useState(false);
 
   // AI assistant state
   const [sessionHash, setSessionHash] = useState<string | null>(null);
@@ -556,67 +571,8 @@ const MemberCommunityApp: React.FC = () => {
         communityId: community?.id || community?.community_id || 36,
         community: community
       });
-    } else if (feature.title === 'Anonymous Chat') {
-      const communityId = community?.id || community?.community_id || 36;
-      navigation.navigate('AnonymousMessageScreen' as any, {
-        communityId: String(communityId),
-        communityName: community?.name || 'Community',
-        onSend: async (payload: { text: string; headIds: string[]; attachments?: any[] }) => {
-          try {
-            const numericCommunityId = Number(communityId);
-            if (isNaN(numericCommunityId)) {
-              throw new Error(`Invalid community ID: ${communityId}`);
-            }
 
-            const apiPayload = {
-              text: payload.text,
-              headIds: payload.headIds || [],
-              attachments: payload.attachments || [],
-              communityId: numericCommunityId
-            };
-
-            const token = await AsyncStorage.getItem('token');
-            const sendHeaders: any = { 'Content-Type': 'application/json' };
-
-            if (token && token !== 'undefined' && token !== 'null') {
-              sendHeaders['Authorization'] = `Bearer ${token}`;
-            }
-
-            const response = await fetch(`${API_BASE_URL}/public/anonymous_messages`, {
-              method: 'POST',
-              headers: sendHeaders,
-              body: JSON.stringify(apiPayload)
-            });
-
-            if (!response.ok) {
-              const errorData = await response.text();
-              throw new Error(`Failed to send message: ${response.status} - ${errorData}`);
-            }
-
-            const result = await response.json();
-
-            if (Platform.OS === 'web') {
-              alert('Anonymous message sent successfully!');
-            } else {
-              Alert.alert('Success', 'Anonymous message sent successfully!');
-            }
-
-            return result;
-          } catch (error) {
-            console.error('❌ Error sending anonymous message:', error);
-            const errorMessage = error instanceof Error ? error.message : 'Failed to send anonymous message';
-
-            if (Platform.OS === 'web') {
-              alert(`Error: ${errorMessage}`);
-            } else {
-              Alert.alert('Error', errorMessage);
-            }
-
-            throw error;
-          }
-        }
-      });
-    } else if (feature.title === 'Poll') {
+    } else if (feature.title === 'Vote' || feature.title === 'Poll') {
       navigation.navigate('PollsListScreen' as any, {
         communityId: community?.id || community?.community_id || 36,
         community: community,
@@ -681,6 +637,51 @@ const MemberCommunityApp: React.FC = () => {
     });
 
     return groups;
+  };
+
+  const handleReact = async (messageId: number, emoji: string) => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await fetch(
+        `${API_BASE_URL}/communities/${communityId}/messages/${messageId}/react`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ emoji }),
+        }
+      );
+
+      if (response.ok) {
+        const updatedMsg = await response.json();
+        // Optimistically update local state if needed, though socket will also handle it
+        setMessages(prev => prev.map(msg => 
+          msg.message_id === messageId ? { ...msg, reaction_count: updatedMsg.reaction_count, user_reaction: updatedMsg.user_reaction } : msg
+        ));
+      }
+    } catch (error) {
+      console.error('❌ Error reacting to message:', error);
+    }
+  };
+
+  const fetchReactionUsers = async (messageId: number, emoji?: string) => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      let url = `${API_BASE_URL}/communities/${communityId}/messages/${messageId}/reactions`;
+      if (emoji) url += `?emoji=${encodeURIComponent(emoji)}`;
+      const response = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const users = await response.json();
+        setReactionUsers(users);
+        setShowReactionUsersModal(true);
+      }
+    } catch (error) {
+      console.error('Error fetching reaction users:', error);
+    }
   };
   const handleLogout = async () => {
     try {
@@ -820,7 +821,13 @@ const MemberCommunityApp: React.FC = () => {
                           : themeStyles.otherMsgWrapper,
                     ]}
                   >
-                    <View
+                    <TouchableOpacity
+                      activeOpacity={0.9}
+                      onPress={() => {
+                        if (!isSpecialMessage && message.message_id) {
+                          setSelectedMessageId(prev => prev === message.message_id ? null : message.message_id!);
+                        }
+                      }}
                       style={[
                         styles.messageBubble,
                         isAnnouncement && styles.announcementMessage,
@@ -887,11 +894,60 @@ const MemberCommunityApp: React.FC = () => {
                             })
                             : ''}
                         </Text>
-                        {/* ✅ Show checkmark ONLY for my messages with message_id */}
                         {isOwn && !isSpecialMessage && message.message_id && (
                           <Text style={styles.checkMark}>✓✓</Text>
                         )}
                       </View>
+
+                      {/* Message Reactions */}
+                      {!isSpecialMessage && message.message_id && (
+                        <>
+                          <View style={styles.reactionsContainer}>
+                            {(message.reaction_count?.['👍'] ?? 0) > 0 && (
+                              <TouchableOpacity 
+                                onPress={() => fetchReactionUsers(message.message_id!, '👍')}
+                                style={[styles.reactionBadge, message.user_reaction === '👍' && styles.reactionBadgeActive]}
+                              >
+                                <Text style={styles.reactionBadgeText}>👍 {message.reaction_count?.['👍']}</Text>
+                              </TouchableOpacity>
+                            )}
+                            {(message.reaction_count?.['👎'] ?? 0) > 0 && (
+                              <TouchableOpacity 
+                                onPress={() => fetchReactionUsers(message.message_id!, '👎')}
+                                style={[styles.reactionBadge, message.user_reaction === '👎' && styles.reactionBadgeActive]}
+                              >
+                                <Text style={styles.reactionBadgeText}>👎 {message.reaction_count?.['👎']}</Text>
+                              </TouchableOpacity>
+                            )}
+                          </View>
+                          
+                          {/* Reaction Picker Popover */}
+                          {selectedMessageId === message.message_id && (
+                            <View style={[styles.reactionPickerOverlay, isOwn ? styles.reactionPickerRight : styles.reactionPickerLeft]}>
+                              <TouchableOpacity 
+                                onPress={() => { handleReact(message.message_id!, '👍'); setSelectedMessageId(null); }} 
+                                style={[styles.reactionOption, message.user_reaction === '👍' && styles.reactionOptionActive]}
+                              >
+                                <Text style={styles.reactionPickerEmoji}>👍</Text>
+                              </TouchableOpacity>
+                              <TouchableOpacity 
+                                onPress={() => { handleReact(message.message_id!, '👎'); setSelectedMessageId(null); }} 
+                                style={[styles.reactionOption, message.user_reaction === '👎' && styles.reactionOptionActive]}
+                              >
+                                <Text style={styles.reactionPickerEmoji}>👎</Text>
+                              </TouchableOpacity>
+                              {message.user_reaction && (
+                                <TouchableOpacity 
+                                  onPress={() => { handleReact(message.message_id!, message.user_reaction!); setSelectedMessageId(null); }} 
+                                  style={styles.reactionOption}
+                                >
+                                  <X size={24} color="#ef4444" />
+                                </TouchableOpacity>
+                              )}
+                            </View>
+                          )}
+                        </>
+                      )}
 
                       {/* WhatsApp-style tail - only for non-special messages */}
                       {!isSpecialMessage && (
@@ -918,7 +974,7 @@ const MemberCommunityApp: React.FC = () => {
                           }}
                         />
                       )}
-                    </View>
+                    </TouchableOpacity>
                   </View>
 
                 );
@@ -975,7 +1031,13 @@ const MemberCommunityApp: React.FC = () => {
               </View>
 
               <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
-                {memberFeatures.map((feature) => (
+                {memberFeatures.filter((f) => {
+                  if (f.title === 'Raise Complaint') return community?.complaints_enabled !== false;
+                  if (f.title === 'Raise Petition') return community?.petitions_enabled !== false;
+                  if (f.title === 'Community Events') return community?.events_enabled !== false;
+                  if (f.title === 'Vote') return community?.voting_enabled !== false;
+                  return true;
+                }).map((feature) => (
                   <TouchableOpacity
                     key={feature.id}
                     style={styles.featureItem}
@@ -1041,6 +1103,33 @@ const MemberCommunityApp: React.FC = () => {
               setPollModalVisible(false);
             }}
           />
+        </Modal>
+
+        {/* Reaction Users Modal */}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={showReactionUsersModal}
+          onRequestClose={() => setShowReactionUsersModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Reactions</Text>
+                <TouchableOpacity onPress={() => setShowReactionUsersModal(false)}>
+                  <Text style={styles.closeButton}>✕</Text>
+                </TouchableOpacity>
+              </View>
+              <ScrollView style={styles.reactionUsersList}>
+                {reactionUsers.map((user, idx) => (
+                  <View key={idx} style={styles.reactionUserItem}>
+                    <Text style={{ fontSize: 20 }}>{user.emoji}</Text>
+                    <Text style={styles.reactionUserName}>{user.name}</Text>
+                  </View>
+                ))}
+              </ScrollView>
+            </View>
+          </View>
         </Modal>
 
       </SafeAreaView>
@@ -1175,11 +1264,16 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 4,
   },
   announcementMessage: {
-    backgroundColor: '#FFF9E6',
+    backgroundColor: '#1E293B',
     borderLeftWidth: 4,
-    borderLeftColor: '#FFC107',
+    borderLeftColor: '#F59E0B',
     maxWidth: '90%',
     borderRadius: 8,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   sosMessage: {
     backgroundColor: '#FFE6E6',
@@ -1236,10 +1330,11 @@ const styles = StyleSheet.create({
   },
   announcementLabel: {
     fontSize: 11,
-    fontWeight: '700',
-    color: '#856404',
+    fontWeight: '900',
+    color: '#F59E0B',
     marginBottom: 4,
-    letterSpacing: 0.3,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
   },
   sosLabel: {
     fontSize: 11,
@@ -1272,8 +1367,9 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
   announcementText: {
-    color: '#856404',
-    fontWeight: '500',
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 16,
   },
   sosText: {
     color: '#FF4757',
@@ -1488,7 +1584,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 8,
     paddingHorizontal: 32,
-    marginTop: 8,
   },
   chatbotFloatingButton: {
     position: 'absolute',
@@ -1505,6 +1600,103 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
+  },
+  reactionsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 6,
+    paddingTop: 4,
+    borderTopWidth: 0.5,
+    borderTopColor: 'rgba(255,255,255,0.05)',
+  },
+  reactionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
+  },
+  reactionBtnActive: {
+    backgroundColor: 'rgba(99, 102, 241, 0.2)',
+    borderColor: 'rgba(99, 102, 241, 0.4)',
+    borderWidth: 1,
+  },
+  reactionEmoji: {
+    fontSize: 20,
+  },
+  reactionCount: {
+    fontSize: 12,
+    color: '#94a3b8',
+    fontWeight: '600',
+  },
+  reactionCountActive: {
+    color: '#818cf8',
+  },
+  reactionBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 14,
+    marginRight: 6,
+  },
+  reactionBadgeActive: {
+    backgroundColor: 'rgba(99, 102, 241, 0.3)',
+    borderColor: 'rgba(99, 102, 241, 0.5)',
+    borderWidth: 1,
+  },
+  reactionBadgeText: {
+    fontSize: 18,
+    color: '#94a3b8',
+    fontWeight: '600',
+  },
+  reactionPickerOverlay: {
+    position: 'absolute',
+    top: -46,
+    flexDirection: 'row',
+    backgroundColor: 'rgba(30, 41, 59, 0.95)',
+    borderRadius: 24,
+    padding: 8,
+    gap: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    zIndex: 100,
+  },
+  reactionPickerRight: {
+    right: 0,
+  },
+  reactionPickerLeft: {
+    left: 0,
+  },
+  reactionOption: {
+    padding: 8,
+  },
+  reactionPickerEmoji: {
+    fontSize: 34,
+  },
+  reactionOptionActive: {
+    backgroundColor: 'rgba(99, 102, 241, 0.15)',
+    borderRadius: 12,
+  },
+  reactionUsersList: {
+    padding: 16,
+  },
+  reactionUserItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    gap: 12,
+  },
+  reactionUserName: {
+    fontSize: 16,
+    color: '#f8fafc',
   },
 });
 const lightTheme = StyleSheet.create({

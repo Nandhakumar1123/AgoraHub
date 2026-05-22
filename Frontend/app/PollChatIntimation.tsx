@@ -187,7 +187,7 @@ const PollChatIntimation: React.FC<Props> = ({
         : 'Open';
 
     const primaryButton =
-      status === 'Open' ? 'Open Poll' : status === 'Voted' ? 'View Poll' : 'View Results';
+      status === 'Open' ? 'Open Voting' : status === 'Voted' ? 'View Voting' : 'View Results';
 
     const selectedOptionId = poll?.my_voted_option_ids?.[0];
     const selectedOption = poll?.options.find((o) => o.option_id === selectedOptionId)?.label;
@@ -214,7 +214,7 @@ const PollChatIntimation: React.FC<Props> = ({
         <View style={styles.inner}>
           <View style={styles.topHeader}>
             <View style={styles.badgeRow}>
-              <Text style={styles.badge}>NEW POLL</Text>
+              <Text style={styles.badge}>NEW VOTE</Text>
               {isAdmin ? <Text style={styles.adminTag}>HEAD</Text> : null}
             </View>
             {!loading ? (

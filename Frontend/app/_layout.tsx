@@ -79,17 +79,14 @@ export default function RootLayout() {
               <Stack.Screen name="RaiseComplaintScreen" options={{ title: 'Raise Complaint', headerShown: true }} />
               <Stack.Screen name="ViewComplaintsScreen" options={{ title: 'View Complaints', headerShown: true }} />
               <Stack.Screen name="ViewPetitionsScreen" options={{ title: 'View Petitions', headerShown: true }} />
-              <Stack.Screen name="AnonymousMessageScreen" options={{ title: 'Anonymous Message', headerShown: true }} />
-              <Stack.Screen name="AnonymousMessagesAdminScreen" options={{ title: 'Admin - Anonymous Messages', headerShown: true }} />
-              <Stack.Screen name="AnonymousThreadScreen" options={{ title: 'Chat', headerShown: true }} />
               <Stack.Screen name="ChatWithModeration" options={{ title: 'AI Assistant', headerShown: false }} />
               <Stack.Screen name="AIChatScreen" options={{ title: 'AI Chat', headerShown: false }} />
               <Stack.Screen name="ComplaintAIChatScreen" options={{ title: 'Complaint AI', headerShown: false }} />
               <Stack.Screen name="PetitionAIChatScreen" options={{ title: 'Petition AI', headerShown: false }} />
               <Stack.Screen name="EventsScreen" options={{ title: 'Events', headerShown: true }} />
               <Stack.Screen name="EventsScreenMember" options={{ title: 'Events', headerShown: true }} />
-              <Stack.Screen name="PollsListScreen" options={{ title: 'Polling', headerShown: false }} />
-              <Stack.Screen name="PollVoteScreen" options={{ title: 'Poll', headerShown: true }} />
+              <Stack.Screen name="PollsListScreen" options={{ title: 'Voting', headerShown: false }} />
+              <Stack.Screen name="PollVoteScreen" options={{ title: 'Vote', headerShown: true }} />
               <Stack.Screen name="+not-found" />
             </Stack>
             <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />

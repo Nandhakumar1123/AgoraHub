@@ -290,7 +290,7 @@ const PollMessageCard: React.FC<PollMessageCardProps> = ({
     };
 
     const closePoll = () =>
-        Alert.alert('Close poll', 'End this poll early?', [
+        Alert.alert('End Voting', 'End this voting early?', [
             { text: 'Cancel', style: 'cancel' },
             {
                 text: 'Close', style: 'destructive', onPress: async () => {
@@ -360,7 +360,7 @@ const PollMessageCard: React.FC<PollMessageCardProps> = ({
                         </View>
                         <View>
                             <Text style={s.statusLabel}>
-                                {isOpen ? '● LIVE POLL' : '■ ENDED'}
+                                {isOpen ? '● LIVE VOTING' : '■ VOTING ENDED'}
                             </Text>
                             <Text style={s.timerText}>{timerLabel}</Text>
                         </View>

@@ -22,11 +22,17 @@ const {
   updateBotHistoryEntry,
   deleteBotHistoryEntry,
   clearBotHistory,
+  translateText,
+  detectLanguageOfText,
 } = require('../services/rag.service');
 const { verifyToken, verifyCommunityAccess, requireRole } = require('../middleware/auth');
 const { ipRateLimit, endpointRateLimit } = require('../middleware/rate-limit');
 const { botAskValidation, docUploadValidation, checkMaliciousPatterns } = require('../middleware/sanitize');
 const { logger, logRequest } = require('../config/logger');
+
+function hasTamilUnicode(text) {
+  return /[\u0B80-\u0BFF]/.test(String(text || ''));
+}
 
 // Helper: Save full AI chat details to dedicated bot history table
 // Saves: question, AI answer, confidence, source_count, status, error_message
@@ -109,6 +115,7 @@ router.post(
           confidence: result.confidence,
           sessionHash: result.sessionHash,
           historyId: result.historyId,
+          ...(result.tamilSummary ? { tamilSummary: result.tamilSummary } : {}),
         },
         metadata: {
           processingTime: duration,
@@ -135,6 +142,77 @@ router.post(
         error: 'Failed to process question',
         code: 'BOT_ERROR',
       });
+    }
+  }
+);
+
+/**
+ * POST /api/bot/translate
+ * Translate text to a target language
+ */
+router.post(
+  '/translate',
+  verifyToken,
+  verifyCommunityAccess,
+  async (req, res) => {
+    try {
+      const { text, target_language = 'Tamil', source_language, community_id } = req.body;
+
+      if (!text) {
+        return res.status(400).json({ success: false, error: 'text is required' });
+      }
+
+      const normalizedTargetLanguage =
+        String(target_language || 'Tamil').trim().toLowerCase() === 'tamil'
+          ? 'Tamil'
+          : String(target_language || 'Tamil').trim();
+
+      let normalizedSourceLanguage = String(source_language || '').trim();
+      if (!normalizedSourceLanguage || normalizedSourceLanguage.toLowerCase() === 'auto') {
+        normalizedSourceLanguage = await detectLanguageOfText(text);
+      }
+      if (!normalizedSourceLanguage || normalizedSourceLanguage === 'Unknown') {
+        normalizedSourceLanguage = 'English';
+      }
+
+      logger.info('Translation request', {
+        textLength: text.length,
+        target: normalizedTargetLanguage,
+        source: normalizedSourceLanguage,
+        communityId: community_id
+      });
+
+      // Use the existing translateText service. If Tamil output is invalid, retry once.
+      let translated = await translateText(text, normalizedSourceLanguage, normalizedTargetLanguage);
+      if (normalizedTargetLanguage === 'Tamil' && !hasTamilUnicode(translated)) {
+        logger.warn('Tamil translation missing Tamil script; retrying once', {
+          source: normalizedSourceLanguage,
+          communityId: community_id,
+        });
+        translated = await translateText(text, normalizedSourceLanguage, normalizedTargetLanguage);
+      }
+      if (normalizedTargetLanguage === 'Tamil' && !hasTamilUnicode(translated)) {
+        return res.status(422).json({
+          success: false,
+          error: 'Tamil translation invalid. Please try again.',
+        });
+      }
+
+      res.json({
+        success: true,
+        data: {
+          original: text,
+          translated: translated,
+          source_language: normalizedSourceLanguage,
+          language: normalizedTargetLanguage
+        }
+      });
+    } catch (error) {
+      logger.error('Translation endpoint error', {
+        error: error.message,
+        stack: error.stack
+      });
+      res.status(500).json({ success: false, error: 'Failed to translate message.' });
     }
   }
 );
@@ -692,6 +770,120 @@ router.post(
         success: false,
         error: error.message || 'Failed to get AI suggestion',
       });
+    }
+  }
+);
+
+/**
+ * POST /api/bot/history/:community_id/:history_id/react
+ * React to an AI chat history item
+ */
+router.post(
+  '/history/:community_id/:history_id/react',
+  verifyToken,
+  verifyCommunityAccess,
+  async (req, res) => {
+    try {
+      const { community_id, history_id } = req.params;
+      const { emoji } = req.body;
+      const userId = getRequestUserId(req);
+
+      if (!userId) {
+        return res.status(401).json({ success: false, error: 'Invalid user token' });
+      }
+      if (!emoji) {
+        return res.status(400).json({ success: false, error: 'emoji is required' });
+      }
+
+      // 1. Check if user already reacted
+      const existing = await pool.query(
+        'SELECT emoji FROM bot_history_reactions WHERE history_id = $1 AND user_id = $2',
+        [history_id, userId]
+      );
+
+      let reactionRemoved = false;
+      let reactionAdded = false;
+
+      if (existing.rows.length > 0) {
+        const oldEmoji = existing.rows[0].emoji;
+        // Remove old reaction
+        await pool.query(
+          'DELETE FROM bot_history_reactions WHERE history_id = $1 AND user_id = $2',
+          [history_id, userId]
+        );
+        reactionRemoved = true;
+
+        // Update reaction_count - decrement old
+        await pool.query(
+          `UPDATE bot_chat_history 
+           SET reaction_count = jsonb_set(
+             reaction_count, 
+             ARRAY[$1], 
+             (GREATEST(0, (COALESCE(reaction_count->>$1, '0')::int - 1)))::text::jsonb
+           )
+           WHERE id = $2`,
+          [oldEmoji, history_id]
+        );
+        
+        // If it's the same emoji, we just removed it (toggle)
+        if (oldEmoji === emoji) {
+          // Done
+        } else {
+          // Add new reaction
+          await pool.query(
+            'INSERT INTO bot_history_reactions (history_id, user_id, emoji) VALUES ($1, $2, $3)',
+            [history_id, userId, emoji]
+          );
+          reactionAdded = true;
+          // Update reaction_count - increment new
+          await pool.query(
+            `UPDATE bot_chat_history 
+             SET reaction_count = jsonb_set(
+               reaction_count, 
+               ARRAY[$1], 
+               (COALESCE(reaction_count->>$1, '0')::int + 1)::text::jsonb
+             )
+             WHERE id = $2`,
+            [emoji, history_id]
+          );
+        }
+      } else {
+        // Add new reaction
+        await pool.query(
+          'INSERT INTO bot_history_reactions (history_id, user_id, emoji) VALUES ($1, $2, $3)',
+          [history_id, userId, emoji]
+        );
+        reactionAdded = true;
+        // Update reaction_count - increment new
+        await pool.query(
+          `UPDATE bot_chat_history 
+           SET reaction_count = jsonb_set(
+             reaction_count, 
+             ARRAY[$1], 
+             (COALESCE(reaction_count->>$1, '0')::int + 1)::text::jsonb
+           )
+           WHERE id = $2`,
+          [emoji, history_id]
+        );
+      }
+
+      // Get updated counts
+      const updated = await pool.query(
+        'SELECT reaction_count FROM bot_chat_history WHERE id = $1',
+        [history_id]
+      );
+
+      res.json({
+        success: true,
+        data: {
+          reaction_count: updated.rows[0].reaction_count,
+          user_reaction: reactionAdded ? emoji : null
+        }
+      });
+
+    } catch (error) {
+      logger.error('Bot history reaction error', { error: error.message, userId: getRequestUserId(req) });
+      res.status(500).json({ success: false, error: 'Failed to process reaction' });
     }
   }
 );

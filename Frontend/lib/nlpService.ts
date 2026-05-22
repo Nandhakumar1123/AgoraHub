@@ -4,7 +4,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_ROOT } from './api';
 
 const NLP_SERVICE_URL = process.env.EXPO_PUBLIC_NLP_SERVICE_URL || process.env.NLP_SERVICE_URL || API_ROOT;
-const BOT_REQUEST_TIMEOUT_MS = 60000;
+const BOT_REQUEST_TIMEOUT_MS = 900000;
+const TRANSLATION_REQUEST_TIMEOUT_MS = 900000;
 
 class NLPService {
   private baseURL: string;
@@ -158,6 +159,16 @@ class NLPService {
     return response.data;
   }
 
+  async reactToBotHistory(communityId: number, historyId: number, emoji: string) {
+    const headers = await this.getHeaders();
+    const response = await axios.post(
+      `${this.baseURL}/api/bot/history/${communityId}/${historyId}/react`,
+      { emoji },
+      { headers, timeout: BOT_REQUEST_TIMEOUT_MS }
+    );
+    return response.data;
+  }
+
   async getModerationStats(communityId: number, days: number = 7) {
     const headers = await this.getHeaders();
     const response = await axios.get(
@@ -198,6 +209,21 @@ class NLPService {
       { headers, timeout: BOT_REQUEST_TIMEOUT_MS }
     );
     return response.data;
+  }
+
+  async translateMessage(text: string, communityId: number, targetLanguage: string = 'Tamil') {
+    const headers = await this.getHeaders();
+    const response = await axios.post(
+      `${this.baseURL}/api/bot/translate`,
+      { text, community_id: communityId, target_language: targetLanguage },
+      { headers, timeout: TRANSLATION_REQUEST_TIMEOUT_MS }
+    );
+    const payload = response.data || {};
+    const translated = payload?.data?.translated ?? payload?.translated ?? '';
+    return {
+      ...payload,
+      translated,
+    };
   }
 }
 

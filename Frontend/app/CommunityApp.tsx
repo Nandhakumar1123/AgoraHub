@@ -56,8 +56,8 @@ export default function CommunityScreen() {
   const [complaintsEnabled, setComplaintsEnabled] = useState(true);
   const [petitionsEnabled, setPetitionsEnabled] = useState(true);
   const [votingEnabled, setVotingEnabled] = useState(true);
-  const [groupChatEnabled, setGroupChatEnabled] = useState(false);
-  const [anonymousEnabled, setAnonymousEnabled] = useState(false);
+  const [groupChatEnabled, setGroupChatEnabled] = useState(true);
+
 
   const createdCommunities = communities.filter((c) => c.role === 'HEAD');
   const joinedCommunities = communities.filter((c) => c.role === 'MEMBER');
@@ -146,7 +146,7 @@ export default function CommunityScreen() {
           petitions_enabled: petitionsEnabled,
           voting_enabled: votingEnabled,
           group_chat_enabled: groupChatEnabled,
-          anonymous_enabled: anonymousEnabled,
+
         }),
       });
 
@@ -171,8 +171,8 @@ export default function CommunityScreen() {
       setComplaintsEnabled(true);
       setPetitionsEnabled(true);
       setVotingEnabled(true);
-      setGroupChatEnabled(false);
-      setAnonymousEnabled(false);
+      setGroupChatEnabled(true);
+
       setView('shareDetails');
       fetchCommunities(currentUser.user_id);
     } catch (error: any) {
@@ -377,27 +377,19 @@ export default function CommunityScreen() {
               { title: 'Complaints', desc: 'Submit and track complaints', state: complaintsEnabled, set: setComplaintsEnabled },
               { title: 'Petitions', desc: 'Create or sign petitions', state: petitionsEnabled, set: setPetitionsEnabled },
               { title: 'Voting', desc: 'Participate in voting', state: votingEnabled, set: setVotingEnabled },
-              { title: 'Group Chat', desc: 'Real-time group chat', state: groupChatEnabled, set: setGroupChatEnabled },
-              { title: 'Anonymous Message', desc: 'Send anonymous messages', state: anonymousEnabled, set: setAnonymousEnabled },
             ].map((item, i) => (
               <View key={i} style={styles.featureItem}>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.featureTitle}>{item.title}</Text>
                   <Text style={styles.featureDesc}>{item.desc}</Text>
                 </View>
-                {item.title === 'Anonymous Message' ? (
-                  <View style={styles.privateBadge}>
-                    <Text style={styles.privateBadgeText}>Private</Text>
-                  </View>
-                ) : (
-                  <Switch
-                    trackColor={{ false: '#d1d5db', true: '#6366f1' }}
-                    thumbColor="#ffffff"
-                    ios_backgroundColor="#e5e7eb"
-                    onValueChange={item.set}
-                    value={item.state}
-                  />
-                )}
+                <Switch
+                  trackColor={{ false: '#d1d5db', true: '#6366f1' }}
+                  thumbColor="#ffffff"
+                  ios_backgroundColor="#e5e7eb"
+                  onValueChange={item.set}
+                  value={item.state}
+                />
               </View>
             ))}
           </View>

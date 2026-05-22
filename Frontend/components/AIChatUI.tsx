@@ -13,6 +13,7 @@ import {
   Animated,
   Dimensions,
   Alert,
+  useWindowDimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -27,6 +28,20 @@ export interface ChatMessage {
   confidence?: number;
   sources?: { title: string }[];
   historyId?: number;
+  translatedText?: string;
+  /** Server-prefetched Tamil (e.g. parallel summary); shown after user taps Tamil Summary */
+  prefetchedTamilSummary?: string;
+  isTranslating?: boolean;
+  reaction_count?: Record<string, number>;
+  user_reaction?: string;
+}
+
+export interface ChatThreadItem {
+  id: string;
+  title: string;
+  subtitle?: string;
+  dayLabel?: string;
+  createdAt?: string;
 }
 
 interface AIChatUIProps {
@@ -38,10 +53,16 @@ interface AIChatUIProps {
   onGoBack: () => void;
   onEditMessage?: (id: string, newText: string) => void;
   onDeleteMessage?: (id: string) => void;
+  onTranslateMessage?: (id: string) => void | Promise<void>;
+  onReactMessage?: (id: string, emoji: string) => void;
   emptyStateText?: string;
   emptyStateIcon?: string;
   accentColor?: string;
   accentGradient?: [string, string];
+  chatThreads?: ChatThreadItem[];
+  currentThreadId?: string | null;
+  onSelectThread?: (id: string) => void | Promise<void>;
+  onNewChat?: () => void;
 }
 
 // ─── Date helpers ────────────────────────────────────────────
@@ -51,12 +72,12 @@ function getDateKey(date: Date): string {
 
 function formatDateLabel(dateKey: string): string {
   if (!dateKey || dateKey.includes('NaN')) return 'Unknown Date';
-  
+
   const [y, m, d] = dateKey.split('-').map(Number);
   const date = new Date(y, m - 1, d);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  
+
   const yesterday = new Date(today);
   yesterday.setDate(today.getDate() - 1);
 
@@ -179,12 +200,19 @@ const AIChatUI: React.FC<AIChatUIProps> = ({
   onGoBack,
   onEditMessage,
   onDeleteMessage,
+  onTranslateMessage,
   emptyStateText = "Hello! I'm your AI assistant. Ask me anything!",
   emptyStateIcon = '🤖',
   accentColor = '#6366f1',
   accentGradient = ['#6366f1', '#8b5cf6'],
+  chatThreads = [],
+  currentThreadId = null,
+  onSelectThread,
+  onNewChat,
 }) => {
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const isNarrowLayout = width < 920;
   const scrollRef = useRef<ScrollView>(null);
   const [inputText, setInputText] = useState('');
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -192,6 +220,20 @@ const AIChatUI: React.FC<AIChatUIProps> = ({
   // Edit states
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState('');
+  const [selectedReactionId, setSelectedReactionId] = useState<string | null>(null);
+
+  const groupedThreads = chatThreads.reduce<Record<string, ChatThreadItem[]>>((acc, thread) => {
+    const raw = thread.createdAt || '';
+    const dt = raw ? new Date(raw.replace(' ', 'T')) : null;
+    const key = dt && !isNaN(dt.getTime())
+      ? formatDateLabel(getDateKey(dt))
+      : (thread.dayLabel || 'Older');
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(thread);
+    return acc;
+  }, {});
+
+  const orderedDayLabels = Object.keys(groupedThreads);
 
   // Auto-scroll when messages change or loading state changes
   useEffect(() => {
@@ -226,7 +268,7 @@ const AIChatUI: React.FC<AIChatUIProps> = ({
 
   const handleLongPress = (msg: ChatMessage) => {
     const options = [];
-    
+
     if (!msg.isBot && onEditMessage) {
       options.push({
         text: 'Edit Message',
@@ -288,159 +330,300 @@ const AIChatUI: React.FC<AIChatUIProps> = ({
             <Text style={styles.headerTitle} numberOfLines={1}>{title}</Text>
           </View>
 
-          <TouchableOpacity onPress={handleClear} style={styles.clearBtn} activeOpacity={0.7}>
-            <Text style={styles.clearIcon}>🗑️</Text>
-          </TouchableOpacity>
+          <View style={styles.headerActions}>
+            {!!onNewChat && (
+              <TouchableOpacity onPress={onNewChat} style={styles.clearBtn} activeOpacity={0.7}>
+                <Ionicons name="add" size={24} color="#fff" />
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity onPress={handleClear} style={[styles.clearBtn, { marginLeft: 8 }]} activeOpacity={0.7}>
+              <Text style={styles.clearIcon}>🗑️</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
-        {/* ── Messages Area ─────────────────────────────── */}
-        <ScrollView
-          ref={scrollRef}
-          style={styles.messagesArea}
-          contentContainerStyle={styles.messagesContent}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
-          {messages.length === 0 && !isLoading ? (
-            <View style={styles.emptyState}>
-              <View style={[styles.emptyIconWrap, { shadowColor: accentColor }]}>
-                <Text style={styles.emptyIcon}>{emptyStateIcon}</Text>
-              </View>
-              <Text style={styles.emptyTitle}>{title}</Text>
-              <Text style={styles.emptyText}>{emptyStateText}</Text>
-              <View style={styles.suggestionsWrap}>
-                {['What can you help me with?', 'Show me a summary', 'Any recent updates?'].map(
-                  (s, i) => (
-                    <TouchableOpacity
-                      key={i}
-                      style={[styles.suggestion, { borderColor: accentColor + '40' }]}
-                      onPress={() => {
-                        setInputText(s);
-                      }}
-                      activeOpacity={0.7}
-                    >
-                      <Text style={[styles.suggestionText, { color: accentColor }]}>{s}</Text>
-                    </TouchableOpacity>
-                  )
-                )}
-              </View>
-            </View>
-          ) : (
-            groups.map((group) => (
-              <View key={group.dateKey}>
-                {/* Date separator */}
-                <View style={styles.dateSeparator}>
-                  <Text style={styles.dateText}>{formatDateLabel(group.dateKey)}</Text>
-                </View>
-
-                {/* Messages in this group */}
-                {group.messages.map((msg) => (
-                  <View
-                    key={msg.id}
-                    style={[
-                      styles.msgRow,
-                      msg.isBot ? styles.msgRowBot : styles.msgRowUser,
-                    ]}
-                  >
-                    {/* Bot avatar */}
-                    {msg.isBot && (
-                      <View style={[styles.avatar, { backgroundColor: accentColor + '20' }]}>
-                        <Text style={styles.avatarText}>{emptyStateIcon}</Text>
-                      </View>
-                    )}
-
-                    <View
-                      style={[
-                        styles.bubble,
-                        msg.isBot
-                          ? styles.botBubble
-                          : [styles.userBubble, { backgroundColor: accentColor }],
-                      ]}
-                    >
-                      {editingId === msg.id ? (
-                        <View style={styles.editContainer}>
-                          <TextInput
-                            style={[styles.msgText, styles.userText, styles.editInput]}
-                            value={editText}
-                            onChangeText={setEditText}
-                            multiline
-                            autoFocus
-                          />
-                          <View style={styles.editActions}>
-                            <TouchableOpacity onPress={cancelEdit} style={styles.editBtn}>
-                              <Text style={styles.editBtnText}>Cancel</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={saveEdit} style={[styles.editBtn, { backgroundColor: accentColor }]}>
-                              <Text style={[styles.editBtnText, { color: '#fff' }]}>Save</Text>
-                            </TouchableOpacity>
-                          </View>
-                        </View>
-                      ) : (
-                        <TouchableOpacity
-                          activeOpacity={0.9}
-                          style={styles.msgTouch}
-                        >
-                          <Text
-                            style={[
-                              styles.msgText,
-                              msg.isBot ? styles.botText : styles.userText,
-                            ]}
-                            selectable={editingId !== msg.id}
-                          >
-                            {msg.text}
-                          </Text>
-                        </TouchableOpacity>
-                      )}
-
-                      {editingId !== msg.id && (
-                        <View style={styles.actionRow}>
-                          {!msg.isBot && (
-                            <TouchableOpacity 
-                              onPress={() => {
-                                setEditingId(msg.id);
-                                setEditText(msg.text);
-                              }} 
-                              style={styles.actionItem}
-                              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                            >
-                              <Ionicons name="pencil" size={14} color="rgba(255,255,255,0.4)" />
-                              <Text style={styles.actionText}>Edit</Text>
-                            </TouchableOpacity>
-                          )}
-                          <TouchableOpacity 
-                            onPress={() => onDeleteMessage?.(msg.id)} 
-                            style={[styles.actionItem, { marginLeft: !msg.isBot ? 12 : 0 }]}
-                            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                          >
-                            <Ionicons name="trash-outline" size={14} color="#ef4444" />
-                            <Text style={[styles.actionText, { color: '#ef4444' }]}>Delete</Text>
-                          </TouchableOpacity>
-                        </View>
-                      )}
-
-
-
-                      {/* Footer: time + confidence */}
-                      <View style={styles.msgFooter}>
-                        <Text
-                          style={[
-                            styles.timeText,
-                            msg.isBot ? styles.botTime : styles.userTime,
-                          ]}
-                        >
-                          {formatTime(msg.timestamp)}
-                        </Text>
-                      </View>
-                    </View>
+        {!!onSelectThread && isNarrowLayout && (
+          <View style={styles.threadPanel}>
+            <Text style={styles.threadPanelTitle}>All Previous Chats</Text>
+            <ScrollView showsVerticalScrollIndicator={false} style={styles.threadList}>
+              {chatThreads.length === 0 ? (
+                <Text style={styles.threadEmptyText}>No previous chats yet.</Text>
+              ) : (
+                orderedDayLabels.map((dayLabel) => (
+                  <View key={dayLabel} style={styles.threadDayGroup}>
+                    <Text style={[styles.threadGroupLabel, { color: accentColor }]}>{dayLabel}</Text>
+                    {groupedThreads[dayLabel].map((thread) => (
+                      <TouchableOpacity
+                        key={thread.id}
+                        style={[
+                          styles.threadItem,
+                          currentThreadId === thread.id && { borderColor: accentColor, backgroundColor: accentColor + '18' },
+                        ]}
+                        onPress={() => onSelectThread(thread.id)}
+                      >
+                        <Text style={styles.threadTitle} numberOfLines={1}>{thread.title}</Text>
+                        {!!thread.subtitle && <Text style={styles.threadSubtitle} numberOfLines={1}>{thread.subtitle}</Text>}
+                      </TouchableOpacity>
+                    ))}
                   </View>
-                ))}
-              </View>
-            ))
+                ))
+              )}
+            </ScrollView>
+          </View>
+        )}
+
+        <View style={[styles.contentRow, isNarrowLayout && styles.contentRowNarrow]}>
+          {!!onSelectThread && !isNarrowLayout && (
+            <View style={styles.sidePanel}>
+              <Text style={styles.threadPanelTitle}>All Previous Chats</Text>
+              <ScrollView showsVerticalScrollIndicator={false} style={styles.threadList}>
+                {chatThreads.length === 0 ? (
+                  <Text style={styles.threadEmptyText}>No previous chats yet.</Text>
+                ) : (
+                  orderedDayLabels.map((dayLabel) => (
+                    <View key={dayLabel} style={styles.threadDayGroup}>
+                      <Text style={[styles.threadGroupLabel, { color: accentColor }]}>{dayLabel}</Text>
+                      {groupedThreads[dayLabel].map((thread) => (
+                        <TouchableOpacity
+                          key={thread.id}
+                          style={[
+                            styles.threadItem,
+                            currentThreadId === thread.id && { borderColor: accentColor, backgroundColor: accentColor + '18' },
+                          ]}
+                          onPress={() => onSelectThread(thread.id)}
+                        >
+                          <Text style={styles.threadTitle} numberOfLines={1}>{thread.title}</Text>
+                          {!!thread.subtitle && <Text style={styles.threadSubtitle} numberOfLines={1}>{thread.subtitle}</Text>}
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  ))
+                )}
+              </ScrollView>
+            </View>
           )}
 
-          {/* Typing indicator */}
-          {isLoading && <TypingIndicator color={accentColor} />}
-        </ScrollView>
+          {/* ── Messages Area ─────────────────────────────── */}
+          <ScrollView
+            ref={scrollRef}
+            style={styles.messagesArea}
+            contentContainerStyle={styles.messagesContent}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            {messages.length === 0 && !isLoading ? (
+              <View style={styles.emptyState}>
+                <View style={[styles.emptyIconWrap, { shadowColor: accentColor }]}>
+                  <Text style={styles.emptyIcon}>{emptyStateIcon}</Text>
+                </View>
+                <Text style={styles.emptyTitle}>{title}</Text>
+                <Text style={styles.emptyText}>{emptyStateText}</Text>
+                <View style={styles.suggestionsWrap}>
+                  {['What can you help me with?', 'Show me a summary', 'Any recent updates?'].map(
+                    (s, i) => (
+                      <TouchableOpacity
+                        key={i}
+                        style={[styles.suggestion, { borderColor: accentColor + '40' }]}
+                        onPress={() => {
+                          setInputText(s);
+                        }}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={[styles.suggestionText, { color: accentColor }]}>{s}</Text>
+                      </TouchableOpacity>
+                    )
+                  )}
+                </View>
+              </View>
+            ) : (
+              groups.map((group) => (
+                <View key={group.dateKey}>
+                  <View style={styles.dateSeparator}>
+                    <Text style={styles.dateText}>{formatDateLabel(group.dateKey)}</Text>
+                  </View>
+                  {group.messages.map((msg) => (
+                    <View
+                      key={msg.id}
+                      style={[
+                        styles.msgRow,
+                        msg.isBot ? styles.msgRowBot : styles.msgRowUser,
+                      ]}
+                    >
+                      {msg.isBot && (
+                        <View style={[styles.avatar, { backgroundColor: accentColor + '20' }]}>
+                          <Text style={styles.avatarText}>{emptyStateIcon}</Text>
+                        </View>
+                      )}
+                      <View
+                        style={[
+                          styles.bubble,
+                          msg.isBot
+                            ? styles.botBubble
+                            : [styles.userBubble, { backgroundColor: accentColor }],
+                        ]}
+                      >
+                        {editingId === msg.id ? (
+                          <View style={styles.editContainer}>
+                            <TextInput
+                              style={[styles.msgText, styles.userText, styles.editInput]}
+                              value={editText}
+                              onChangeText={setEditText}
+                              multiline
+                              autoFocus
+                            />
+                            <View style={styles.editActions}>
+                              <TouchableOpacity onPress={cancelEdit} style={styles.editBtn}>
+                                <Text style={styles.editBtnText}>Cancel</Text>
+                              </TouchableOpacity>
+                              <TouchableOpacity onPress={saveEdit} style={[styles.editBtn, { backgroundColor: accentColor }]}>
+                                <Text style={[styles.editBtnText, { color: '#fff' }]}>Save</Text>
+                              </TouchableOpacity>
+                            </View>
+                          </View>
+                        ) : (
+                          <TouchableOpacity
+                            activeOpacity={0.9}
+                            style={styles.msgTouch}
+                            onPress={() => {
+                              if (msg.isBot && msg.historyId) {
+                                setSelectedReactionId(prev => prev === msg.id ? null : msg.id);
+                              }
+                            }}
+                          >
+                            <Text
+                              style={[
+                                styles.msgText,
+                                msg.isBot ? styles.botText : styles.userText,
+                              ]}
+                              selectable={editingId !== msg.id}
+                            >
+                              {msg.text}
+                            </Text>
+                          </TouchableOpacity>
+                        )}
+
+                        {editingId !== msg.id && (
+                          <View style={styles.actionRow}>
+                            {!msg.isBot && (
+                              <TouchableOpacity
+                                onPress={() => {
+                                  setEditingId(msg.id);
+                                  setEditText(msg.text);
+                                }}
+                                style={styles.actionItem}
+                                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                              >
+                                <Ionicons name="pencil" size={14} color="rgba(255,255,255,0.4)" />
+                                <Text style={styles.actionText}>Edit</Text>
+                              </TouchableOpacity>
+                            )}
+
+                            {msg.isBot && !msg.translatedText && onTranslateMessage && (
+                              <TouchableOpacity
+                                onPress={() => onTranslateMessage(msg.id)}
+                                style={styles.actionItem}
+                                disabled={msg.isTranslating}
+                              >
+                                {msg.isTranslating ? (
+                                  <ActivityIndicator size="small" color={accentColor} />
+                                ) : (
+                                  <>
+                                    <Ionicons name="language" size={14} color={accentColor} />
+                                    <Text style={[styles.actionText, { color: accentColor }]}>Tamil Summary</Text>
+                                  </>
+                                )}
+                              </TouchableOpacity>
+                            )}
+
+                            <TouchableOpacity
+                              onPress={() => onDeleteMessage?.(msg.id)}
+                              style={[styles.actionItem, { marginLeft: 12 }]}
+                              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                            >
+                              <Ionicons name="trash-outline" size={14} color="#ef4444" />
+                              <Text style={[styles.actionText, { color: '#ef4444' }]}>Delete</Text>
+                            </TouchableOpacity>
+                          </View>
+                        )}
+
+                        {msg.isBot && msg.historyId && (
+                          <>
+                            <View style={styles.reactionsContainer}>
+                              {(msg.reaction_count?.['👍'] ?? 0) > 0 && (
+                                <View style={[styles.reactionBadge, msg.user_reaction === '👍' && styles.reactionBadgeActive]}>
+                                  <Text style={styles.reactionBadgeText}>👍 {msg.reaction_count?.['👍']}</Text>
+                                </View>
+                              )}
+                              {(msg.reaction_count?.['👎'] ?? 0) > 0 && (
+                                <View style={[styles.reactionBadge, msg.user_reaction === '👎' && styles.reactionBadgeActive]}>
+                                  <Text style={styles.reactionBadgeText}>👎 {msg.reaction_count?.['👎']}</Text>
+                                </View>
+                              )}
+                            </View>
+
+                            {selectedReactionId === msg.id && (
+                              <View style={[styles.reactionPickerOverlay, styles.reactionPickerLeft]}>
+                                <TouchableOpacity 
+                                  onPress={() => { onReactMessage?.(msg.id, '👍'); setSelectedReactionId(null); }} 
+                                  style={[styles.reactionOption, msg.user_reaction === '👍' && styles.reactionOptionActive]}
+                                >
+                                  <Text style={styles.reactionPickerEmoji}>👍</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity 
+                                  onPress={() => { onReactMessage?.(msg.id, '👎'); setSelectedReactionId(null); }} 
+                                  style={[styles.reactionOption, msg.user_reaction === '👎' && styles.reactionOptionActive]}
+                                >
+                                  <Text style={styles.reactionPickerEmoji}>👎</Text>
+                                </TouchableOpacity>
+                                {msg.user_reaction && (
+                                  <TouchableOpacity 
+                                    onPress={() => { onReactMessage?.(msg.id, msg.user_reaction!); setSelectedReactionId(null); }} 
+                                    style={styles.reactionOption}
+                                  >
+                                    <Ionicons name="close-circle-outline" size={24} color="#ef4444" />
+                                  </TouchableOpacity>
+                                )}
+                              </View>
+                            )}
+                          </>
+                        )}
+
+                        {msg.isBot && msg.isTranslating && (
+                          <Text style={[styles.inlineTamilHint, { color: accentColor }]}>
+                            Generating Tamil summary…
+                          </Text>
+                        )}
+
+                        {msg.translatedText ? (
+                          <View style={styles.translatedContainer}>
+                            <View style={[styles.translationDivider, { backgroundColor: accentColor + '30' }]} />
+                            <Text style={styles.translationLabel}>Tamil Summary</Text>
+                            <Text style={[styles.msgText, styles.botText, styles.translatedText]}>
+                              {msg.translatedText}
+                            </Text>
+                          </View>
+                        ) : null}
+
+                        <View style={styles.msgFooter}>
+                          <Text
+                            style={[
+                              styles.timeText,
+                              msg.isBot ? styles.botTime : styles.userTime,
+                            ]}
+                          >
+                            {formatTime(msg.timestamp)}
+                          </Text>
+                        </View>
+                      </View>
+                    </View>
+                  ))}
+                </View>
+              ))
+            )}
+
+            {isLoading && <TypingIndicator color={accentColor} />}
+          </ScrollView>
+        </View>
 
         {/* ── Input Bar ─────────────────────────────────── */}
         <KeyboardAvoidingView
@@ -542,11 +725,92 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   clearIcon: { fontSize: 18 },
+  threadPanel: {
+    maxHeight: 280,
+    marginHorizontal: 12,
+    marginTop: 10,
+    marginBottom: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+    borderRadius: 14,
+    backgroundColor: 'rgba(10, 15, 30, 0.95)',
+    padding: 10,
+  },
+  threadPanelTitle: {
+    color: '#f1f5f9',
+    fontSize: 13,
+    fontWeight: '800',
+    marginBottom: 8,
+  },
+  threadList: {
+    maxHeight: 230,
+  },
+  threadItem: {
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 8,
+    backgroundColor: 'rgba(255,255,255,0.03)',
+  },
+  threadDayGroup: {
+    marginBottom: 10,
+  },
+  threadGroupLabel: {
+    fontSize: 11,
+    fontWeight: '800',
+    marginBottom: 6,
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+  },
+  threadTitle: {
+    color: '#e2e8f0',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  threadSubtitle: {
+    color: '#94a3b8',
+    fontSize: 12,
+    marginTop: 2,
+  },
+  threadDay: {
+    marginTop: 4,
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  threadEmptyText: {
+    color: '#94a3b8',
+    fontSize: 12,
+    paddingVertical: 6,
+  },
 
   // ── Messages area
   messagesArea: { flex: 1 },
   messagesContent: { paddingVertical: 16, paddingHorizontal: 8 },
+  contentRow: {
+    flex: 1,
+    flexDirection: 'row',
+    minHeight: 0,
+  },
+  contentRowNarrow: {
+    flexDirection: 'column',
+  },
+  sidePanel: {
+    width: 320,
+    borderRightWidth: 1,
+    borderRightColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(10, 15, 30, 0.9)',
+    padding: 10,
+    marginTop: 6,
+    marginBottom: 6,
+    marginLeft: 10,
+    borderRadius: 14,
+  },
 
   // ── Empty state
   emptyState: {
@@ -723,6 +987,33 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#94a3b8',
   },
+  translatedContainer: {
+    marginTop: 10,
+    paddingTop: 8,
+  },
+  translationDivider: {
+    height: 1,
+    width: '100%',
+    marginBottom: 8,
+  },
+  translationLabel: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: 'rgba(255,255,255,0.4)',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 4,
+  },
+  translatedText: {
+    fontStyle: 'italic',
+    color: '#cbd5e1',
+  },
+  inlineTamilHint: {
+    fontSize: 11,
+    fontStyle: 'italic',
+    marginTop: 8,
+    opacity: 0.85,
+  },
 
   // ── Input bar
   inputBar: {
@@ -763,6 +1054,64 @@ const styles = StyleSheet.create({
   sendIcon: {
     fontSize: 20,
     fontWeight: '800',
+  },
+
+  // ── Reactions
+  reactionsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 8,
+    paddingTop: 6,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.05)',
+  },
+  reactionBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 14,
+  },
+  reactionBadgeActive: {
+    backgroundColor: 'rgba(99, 102, 241, 0.2)',
+    borderColor: 'rgba(99, 102, 241, 0.4)',
+    borderWidth: 1,
+  },
+  reactionBadgeText: {
+    fontSize: 16,
+    color: '#e2e8f0',
+    fontWeight: '600',
+  },
+  reactionPickerOverlay: {
+    position: 'absolute',
+    top: -55,
+    flexDirection: 'row',
+    backgroundColor: 'rgba(15, 23, 42, 0.95)',
+    borderRadius: 24,
+    padding: 6,
+    gap: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 10,
+    zIndex: 1000,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  reactionPickerRight: { right: 0 },
+  reactionPickerLeft: { left: 0 },
+  reactionOption: {
+    padding: 6,
+    borderRadius: 12,
+  },
+  reactionOptionActive: {
+    backgroundColor: 'rgba(99, 102, 241, 0.2)',
+  },
+  reactionPickerEmoji: {
+    fontSize: 32,
   },
 });
 

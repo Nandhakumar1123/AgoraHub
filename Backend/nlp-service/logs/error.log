@@ -497,3 +497,222 @@
 2026-04-17 12:21:31 [ERROR]: Uncaught exception {"error":"listen EADDRINUSE: address already in use 0.0.0.0:3002","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:3002\n    at Server.setupListenHandle [as _listen2] (node:net:1940:16)\n    at listenInCluster (node:net:1997:12)\n    at node:net:2206:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}
 2026-04-17 12:31:25 [ERROR]: Uncaught exception {"error":"listen EADDRINUSE: address already in use 0.0.0.0:3002","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:3002\n    at Server.setupListenHandle [as _listen2] (node:net:1940:16)\n    at listenInCluster (node:net:1997:12)\n    at node:net:2206:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}
 2026-04-17 12:33:22 [ERROR]: Uncaught exception {"error":"listen EADDRINUSE: address already in use 0.0.0.0:3002","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:3002\n    at Server.setupListenHandle [as _listen2] (node:net:1940:16)\n    at listenInCluster (node:net:1997:12)\n    at node:net:2206:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}
+2026-04-21 19:04:57 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-04-21 19:04:57 [ERROR]: Chunk translation error {"error":"timeout of 60000ms exceeded","attempt":1}
+2026-04-21 19:06:49 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-04-21 19:06:49 [ERROR]: LLM query failed {"error":"timeout of 60000ms exceeded","intent":"summary"}
+2026-04-21 19:07:01 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-04-21 19:07:01 [ERROR]: Chunk translation error {"error":"timeout of 60000ms exceeded","attempt":1}
+2026-04-21 19:09:01 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-04-21 19:09:01 [ERROR]: Chunk translation error {"error":"timeout of 60000ms exceeded","attempt":1}
+2026-04-21 19:09:13 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-04-21 19:09:13 [ERROR]: LLM query failed {"error":"timeout of 60000ms exceeded","intent":"summary"}
+2026-04-22 11:57:36 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-04-22 11:57:37 [ERROR]: LLM query failed {"error":"timeout of 60000ms exceeded","intent":"summary"}
+2026-04-22 11:59:46 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-04-22 11:59:46 [ERROR]: LLM per-message solutions failed {"error":"timeout of 60000ms exceeded"}
+2026-04-22 12:01:50 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-04-22 12:01:50 [ERROR]: LLM query failed {"error":"timeout of 60000ms exceeded","intent":"summary"}
+2026-04-22 12:02:51 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-04-23 10:16:30 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-04-23 10:16:30 [ERROR]: Chunk translation error {"error":"timeout of 60000ms exceeded","attempt":1}
+2026-04-23 10:24:30 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-04-23 10:24:30 [ERROR]: Chunk translation error {"error":"timeout of 60000ms exceeded","attempt":1}
+2026-04-23 10:24:53 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-04-23 10:24:53 [ERROR]: Chunk translation error {"error":"timeout of 60000ms exceeded","attempt":1}
+2026-04-23 10:25:31 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-04-23 10:25:31 [ERROR]: Chunk translation error {"error":"timeout of 60000ms exceeded","attempt":2}
+2026-04-23 10:25:54 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-04-23 10:25:54 [ERROR]: Chunk translation error {"error":"timeout of 60000ms exceeded","attempt":2}
+2026-04-23 19:02:44 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-04-23 19:02:44 [ERROR]: Chunk translation error {"error":"timeout of 60000ms exceeded","attempt":1}
+2026-04-23 19:03:44 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-04-23 19:03:44 [ERROR]: Chunk translation error {"error":"timeout of 60000ms exceeded","attempt":2}
+2026-04-23 19:53:15 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-04-23 19:53:15 [ERROR]: Chunk translation error {"error":"timeout of 60000ms exceeded","attempt":1}
+2026-04-23 19:54:16 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-04-23 19:54:16 [ERROR]: Chunk translation error {"error":"timeout of 60000ms exceeded","attempt":2}
+2026-04-23 19:55:32 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-04-23 19:55:32 [ERROR]: Chunk translation error {"error":"timeout of 60000ms exceeded","attempt":1}
+2026-04-23 19:56:32 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-04-23 19:56:32 [ERROR]: Chunk translation error {"error":"timeout of 60000ms exceeded","attempt":2}
+2026-04-29 20:44:24 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-04-29 20:44:24 [ERROR]: LLM query failed {"error":"timeout of 60000ms exceeded","intent":"summary"}
+2026-04-29 20:50:13 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-04-29 20:50:13 [ERROR]: Chunk translation error {"error":"timeout of 60000ms exceeded","attempt":1}
+2026-04-29 20:50:44 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-04-29 20:50:44 [ERROR]: Chunk translation error {"error":"timeout of 60000ms exceeded","attempt":1}
+2026-04-29 20:51:13 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-04-29 20:51:13 [ERROR]: Chunk translation error {"error":"timeout of 60000ms exceeded","attempt":2}
+2026-04-29 20:52:14 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-04-29 20:52:14 [ERROR]: Chunk translation error {"error":"timeout of 60000ms exceeded","attempt":1}
+2026-04-29 20:53:24 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-04-29 20:53:24 [ERROR]: Chunk translation error {"error":"timeout of 60000ms exceeded","attempt":1}
+2026-04-29 21:00:50 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-04-29 21:00:50 [ERROR]: LLM query failed {"error":"timeout of 60000ms exceeded","intent":"summary"}
+2026-04-29 21:05:02 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-04-29 21:05:02 [ERROR]: Chunk translation error {"error":"timeout of 60000ms exceeded","attempt":1}
+2026-04-29 21:39:29 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-04-29 21:39:29 [ERROR]: Chunk translation error {"error":"timeout of 60000ms exceeded","attempt":1}
+2026-04-29 21:40:49 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-04-29 21:40:49 [ERROR]: Chunk translation error {"error":"timeout of 60000ms exceeded","attempt":1}
+2026-04-30 12:52:15 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-04-30 13:02:51 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-04-30 13:04:14 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-05-01 16:12:48 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-05-01 16:14:07 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-05-01 16:20:13 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-05-01 16:20:22 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-05-01 16:20:22 [ERROR]: LLM query failed {"error":"timeout of 60000ms exceeded","intent":"summary"}
+2026-05-01 16:21:30 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-05-01 16:24:12 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-05-01 17:40:19 [ERROR]: Ollama query error {"error":"timeout of 60000ms exceeded"}
+2026-05-07 21:38:11 [ERROR]: Ollama query error {"error":"timeout of 120000ms exceeded"}
+2026-05-07 21:38:11 [ERROR]: Tamil translation attempt 1 failed {"error":"timeout of 120000ms exceeded"}
+2026-05-07 21:40:11 [ERROR]: Ollama query error {"error":"timeout of 120000ms exceeded"}
+2026-05-07 21:40:11 [ERROR]: Tamil translation attempt 2 failed {"error":"timeout of 120000ms exceeded"}
+2026-05-07 21:40:11 [ERROR]: Translation endpoint error {"error":"timeout of 120000ms exceeded","stack":"AxiosError: timeout of 120000ms exceeded\n    at RedirectableRequest.handleRequestTimeout (C:\\AgoraHub\\Backend\\nlp-service\\node_modules\\axios\\dist\\node\\axios.cjs:3604:15)\n    at RedirectableRequest.emit (node:events:507:28)\n    at Timeout._onTimeout (C:\\AgoraHub\\Backend\\nlp-service\\node_modules\\follow-redirects\\index.js:221:12)\n    at listOnTimeout (node:internal/timers:608:17)\n    at process.processTimers (node:internal/timers:543:7)\n    at Axios.request (C:\\AgoraHub\\Backend\\nlp-service\\node_modules\\axios\\dist\\node\\axios.cjs:4796:41)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async queryOllama (C:\\AgoraHub\\Backend\\nlp-service\\services\\rag.service.js:2934:22)\n    at async translateTamilReliably (C:\\AgoraHub\\Backend\\nlp-service\\services\\rag.service.js:304:22)\n    at async translateStructuredIssueListToTamil (C:\\AgoraHub\\Backend\\nlp-service\\services\\rag.service.js:358:10)\n    at async C:\\AgoraHub\\Backend\\nlp-service\\routes\\bot.routes.js:181:26"}
+2026-05-07 21:50:43 [ERROR]: Ollama query error {"error":"timeout of 120000ms exceeded"}
+2026-05-07 21:50:43 [ERROR]: Tamil translation attempt 1 failed {"error":"timeout of 120000ms exceeded"}
+2026-05-07 21:52:36 [ERROR]: Tamil translation failed all quality checks. Returning original text.
+2026-05-07 22:10:16 [ERROR]: Ollama query error {"error":"timeout of 120000ms exceeded"}
+2026-05-07 22:10:16 [ERROR]: Tamil translation attempt 1 failed {"error":"timeout of 120000ms exceeded"}
+2026-05-07 22:12:16 [ERROR]: Ollama query error {"error":"timeout of 120000ms exceeded"}
+2026-05-07 22:12:16 [ERROR]: Tamil translation attempt 2 failed {"error":"timeout of 120000ms exceeded"}
+2026-05-07 22:12:16 [ERROR]: Translation endpoint error {"error":"timeout of 120000ms exceeded","stack":"AxiosError: timeout of 120000ms exceeded\n    at RedirectableRequest.handleRequestTimeout (C:\\AgoraHub\\Backend\\nlp-service\\node_modules\\axios\\dist\\node\\axios.cjs:3604:15)\n    at RedirectableRequest.emit (node:events:507:28)\n    at Timeout._onTimeout (C:\\AgoraHub\\Backend\\nlp-service\\node_modules\\follow-redirects\\index.js:221:12)\n    at listOnTimeout (node:internal/timers:608:17)\n    at process.processTimers (node:internal/timers:543:7)\n    at Axios.request (C:\\AgoraHub\\Backend\\nlp-service\\node_modules\\axios\\dist\\node\\axios.cjs:4796:41)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async queryOllama (C:\\AgoraHub\\Backend\\nlp-service\\services\\rag.service.js:2953:22)\n    at async translateTamilReliably (C:\\AgoraHub\\Backend\\nlp-service\\services\\rag.service.js:305:22)\n    at async translateStructuredIssueListToTamil (C:\\AgoraHub\\Backend\\nlp-service\\services\\rag.service.js:359:10)\n    at async C:\\AgoraHub\\Backend\\nlp-service\\routes\\bot.routes.js:181:26"}
+2026-05-07 22:15:33 [ERROR]: Ollama query error {"error":"timeout of 120000ms exceeded"}
+2026-05-07 22:15:33 [ERROR]: Tamil translation attempt 1 failed {"error":"timeout of 120000ms exceeded"}
+2026-05-07 22:17:33 [ERROR]: Ollama query error {"error":"timeout of 120000ms exceeded"}
+2026-05-07 22:17:33 [ERROR]: Tamil translation attempt 2 failed {"error":"timeout of 120000ms exceeded"}
+2026-05-07 22:17:33 [ERROR]: Translation endpoint error {"error":"timeout of 120000ms exceeded","stack":"AxiosError: timeout of 120000ms exceeded\n    at RedirectableRequest.handleRequestTimeout (C:\\AgoraHub\\Backend\\nlp-service\\node_modules\\axios\\dist\\node\\axios.cjs:3604:15)\n    at RedirectableRequest.emit (node:events:507:28)\n    at Timeout._onTimeout (C:\\AgoraHub\\Backend\\nlp-service\\node_modules\\follow-redirects\\index.js:221:12)\n    at listOnTimeout (node:internal/timers:608:17)\n    at process.processTimers (node:internal/timers:543:7)\n    at Axios.request (C:\\AgoraHub\\Backend\\nlp-service\\node_modules\\axios\\dist\\node\\axios.cjs:4796:41)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async queryOllama (C:\\AgoraHub\\Backend\\nlp-service\\services\\rag.service.js:2953:22)\n    at async translateTamilReliably (C:\\AgoraHub\\Backend\\nlp-service\\services\\rag.service.js:305:22)\n    at async translateStructuredIssueListToTamil (C:\\AgoraHub\\Backend\\nlp-service\\services\\rag.service.js:359:10)\n    at async C:\\AgoraHub\\Backend\\nlp-service\\routes\\bot.routes.js:181:26"}
+2026-05-07 22:29:39 [ERROR]: Ollama query error {"error":"timeout of 120000ms exceeded"}
+2026-05-07 22:29:39 [ERROR]: Tamil translation attempt 1 failed {"model":"aya:8b","error":"timeout of 120000ms exceeded"}
+2026-05-08 10:04:34 [ERROR]: CRITICAL: Missing required Ollama models {"missing":["llama3.2:1b","aya:8b"]}
+2026-05-08 17:18:41 [ERROR]: Ollama query error {"error":"timeout of 300000ms exceeded"}
+2026-05-08 17:18:41 [ERROR]: Tamil translation attempt 1 failed {"model":"aya:8b","error":"timeout of 300000ms exceeded"}
+2026-05-08 18:49:55 [ERROR]: Ollama query error {"error":"timeout of 300000ms exceeded"}
+2026-05-08 18:49:55 [ERROR]: Tamil translation attempt 1 failed {"model":"aya:8b","error":"timeout of 300000ms exceeded"}
+2026-05-08 18:49:57 [ERROR]: Ollama query error {"error":"timeout of 300000ms exceeded"}
+2026-05-08 18:49:57 [ERROR]: Tamil translation attempt 1 failed {"model":"aya:8b","error":"timeout of 300000ms exceeded"}
+2026-05-08 19:24:04 [ERROR]: Ollama query error {"error":"timeout of 300000ms exceeded"}
+2026-05-08 19:24:04 [ERROR]: Tamil translation attempt 2 failed {"model":"llama3.1:8b","error":"timeout of 300000ms exceeded"}
+2026-05-08 19:24:05 [ERROR]: Ollama query error {"error":"timeout of 300000ms exceeded"}
+2026-05-08 19:24:05 [ERROR]: Tamil translation attempt 2 failed {"model":"llama3.1:8b","error":"timeout of 300000ms exceeded"}
+2026-05-08 19:25:32 [ERROR]: Tamil translation failed all quality checks. Returning original text.
+2026-05-08 19:29:20 [ERROR]: Ollama query error {"error":"timeout of 300000ms exceeded"}
+2026-05-08 19:29:20 [ERROR]: Tamil translation attempt 1 failed {"model":"aya:8b","error":"timeout of 300000ms exceeded"}
+2026-05-08 20:42:40 [ERROR]: Uncaught exception {"error":"listen EADDRINUSE: address already in use 0.0.0.0:3002","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:3002\n    at Server.setupListenHandle [as _listen2] (node:net:1940:16)\n    at listenInCluster (node:net:1997:12)\n    at node:net:2206:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}
+2026-05-08 20:49:55 [ERROR]: Uncaught exception {"error":"listen EADDRINUSE: address already in use 0.0.0.0:3002","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:3002\n    at Server.setupListenHandle [as _listen2] (node:net:1940:16)\n    at listenInCluster (node:net:1997:12)\n    at node:net:2206:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}
+2026-05-08 21:42:28 [ERROR]: Ollama query error {"error":"timeout of 300000ms exceeded"}
+2026-05-08 21:42:28 [ERROR]: Tamil translation attempt 1 failed {"model":"aya:8b","error":"timeout of 300000ms exceeded"}
+2026-05-08 22:04:59 [ERROR]: Ollama query error {"error":"timeout of 300000ms exceeded"}
+2026-05-08 22:04:59 [ERROR]: Tamil translation attempt 1 failed {"model":"aya:8b","error":"timeout of 300000ms exceeded"}
+2026-05-08 22:21:40 [ERROR]: Tamil translation failed all quality checks. Returning original text.
+2026-05-08 22:38:53 [ERROR]: Ollama query error {"error":"timeout of 300000ms exceeded"}
+2026-05-08 22:38:53 [ERROR]: Tamil translation attempt 2 failed {"model":"llama3.1:8b","error":"timeout of 300000ms exceeded"}
+2026-05-09 09:39:06 [ERROR]: Tamil translation failed all quality checks. Returning original text.
+2026-05-09 10:35:00 [ERROR]: Ollama query error {"error":"timeout of 300000ms exceeded"}
+2026-05-09 10:35:00 [ERROR]: Tamil translation attempt 1 failed {"model":"aya:8b","error":"timeout of 300000ms exceeded"}
+2026-05-09 10:41:09 [ERROR]: Tamil translation failed all quality checks. Returning original text.
+2026-05-09 10:42:29 [ERROR]: Ollama query error {"error":"timeout of 300000ms exceeded"}
+2026-05-09 10:42:29 [ERROR]: Tamil translation attempt 1 failed {"model":"aya:8b","error":"timeout of 300000ms exceeded"}
+2026-05-09 10:47:29 [ERROR]: Ollama query error {"error":"timeout of 300000ms exceeded"}
+2026-05-09 10:47:29 [ERROR]: Tamil translation attempt 2 failed {"model":"llama3.1:8b","error":"timeout of 300000ms exceeded"}
+2026-05-09 10:48:42 [ERROR]: Tamil translation failed all quality checks. Returning original text.
+2026-05-09 11:48:50 [ERROR]: Ollama query error {"error":"timeout of 300000ms exceeded"}
+2026-05-09 11:48:50 [ERROR]: Tamil translation attempt 1 failed {"model":"aya:8b","error":"timeout of 300000ms exceeded"}
+2026-05-09 11:53:50 [ERROR]: Ollama query error {"error":"timeout of 300000ms exceeded"}
+2026-05-09 11:53:50 [ERROR]: Tamil translation attempt 2 failed {"model":"llama3.1:8b","error":"timeout of 300000ms exceeded"}
+2026-05-09 11:55:46 [ERROR]: Tamil translation failed all quality checks. Returning original text.
+2026-05-09 11:56:38 [ERROR]: Ollama query error {"error":"timeout of 300000ms exceeded"}
+2026-05-09 11:56:38 [ERROR]: Tamil translation attempt 2 failed {"model":"llama3.1:8b","error":"timeout of 300000ms exceeded"}
+2026-05-09 11:57:03 [ERROR]: Tamil translation failed all quality checks. Returning original text.
+2026-05-09 12:34:11 [ERROR]: Ollama query error {"error":"timeout of 300000ms exceeded"}
+2026-05-09 12:34:11 [ERROR]: Summary Tamil translate attempt error {"attempt":1,"error":"timeout of 300000ms exceeded"}
+2026-05-09 12:41:03 [ERROR]: Ollama query error {"error":"socket hang up"}
+2026-05-09 12:41:03 [ERROR]: LLM query failed {"error":"socket hang up","intent":"summary"}
+2026-05-09 12:46:04 [ERROR]: Ollama query error {"error":"timeout of 300000ms exceeded"}
+2026-05-09 12:46:04 [ERROR]: Summary Tamil translate attempt error {"attempt":1,"error":"timeout of 300000ms exceeded"}
+2026-05-09 12:52:50 [ERROR]: Ollama query error {"error":"Request failed with status code 500"}
+2026-05-09 12:52:50 [ERROR]: Summary Tamil translate attempt error {"attempt":1,"error":"Request failed with status code 500"}
+2026-05-09 12:52:53 [ERROR]: Ollama query error {"error":"Request failed with status code 500"}
+2026-05-09 12:52:53 [ERROR]: Summary Tamil translate attempt error {"attempt":2,"error":"Request failed with status code 500"}
+2026-05-09 13:01:05 [ERROR]: Ollama query error {"error":"timeout of 300000ms exceeded"}
+2026-05-09 13:01:05 [ERROR]: Summary Tamil translate attempt error {"attempt":1,"error":"timeout of 300000ms exceeded"}
+2026-05-09 13:13:44 [ERROR]: Ollama query error {"error":"timeout of 300000ms exceeded"}
+2026-05-09 13:13:44 [ERROR]: Summary Tamil translate attempt error {"attempt":1,"error":"timeout of 300000ms exceeded"}
+2026-05-09 13:18:44 [ERROR]: Ollama query error {"error":"timeout of 300000ms exceeded"}
+2026-05-09 13:18:44 [ERROR]: Summary Tamil translate attempt error {"attempt":2,"error":"timeout of 300000ms exceeded"}
+2026-05-09 15:07:24 [ERROR]: Ollama query error {"error":"timeout of 300000ms exceeded"}
+2026-05-09 15:07:24 [ERROR]: Summary Tamil translate attempt error {"attempt":1,"error":"timeout of 300000ms exceeded"}
+2026-05-09 19:45:07 [ERROR]: Ollama query error {"error":"timeout of 600000ms exceeded"}
+2026-05-09 19:45:07 [ERROR]: Summary Tamil translate attempt error {"attempt":1,"error":"timeout of 600000ms exceeded"}
+2026-05-09 20:12:12 [ERROR]: Ollama query error {"error":"timeout of 600000ms exceeded"}
+2026-05-09 20:12:12 [ERROR]: Summary Tamil translate attempt error {"attempt":2,"error":"timeout of 600000ms exceeded"}
+2026-05-09 20:37:32 [ERROR]: Uncaught exception {"error":"listen EADDRINUSE: address already in use 0.0.0.0:3002","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:3002\n    at Server.setupListenHandle [as _listen2] (node:net:1940:16)\n    at listenInCluster (node:net:1997:12)\n    at node:net:2206:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}
+2026-05-09 20:43:50 [ERROR]: Uncaught exception {"error":"listen EADDRINUSE: address already in use 0.0.0.0:3002","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:3002\n    at Server.setupListenHandle [as _listen2] (node:net:1940:16)\n    at listenInCluster (node:net:1997:12)\n    at node:net:2206:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}
+2026-05-09 22:30:55 [ERROR]: Ollama query error {"error":"timeout of 600000ms exceeded"}
+2026-05-09 22:30:55 [ERROR]: Tamil translation attempt 1 failed {"model":"aya:8b","error":"timeout of 600000ms exceeded"}
+2026-05-09 22:36:52 [ERROR]: Forced shutdown after timeout
+2026-05-11 20:01:02 [ERROR]: Ollama query error {"error":"timeout of 600000ms exceeded"}
+2026-05-11 20:01:02 [ERROR]: Tamil translation attempt 1 failed {"model":"aya:8b","error":"timeout of 600000ms exceeded"}
+2026-05-11 20:01:03 [ERROR]: Ollama query error {"error":"timeout of 600000ms exceeded"}
+2026-05-11 20:01:03 [ERROR]: Tamil translation attempt 1 failed {"model":"aya:8b","error":"timeout of 600000ms exceeded"}
+2026-05-11 20:02:17 [ERROR]: Ollama query error {"error":"timeout of 600000ms exceeded"}
+2026-05-11 20:02:17 [ERROR]: LLM query failed {"error":"timeout of 600000ms exceeded","intent":"summary"}
+2026-05-11 20:11:03 [ERROR]: Ollama query error {"error":"timeout of 600000ms exceeded"}
+2026-05-11 20:11:03 [ERROR]: Tamil translation attempt 2 failed {"model":"llama3.1:8b","error":"timeout of 600000ms exceeded"}
+2026-05-11 20:11:03 [ERROR]: Tamil translation failed all quality checks. Returning empty translation.
+2026-05-11 20:12:37 [ERROR]: Ollama query error {"error":"timeout of 600000ms exceeded"}
+2026-05-11 20:12:37 [ERROR]: Tamil translation attempt 1 failed {"model":"aya:8b","error":"timeout of 600000ms exceeded"}
+2026-05-11 20:22:37 [ERROR]: Ollama query error {"error":"timeout of 600000ms exceeded"}
+2026-05-11 20:22:37 [ERROR]: Tamil translation attempt 2 failed {"model":"llama3.1:8b","error":"timeout of 600000ms exceeded"}
+2026-05-11 20:22:37 [ERROR]: Tamil translation failed all quality checks. Returning empty translation.
+2026-05-11 20:33:05 [ERROR]: Ollama query error {"error":"timeout of 600000ms exceeded"}
+2026-05-11 20:33:05 [ERROR]: Tamil translation attempt 1 failed {"model":"aya:8b","error":"timeout of 600000ms exceeded"}
+2026-05-11 20:33:12 [ERROR]: Ollama query error {"error":"timeout of 600000ms exceeded"}
+2026-05-11 20:33:12 [ERROR]: Tamil translation attempt 1 failed {"model":"aya:8b","error":"timeout of 600000ms exceeded"}
+2026-05-11 20:43:05 [ERROR]: Ollama query error {"error":"timeout of 600000ms exceeded"}
+2026-05-11 20:43:05 [ERROR]: Tamil translation attempt 2 failed {"model":"llama3.1:8b","error":"timeout of 600000ms exceeded"}
+2026-05-11 20:43:05 [ERROR]: Tamil translation failed all quality checks. Returning empty translation.
+2026-05-11 20:43:12 [ERROR]: Ollama query error {"error":"timeout of 600000ms exceeded"}
+2026-05-11 20:43:12 [ERROR]: Tamil translation attempt 2 failed {"model":"llama3.1:8b","error":"timeout of 600000ms exceeded"}
+2026-05-11 20:43:12 [ERROR]: Tamil translation failed all quality checks. Returning empty translation.
+2026-05-11 20:54:00 [ERROR]: Ollama query error {"error":"timeout of 600000ms exceeded"}
+2026-05-11 20:54:00 [ERROR]: Tamil translation attempt 1 failed {"model":"aya:8b","error":"timeout of 600000ms exceeded"}
+2026-05-11 21:06:59 [ERROR]: Ollama query error {"error":"timeout of 600000ms exceeded"}
+2026-05-11 21:06:59 [ERROR]: Summary Tamil translate error {"error":"timeout of 600000ms exceeded"}
+2026-05-11 21:16:19 [ERROR]: Forced shutdown after timeout
+2026-05-13 12:06:16 [ERROR]: Uncaught exception {"error":"listen EADDRINUSE: address already in use 0.0.0.0:3002","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:3002\n    at Server.setupListenHandle [as _listen2] (node:net:1940:16)\n    at listenInCluster (node:net:1997:12)\n    at node:net:2206:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}
+2026-05-13 12:09:44 [ERROR]: Uncaught exception {"error":"listen EADDRINUSE: address already in use 0.0.0.0:3002","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:3002\n    at Server.setupListenHandle [as _listen2] (node:net:1940:16)\n    at listenInCluster (node:net:1997:12)\n    at node:net:2206:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}
+2026-05-13 15:06:18 [ERROR]: Ollama query error {"error":"timeout of 600000ms exceeded"}
+2026-05-13 15:06:18 [ERROR]: Tamil translation attempt 1 failed {"model":"aya:8b","error":"timeout of 600000ms exceeded"}
+2026-05-13 15:42:17 [ERROR]: Ollama query error {"error":"Request failed with status code 500"}
+2026-05-13 15:42:18 [ERROR]: Tamil translation attempt 2 failed {"model":"llama3.1:8b","error":"Request failed with status code 500"}
+2026-05-13 15:42:19 [ERROR]: Tamil translation failed all quality checks. Returning empty translation.
+2026-05-13 15:53:13 [ERROR]: Ollama query error {"error":"timeout of 600000ms exceeded"}
+2026-05-13 15:53:13 [ERROR]: Tamil translation attempt 1 failed {"model":"aya:8b","error":"timeout of 600000ms exceeded"}
+2026-05-13 15:57:09 [ERROR]: Ollama query error {"error":"timeout of 600000ms exceeded"}
+2026-05-13 15:57:09 [ERROR]: Tamil translation attempt 1 failed {"model":"aya:8b","error":"timeout of 600000ms exceeded"}
+2026-05-13 16:51:05 [ERROR]: Ollama query error {"error":"timeout of 600000ms exceeded"}
+2026-05-13 16:51:05 [ERROR]: Tamil translation attempt 2 failed {"model":"llama3.1:8b","error":"timeout of 600000ms exceeded"}
+2026-05-13 16:51:05 [ERROR]: Tamil translation failed all quality checks. Returning empty translation.
+2026-05-13 16:51:05 [ERROR]: Ollama query error {"error":"timeout of 600000ms exceeded"}
+2026-05-13 16:51:05 [ERROR]: Tamil translation attempt 2 failed {"model":"llama3.1:8b","error":"timeout of 600000ms exceeded"}
+2026-05-13 16:51:05 [ERROR]: Tamil translation failed all quality checks. Returning empty translation.
+2026-05-13 17:34:53 [ERROR]: Ollama query error {"error":"timeout of 600000ms exceeded"}
+2026-05-13 19:22:22 [ERROR]: Ollama query error {"error":"timeout of 600000ms exceeded"}
+2026-05-13 19:22:22 [ERROR]: Tamil translation attempt 1 failed {"model":"aya:8b","error":"timeout of 600000ms exceeded"}
+2026-05-15 11:34:59 [ERROR]: Ollama query error {"error":"timeout of 600000ms exceeded"}
+2026-05-15 11:34:59 [ERROR]: Tamil translation attempt 1 failed {"model":"aya:8b","error":"timeout of 600000ms exceeded"}
+2026-05-16 14:30:10 [ERROR]: Ollama query error {"error":"timeout of 600000ms exceeded"}
+2026-05-16 14:30:10 [ERROR]: Summary Tamil translate error {"error":"timeout of 600000ms exceeded"}
+2026-05-16 14:35:44 [ERROR]: Ollama query error {"error":"timeout of 600000ms exceeded"}
+2026-05-16 14:35:44 [ERROR]: Summary Tamil translate error {"error":"timeout of 600000ms exceeded"}
+2026-05-16 14:59:14 [ERROR]: Ollama query error {"error":"timeout of 600000ms exceeded"}
+2026-05-16 14:59:14 [ERROR]: Summary Tamil translate error {"error":"timeout of 600000ms exceeded"}
+2026-05-17 10:48:30 [ERROR]: Failed to fetch bot history for complaints {"error":"column b.reaction_count does not exist","communityId":"58","userId":15}
+2026-05-17 10:48:43 [ERROR]: Failed to fetch bot history for petitions {"error":"column b.reaction_count does not exist","communityId":"58","userId":15}
+2026-05-17 19:42:18 [ERROR]: Failed to save bot history for chat {"error":"value too long for type character varying(32)"}
+2026-05-18 09:49:25 [ERROR]: Failed to save bot history for chat {"error":"value too long for type character varying(32)"}
+2026-05-18 10:45:04 [ERROR]: Content moderation error {"error":"relation \"content_quarantine\" does not exist"}
