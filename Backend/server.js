@@ -637,6 +637,27 @@ app.use('/api/admin', adminRoutes);
 // (Include all your existing community endpoints here - I'll add them below)
 // Create community, join community, get communities, etc.
 
+// Endpoint to request/enable creator access for testing
+app.post("/api/request_creator_access", authenticateToken, async (req, res) => {
+  try {
+    const user_id = req.user.user_id;
+    if (!user_id) {
+      return res.status(401).json({ error: "Unauthorized: Missing user authentication context" });
+    }
+    
+    // Elevate user's can_create_community permission in the database
+    await pool.query(
+      `UPDATE users SET can_create_community = true WHERE user_id = $1`,
+      [user_id]
+    );
+
+    res.json({ message: "✅ Creator access granted successfully" });
+  } catch (error) {
+    console.error("❌ Error requesting creator access:", error);
+    res.status(500).json({ error: "Failed to request creator access" });
+  }
+});
+
 app.post("/api/create_community", authenticateToken, async (req, res) => {
   try {
     const {
@@ -656,9 +677,9 @@ app.post("/api/create_community", authenticateToken, async (req, res) => {
       return res.status(401).json({ error: "Unauthorized: Missing user authentication context" });
     }
 
-    // 1. Role-Based Restriction and JWT Enforcement (database lookup to verify latest permissions)
+    // 1. Verify authenticated user exists
     const userQuery = await pool.query(
-      `SELECT role, can_create_community FROM users WHERE user_id = $1`,
+      `SELECT user_id FROM users WHERE user_id = $1`,
       [created_by]
     );
 
@@ -666,13 +687,8 @@ app.post("/api/create_community", authenticateToken, async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    const { role, can_create_community } = userQuery.rows[0];
-
-    // Permit only ADMIN or HEAD, or if can_create_community is true
-    const isAuthorized = role === 'ADMIN' || role === 'HEAD' || can_create_community === true;
-    if (!isAuthorized) {
-      return res.status(403).json({ error: "You are not authorized to create a community" });
-    }
+    const MIN_REASON_LENGTH = 20;
+    const MAX_COMMUNITIES_PER_USER = 5;
 
     // 2. Input Validation Rules
     if (!name || typeof name !== 'string' || !name.trim()) {
@@ -682,8 +698,17 @@ app.post("/api/create_community", authenticateToken, async (req, res) => {
       return res.status(400).json({ error: "Community name cannot exceed 255 characters" });
     }
 
-    if (description && (typeof description !== 'string' || description.length > 1000)) {
-      return res.status(400).json({ error: "Description must be a valid text up to 1000 characters" });
+    const trimmedDescription = typeof description === 'string' ? description.trim() : '';
+    if (!trimmedDescription) {
+      return res.status(400).json({ error: "Please provide a reason for creating this community" });
+    }
+    if (trimmedDescription.length < MIN_REASON_LENGTH) {
+      return res.status(400).json({
+        error: `Please explain why this community is needed (at least ${MIN_REASON_LENGTH} characters)`
+      });
+    }
+    if (trimmedDescription.length > 1000) {
+      return res.status(400).json({ error: "Reason must be a valid text up to 1000 characters" });
     }
 
     if (!community_type || typeof community_type !== 'string' || !community_type.trim()) {
@@ -704,7 +729,26 @@ app.post("/api/create_community", authenticateToken, async (req, res) => {
     // Normalize type case to standard array capitalization
     const matchedType = allowedTypes.find(type => type.toLowerCase() === formattedType.toLowerCase());
 
-    // 3. Prevent duplicate community names per user
+    // 3. Limit how many active communities one person can create
+    const activeCommunityCount = await pool.query(
+      `SELECT COUNT(*)::int AS count
+       FROM communities c
+       JOIN memberships m ON c.community_id = m.community_id
+       WHERE c.created_by = $1
+         AND m.user_id = $1
+         AND m.role = 'HEAD'
+         AND m.status = 'ACTIVE'
+         AND COALESCE(c.is_archived, FALSE) = FALSE`,
+      [created_by]
+    );
+
+    if (activeCommunityCount.rows[0].count >= MAX_COMMUNITIES_PER_USER) {
+      return res.status(400).json({
+        error: `You can create up to ${MAX_COMMUNITIES_PER_USER} active communities. Archive an existing one before creating another.`
+      });
+    }
+
+    // 4. Prevent duplicate community names per user
     const duplicateCheck = await pool.query(
       `SELECT 1 FROM communities WHERE LOWER(TRIM(name)) = LOWER(TRIM($1)) AND created_by = $2`,
       [name, created_by]
@@ -728,7 +772,7 @@ app.post("/api/create_community", authenticateToken, async (req, res) => {
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
        RETURNING community_id, code, name, description, community_type,
                  complaints_enabled, petitions_enabled, voting_enabled, group_chat_enabled, anonymous_enabled, events_enabled, created_at`,
-      [code, name.trim(), description ? description.trim() : "", matchedType, created_by,
+      [code, name.trim(), trimmedDescription, matchedType, created_by,
         complaints_enabled, petitions_enabled, voting_enabled, group_chat_enabled, anonymous_enabled, events_enabled]
     );
 

@@ -39377,3 +39377,284 @@
 2026-05-21 19:28:32 [INFO]: Socket.io enabled for real-time features
 2026-05-21 19:28:32 [INFO]: NLP ChatBot service: OPTIONAL
 2026-05-21 19:28:55 [INFO]: HTTP Request {"method":"POST","path":"/api/register","status":400,"duration":"13ms","ip":"127.0.0.1"}
+2026-05-22 20:12:06 [INFO]: ✅ PostgreSQL connected
+2026-05-22 20:12:06 [INFO]: ✅ PostgreSQL connected
+2026-05-22 20:12:06 [INFO]: ✅ Redis connected (NLP service available)
+2026-05-22 20:12:06 [INFO]: Preloading NLP models...
+2026-05-22 20:12:06 [INFO]: Preloading NLP models...
+2026-05-22 20:12:06 [INFO]: Loading sentiment analysis model...
+2026-05-22 20:12:06 [INFO]: Loading toxicity detection model...
+2026-05-22 20:12:07 [INFO]: ✅ Sentiment analysis model loaded {"duration":"668ms"}
+2026-05-22 20:12:07 [WARN]: Slow operation {"operation":"Toxicity model initialization","duration":"1207ms"}
+2026-05-22 20:12:07 [INFO]: ✅ Toxicity detection model loaded {"duration":"1207ms"}
+2026-05-22 20:12:07 [INFO]: ✅ All NLP models preloaded
+2026-05-22 20:12:07 [INFO]: Available Ollama models: {"models":["aya:8b","llama3.2:1b","llama3.1:8b"]}
+2026-05-22 20:12:07 [INFO]: ✅ All required Ollama models are available
+2026-05-22 20:12:07 [INFO]: 🚀 Civix Platform running on port 3002
+2026-05-22 20:12:07 [INFO]: Environment: development
+2026-05-22 20:12:07 [INFO]: Accessible at http://localhost:3002 (local)
+2026-05-22 20:12:07 [INFO]: Socket.io enabled for real-time features
+2026-05-22 20:12:07 [INFO]: NLP ChatBot service: OPTIONAL
+2026-05-22 20:23:22 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"14ms","ip":"10.154.25.57"}
+2026-05-22 20:23:40 [INFO]: ✅ PostgreSQL connected
+2026-05-22 20:23:41 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"396ms","ip":"10.154.25.57"}
+2026-05-22 20:23:41 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":200,"duration":"32ms","ip":"10.154.25.57"}
+2026-05-22 20:23:41 [INFO]: ✅ PostgreSQL connected
+2026-05-22 20:23:41 [INFO]: ✅ PostgreSQL connected
+2026-05-22 20:23:41 [INFO]: ✅ PostgreSQL connected
+2026-05-22 20:23:41 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/24","status":200,"duration":"120ms","ip":"10.154.25.57"}
+2026-05-22 20:23:41 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/24","status":200,"duration":"109ms","ip":"10.154.25.57"}
+2026-05-22 20:23:41 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/24","status":200,"duration":"125ms","ip":"10.154.25.57"}
+2026-05-22 20:23:41 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/24","status":304,"duration":"12ms","ip":"10.154.25.57"}
+2026-05-22 20:23:41 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/24","status":304,"duration":"12ms","ip":"10.154.25.57"}
+2026-05-22 20:23:41 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/24","status":304,"duration":"12ms","ip":"10.154.25.57"}
+2026-05-22 20:23:59 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"2ms","ip":"10.154.25.57"}
+2026-05-22 20:24:10 [INFO]: ✅ PostgreSQL connected
+2026-05-22 20:24:11 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"256ms","ip":"10.154.25.57"}
+2026-05-22 20:24:11 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":200,"duration":"22ms","ip":"10.154.25.57"}
+2026-05-22 20:24:11 [INFO]: ✅ PostgreSQL connected
+2026-05-22 20:24:11 [INFO]: ✅ PostgreSQL connected
+2026-05-22 20:24:11 [INFO]: ✅ PostgreSQL connected
+2026-05-22 20:24:11 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/15","status":304,"duration":"120ms","ip":"10.154.25.57"}
+2026-05-22 20:24:11 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/15","status":304,"duration":"13ms","ip":"10.154.25.57"}
+2026-05-22 20:24:11 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"137ms","ip":"10.154.25.57"}
+2026-05-22 20:24:11 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"10ms","ip":"10.154.25.57"}
+2026-05-22 20:24:11 [INFO]: ✅ PostgreSQL connected
+2026-05-22 20:24:11 [INFO]: ✅ PostgreSQL connected
+2026-05-22 20:24:11 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"205ms","ip":"10.154.25.57"}
+2026-05-22 20:24:11 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"8ms","ip":"10.154.25.57"}
+2026-05-23 20:10:30 [INFO]: ✅ PostgreSQL connected
+2026-05-23 20:10:30 [INFO]: ✅ PostgreSQL connected
+2026-05-23 20:10:30 [WARN]: ⚠️  Redis not available (NLP caching disabled)
+2026-05-23 20:10:30 [INFO]: Preloading NLP models...
+2026-05-23 20:10:30 [INFO]: Preloading NLP models...
+2026-05-23 20:10:30 [INFO]: Loading sentiment analysis model...
+2026-05-23 20:10:30 [INFO]: Loading toxicity detection model...
+2026-05-23 20:10:31 [INFO]: ✅ Sentiment analysis model loaded {"duration":"801ms"}
+2026-05-23 20:10:32 [WARN]: Slow operation {"operation":"Toxicity model initialization","duration":"1739ms"}
+2026-05-23 20:10:32 [INFO]: ✅ Toxicity detection model loaded {"duration":"1739ms"}
+2026-05-23 20:10:32 [INFO]: ✅ All NLP models preloaded
+2026-05-23 20:10:32 [INFO]: Available Ollama models: {"models":["aya:8b","llama3.2:1b","llama3.1:8b"]}
+2026-05-23 20:10:32 [INFO]: ✅ All required Ollama models are available
+2026-05-23 20:10:32 [INFO]: 🚀 Civix Platform running on port 3002
+2026-05-23 20:10:32 [INFO]: Environment: development
+2026-05-23 20:10:32 [INFO]: Accessible at http://localhost:3002 (local)
+2026-05-23 20:10:32 [INFO]: Socket.io enabled for real-time features
+2026-05-23 20:10:32 [INFO]: NLP ChatBot service: OPTIONAL
+2026-05-23 20:16:06 [INFO]: ✅ PostgreSQL connected
+2026-05-23 20:16:06 [INFO]: HTTP Request {"method":"POST","path":"/api/register","status":201,"duration":"140ms","ip":"127.0.0.1"}
+2026-05-23 20:21:50 [INFO]: ✅ PostgreSQL connected
+2026-05-23 20:21:50 [INFO]: HTTP Request {"method":"POST","path":"/api/register","status":201,"duration":"142ms","ip":"127.0.0.1"}
+2026-05-23 20:21:50 [INFO]: HTTP Request {"method":"POST","path":"/api/create_community","status":403,"duration":"4ms","ip":"127.0.0.1"}
+2026-05-23 20:21:50 [INFO]: HTTP Request {"method":"POST","path":"/api/request_creator_access","status":200,"duration":"9ms","ip":"127.0.0.1"}
+2026-05-23 20:21:50 [INFO]: HTTP Request {"method":"POST","path":"/api/create_community","status":400,"duration":"2ms","ip":"127.0.0.1"}
+2026-05-23 20:21:50 [INFO]: HTTP Request {"method":"POST","path":"/api/create_community","status":400,"duration":"1ms","ip":"127.0.0.1"}
+2026-05-23 20:21:50 [INFO]: HTTP Request {"method":"POST","path":"/api/create_community","status":201,"duration":"25ms","ip":"127.0.0.1"}
+2026-05-23 20:21:50 [INFO]: HTTP Request {"method":"POST","path":"/api/create_community","status":400,"duration":"2ms","ip":"127.0.0.1"}
+2026-05-24 13:11:04 [INFO]: ✅ PostgreSQL connected
+2026-05-24 13:11:04 [INFO]: ✅ PostgreSQL connected
+2026-05-24 13:11:04 [INFO]: ✅ Redis connected (NLP service available)
+2026-05-24 13:11:04 [INFO]: Preloading NLP models...
+2026-05-24 13:11:04 [INFO]: Preloading NLP models...
+2026-05-24 13:11:04 [INFO]: Loading sentiment analysis model...
+2026-05-24 13:11:04 [INFO]: Loading toxicity detection model...
+2026-05-24 13:11:05 [INFO]: ✅ Sentiment analysis model loaded {"duration":"519ms"}
+2026-05-24 13:11:05 [INFO]: ✅ Toxicity detection model loaded {"duration":"977ms"}
+2026-05-24 13:11:05 [INFO]: ✅ All NLP models preloaded
+2026-05-24 13:11:05 [INFO]: Available Ollama models: {"models":["aya:8b","llama3.2:1b","llama3.1:8b"]}
+2026-05-24 13:11:05 [INFO]: ✅ All required Ollama models are available
+2026-05-24 13:11:05 [INFO]: 🚀 Civix Platform running on port 3002
+2026-05-24 13:11:05 [INFO]: Environment: development
+2026-05-24 13:11:05 [INFO]: Accessible at http://localhost:3002 (local)
+2026-05-24 13:11:05 [INFO]: Socket.io enabled for real-time features
+2026-05-24 13:11:05 [INFO]: NLP ChatBot service: OPTIONAL
+2026-05-24 14:06:47 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"384ms","ip":"10.154.25.57"}
+2026-05-24 14:07:03 [INFO]: ✅ PostgreSQL connected
+2026-05-24 14:07:05 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"3868ms","ip":"10.154.25.57"}
+2026-05-24 14:07:08 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":304,"duration":"141ms","ip":"10.154.25.57"}
+2026-05-24 14:07:08 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/15","status":304,"duration":"50ms","ip":"10.154.25.57"}
+2026-05-24 14:07:09 [INFO]: ✅ PostgreSQL connected
+2026-05-24 14:07:09 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"648ms","ip":"10.154.25.57"}
+2026-05-24 14:07:09 [INFO]: ✅ PostgreSQL connected
+2026-05-24 14:07:09 [INFO]: ✅ PostgreSQL connected
+2026-05-24 14:07:09 [INFO]: ✅ PostgreSQL connected
+2026-05-24 14:07:09 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"1130ms","ip":"10.154.25.57"}
+2026-05-24 14:07:09 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"157ms","ip":"10.154.25.57"}
+2026-05-24 14:07:10 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"69ms","ip":"10.154.25.57"}
+2026-05-24 14:07:10 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/15","status":304,"duration":"45ms","ip":"10.154.25.57"}
+2026-05-26 10:19:15 [INFO]: ✅ PostgreSQL connected
+2026-05-26 10:19:15 [INFO]: ✅ PostgreSQL connected
+2026-05-26 10:19:15 [INFO]: ✅ Redis connected (NLP service available)
+2026-05-26 10:19:15 [INFO]: Preloading NLP models...
+2026-05-26 10:19:15 [INFO]: Preloading NLP models...
+2026-05-26 10:19:15 [INFO]: Loading sentiment analysis model...
+2026-05-26 10:19:15 [INFO]: Loading toxicity detection model...
+2026-05-26 10:19:15 [INFO]: ✅ Sentiment analysis model loaded {"duration":"698ms"}
+2026-05-26 10:19:16 [WARN]: Slow operation {"operation":"Toxicity model initialization","duration":"1209ms"}
+2026-05-26 10:19:16 [INFO]: ✅ Toxicity detection model loaded {"duration":"1209ms"}
+2026-05-26 10:19:16 [INFO]: ✅ All NLP models preloaded
+2026-05-26 10:19:16 [INFO]: Available Ollama models: {"models":["aya:8b","llama3.2:1b","llama3.1:8b"]}
+2026-05-26 10:19:16 [INFO]: ✅ All required Ollama models are available
+2026-05-26 10:19:16 [INFO]: 🚀 Civix Platform running on port 3002
+2026-05-26 10:19:16 [INFO]: Environment: development
+2026-05-26 10:19:16 [INFO]: Accessible at http://localhost:3002 (local)
+2026-05-26 10:19:16 [INFO]: Socket.io enabled for real-time features
+2026-05-26 10:19:16 [INFO]: NLP ChatBot service: OPTIONAL
+2026-05-26 10:35:20 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"13ms","ip":"10.154.25.57"}
+2026-05-26 10:35:32 [INFO]: ✅ PostgreSQL connected
+2026-05-26 10:35:32 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"380ms","ip":"10.154.25.57"}
+2026-05-26 10:35:32 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":200,"duration":"33ms","ip":"10.154.25.57"}
+2026-05-26 10:35:32 [INFO]: ✅ PostgreSQL connected
+2026-05-26 10:35:32 [INFO]: ✅ PostgreSQL connected
+2026-05-26 10:35:32 [INFO]: ✅ PostgreSQL connected
+2026-05-26 10:35:32 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/15","status":200,"duration":"91ms","ip":"10.154.25.57"}
+2026-05-26 10:35:32 [INFO]: ✅ PostgreSQL connected
+2026-05-26 10:35:32 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":200,"duration":"202ms","ip":"10.154.25.57"}
+2026-05-26 10:35:32 [INFO]: ✅ PostgreSQL connected
+2026-05-26 10:35:32 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":200,"duration":"205ms","ip":"10.154.25.57"}
+2026-05-26 10:35:32 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"12ms","ip":"10.154.25.57"}
+2026-05-26 10:35:32 [INFO]: ✅ PostgreSQL connected
+2026-05-26 10:35:32 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/15","status":304,"duration":"110ms","ip":"10.154.25.57"}
+2026-05-26 10:35:32 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"12ms","ip":"10.154.25.57"}
+2026-05-26 10:35:40 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":304,"duration":"5ms","ip":"10.154.25.57"}
+2026-05-26 10:35:43 [INFO]: ✅ PostgreSQL connected
+2026-05-26 10:35:43 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"90ms","ip":"10.154.25.57"}
+2026-05-26 10:35:43 [INFO]: ✅ PostgreSQL connected
+2026-05-26 10:35:43 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/15","status":304,"duration":"92ms","ip":"10.154.25.57"}
+2026-05-26 10:35:43 [INFO]: ✅ PostgreSQL connected
+2026-05-26 10:35:43 [INFO]: ✅ PostgreSQL connected
+2026-05-26 10:35:43 [INFO]: ✅ PostgreSQL connected
+2026-05-26 10:35:43 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"115ms","ip":"10.154.25.57"}
+2026-05-26 12:43:54 [INFO]: ✅ PostgreSQL connected
+2026-05-26 12:43:54 [INFO]: ✅ PostgreSQL connected
+2026-05-26 12:43:55 [INFO]: ✅ Redis connected (NLP service available)
+2026-05-26 12:43:55 [INFO]: Preloading NLP models...
+2026-05-26 12:43:55 [INFO]: Preloading NLP models...
+2026-05-26 12:43:55 [INFO]: Loading sentiment analysis model...
+2026-05-26 12:43:55 [INFO]: Loading toxicity detection model...
+2026-05-26 12:43:55 [INFO]: ✅ Sentiment analysis model loaded {"duration":"518ms"}
+2026-05-26 12:43:55 [INFO]: ✅ Toxicity detection model loaded {"duration":"915ms"}
+2026-05-26 12:43:55 [INFO]: ✅ All NLP models preloaded
+2026-05-26 12:43:55 [INFO]: Available Ollama models: {"models":["aya:8b","llama3.2:1b","llama3.1:8b"]}
+2026-05-26 12:43:55 [INFO]: ✅ All required Ollama models are available
+2026-05-26 12:43:55 [ERROR]: Uncaught exception {"error":"listen EADDRINUSE: address already in use 0.0.0.0:3002","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:3002\n    at Server.setupListenHandle [as _listen2] (node:net:1940:16)\n    at listenInCluster (node:net:1997:12)\n    at node:net:2206:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}
+2026-05-26 12:43:55 [INFO]: UNCAUGHT_EXCEPTION received, shutting down gracefully...
+2026-05-26 12:43:56 [INFO]: ✅ All connections closed
+2026-05-26 12:44:41 [INFO]: ✅ PostgreSQL connected
+2026-05-26 12:44:41 [INFO]: ✅ PostgreSQL connected
+2026-05-26 12:44:41 [INFO]: ✅ Redis connected (NLP service available)
+2026-05-26 12:44:41 [INFO]: Preloading NLP models...
+2026-05-26 12:44:41 [INFO]: Preloading NLP models...
+2026-05-26 12:44:41 [INFO]: Loading sentiment analysis model...
+2026-05-26 12:44:41 [INFO]: Loading toxicity detection model...
+2026-05-26 12:44:42 [INFO]: ✅ Sentiment analysis model loaded {"duration":"258ms"}
+2026-05-26 12:44:42 [INFO]: ✅ Toxicity detection model loaded {"duration":"543ms"}
+2026-05-26 12:44:42 [INFO]: ✅ All NLP models preloaded
+2026-05-26 12:44:42 [INFO]: Available Ollama models: {"models":["aya:8b","llama3.2:1b","llama3.1:8b"]}
+2026-05-26 12:44:42 [INFO]: ✅ All required Ollama models are available
+2026-05-26 12:44:42 [INFO]: 🚀 Civix Platform running on port 3002
+2026-05-26 12:44:42 [INFO]: Environment: development
+2026-05-26 12:44:42 [INFO]: Accessible at http://localhost:3002 (local)
+2026-05-26 12:44:42 [INFO]: Socket.io enabled for real-time features
+2026-05-26 12:44:42 [INFO]: NLP ChatBot service: OPTIONAL
+2026-05-26 12:45:43 [INFO]: ✅ PostgreSQL connected
+2026-05-26 12:45:44 [INFO]: HTTP Request {"method":"POST","path":"/api/register","status":201,"duration":"143ms","ip":"127.0.0.1"}
+2026-05-26 12:45:44 [INFO]: HTTP Request {"method":"POST","path":"/api/create_community","status":400,"duration":"11ms","ip":"127.0.0.1"}
+2026-05-26 12:45:44 [INFO]: HTTP Request {"method":"POST","path":"/api/create_community","status":400,"duration":"4ms","ip":"127.0.0.1"}
+2026-05-26 12:45:44 [INFO]: HTTP Request {"method":"POST","path":"/api/create_community","status":400,"duration":"3ms","ip":"127.0.0.1"}
+2026-05-26 12:45:44 [INFO]: HTTP Request {"method":"POST","path":"/api/create_community","status":201,"duration":"42ms","ip":"127.0.0.1"}
+2026-05-26 12:45:44 [INFO]: HTTP Request {"method":"POST","path":"/api/create_community","status":400,"duration":"6ms","ip":"127.0.0.1"}
+2026-05-26 12:47:53 [INFO]: ✅ PostgreSQL connected
+2026-05-26 12:47:53 [INFO]: ✅ PostgreSQL connected
+2026-05-26 12:47:53 [INFO]: ✅ Redis connected (NLP service available)
+2026-05-26 12:47:53 [INFO]: Preloading NLP models...
+2026-05-26 12:47:53 [INFO]: Preloading NLP models...
+2026-05-26 12:47:53 [INFO]: Loading sentiment analysis model...
+2026-05-26 12:47:53 [INFO]: Loading toxicity detection model...
+2026-05-26 12:47:54 [INFO]: ✅ Sentiment analysis model loaded {"duration":"319ms"}
+2026-05-26 12:47:54 [INFO]: ✅ Toxicity detection model loaded {"duration":"635ms"}
+2026-05-26 12:47:54 [INFO]: ✅ All NLP models preloaded
+2026-05-26 12:47:54 [INFO]: Available Ollama models: {"models":["aya:8b","llama3.2:1b","llama3.1:8b"]}
+2026-05-26 12:47:54 [INFO]: ✅ All required Ollama models are available
+2026-05-26 12:47:54 [ERROR]: Uncaught exception {"error":"listen EADDRINUSE: address already in use 0.0.0.0:3002","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:3002\n    at Server.setupListenHandle [as _listen2] (node:net:1940:16)\n    at listenInCluster (node:net:1997:12)\n    at node:net:2206:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}
+2026-05-26 12:47:54 [INFO]: UNCAUGHT_EXCEPTION received, shutting down gracefully...
+2026-05-26 12:47:54 [INFO]: ✅ All connections closed
+2026-05-26 12:47:58 [INFO]: ✅ PostgreSQL connected
+2026-05-26 12:47:58 [INFO]: ✅ PostgreSQL connected
+2026-05-26 12:47:58 [INFO]: ✅ Redis connected (NLP service available)
+2026-05-26 12:47:58 [INFO]: Preloading NLP models...
+2026-05-26 12:47:58 [INFO]: Preloading NLP models...
+2026-05-26 12:47:58 [INFO]: Loading sentiment analysis model...
+2026-05-26 12:47:58 [INFO]: Loading toxicity detection model...
+2026-05-26 12:47:59 [INFO]: ✅ Sentiment analysis model loaded {"duration":"269ms"}
+2026-05-26 12:47:59 [INFO]: ✅ Toxicity detection model loaded {"duration":"538ms"}
+2026-05-26 12:47:59 [INFO]: ✅ All NLP models preloaded
+2026-05-26 12:47:59 [INFO]: Available Ollama models: {"models":["aya:8b","llama3.2:1b","llama3.1:8b"]}
+2026-05-26 12:47:59 [INFO]: ✅ All required Ollama models are available
+2026-05-26 12:47:59 [ERROR]: Uncaught exception {"error":"listen EADDRINUSE: address already in use 0.0.0.0:3002","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:3002\n    at Server.setupListenHandle [as _listen2] (node:net:1940:16)\n    at listenInCluster (node:net:1997:12)\n    at node:net:2206:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}
+2026-05-26 12:47:59 [INFO]: UNCAUGHT_EXCEPTION received, shutting down gracefully...
+2026-05-26 12:47:59 [INFO]: ✅ All connections closed
+2026-05-26 12:53:36 [INFO]: SIGINT received, shutting down gracefully...
+2026-05-26 12:53:36 [ERROR]: Uncaught exception {"error":"EPIPE: broken pipe, write","stack":"Error: EPIPE: broken pipe, write\n    at Socket._write (node:internal/net:63:18)\n    at writeOrBuffer (node:internal/streams/writable:572:12)\n    at _write (node:internal/streams/writable:501:10)\n    at Writable.write (node:internal/streams/writable:510:10)\n    at Console.log (C:\\AgoraHub\\Backend\\node_modules\\winston\\lib\\winston\\transports\\console.js:87:23)\n    at Console._write (C:\\AgoraHub\\Backend\\node_modules\\winston-transport\\modern.js:103:17)\n    at doWrite (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:390:139)\n    at writeOrBuffer (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:381:5)\n    at Writable.write (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:302:11)\n    at DerivedLogger.ondata (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_readable.js:629:20)"}
+2026-05-26 12:53:36 [INFO]: UNCAUGHT_EXCEPTION received, shutting down gracefully...
+2026-05-26 12:53:36 [ERROR]: Uncaught exception {"error":"EPIPE: broken pipe, write","stack":"Error: EPIPE: broken pipe, write\n    at Socket._write (node:internal/net:63:18)\n    at writeOrBuffer (node:internal/streams/writable:572:12)\n    at _write (node:internal/streams/writable:501:10)\n    at Writable.write (node:internal/streams/writable:510:10)\n    at Console.log (C:\\AgoraHub\\Backend\\node_modules\\winston\\lib\\winston\\transports\\console.js:87:23)\n    at Console._write (C:\\AgoraHub\\Backend\\node_modules\\winston-transport\\modern.js:103:17)\n    at doWrite (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:390:139)\n    at writeOrBuffer (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:381:5)\n    at Writable.write (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:302:11)\n    at DerivedLogger.ondata (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_readable.js:629:20)"}
+2026-05-26 12:53:36 [INFO]: UNCAUGHT_EXCEPTION received, shutting down gracefully...
+2026-05-26 12:53:36 [ERROR]: Uncaught exception {"error":"EPIPE: broken pipe, write","stack":"Error: EPIPE: broken pipe, write\n    at Socket._write (node:internal/net:63:18)\n    at writeOrBuffer (node:internal/streams/writable:572:12)\n    at _write (node:internal/streams/writable:501:10)\n    at Writable.write (node:internal/streams/writable:510:10)\n    at Console.log (C:\\AgoraHub\\Backend\\node_modules\\winston\\lib\\winston\\transports\\console.js:87:23)\n    at Console._write (C:\\AgoraHub\\Backend\\node_modules\\winston-transport\\modern.js:103:17)\n    at doWrite (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:390:139)\n    at writeOrBuffer (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:381:5)\n    at Writable.write (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:302:11)\n    at DerivedLogger.ondata (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_readable.js:629:20)"}
+2026-05-26 12:53:36 [INFO]: UNCAUGHT_EXCEPTION received, shutting down gracefully...
+2026-05-26 12:53:36 [ERROR]: Uncaught exception {"error":"EPIPE: broken pipe, write","stack":"Error: EPIPE: broken pipe, write\n    at Socket._write (node:internal/net:63:18)\n    at writeOrBuffer (node:internal/streams/writable:572:12)\n    at _write (node:internal/streams/writable:501:10)\n    at Writable.write (node:internal/streams/writable:510:10)\n    at Console.log (C:\\AgoraHub\\Backend\\node_modules\\winston\\lib\\winston\\transports\\console.js:87:23)\n    at Console._write (C:\\AgoraHub\\Backend\\node_modules\\winston-transport\\modern.js:103:17)\n    at doWrite (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:390:139)\n    at writeOrBuffer (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:381:5)\n    at Writable.write (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:302:11)\n    at DerivedLogger.ondata (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_readable.js:629:20)"}
+2026-05-26 12:53:36 [INFO]: UNCAUGHT_EXCEPTION received, shutting down gracefully...
+2026-05-26 12:53:36 [ERROR]: Uncaught exception {"error":"EPIPE: broken pipe, write","stack":"Error: EPIPE: broken pipe, write\n    at Socket._write (node:internal/net:63:18)\n    at writeOrBuffer (node:internal/streams/writable:572:12)\n    at _write (node:internal/streams/writable:501:10)\n    at Writable.write (node:internal/streams/writable:510:10)\n    at Console.log (C:\\AgoraHub\\Backend\\node_modules\\winston\\lib\\winston\\transports\\console.js:87:23)\n    at Console._write (C:\\AgoraHub\\Backend\\node_modules\\winston-transport\\modern.js:103:17)\n    at doWrite (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:390:139)\n    at writeOrBuffer (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:381:5)\n    at Writable.write (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:302:11)\n    at DerivedLogger.ondata (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_readable.js:629:20)"}
+2026-05-26 12:53:36 [INFO]: UNCAUGHT_EXCEPTION received, shutting down gracefully...
+2026-05-26 12:53:36 [ERROR]: Uncaught exception {"error":"EPIPE: broken pipe, write","stack":"Error: EPIPE: broken pipe, write\n    at Socket._write (node:internal/net:63:18)\n    at writeOrBuffer (node:internal/streams/writable:572:12)\n    at _write (node:internal/streams/writable:501:10)\n    at Writable.write (node:internal/streams/writable:510:10)\n    at Console.log (C:\\AgoraHub\\Backend\\node_modules\\winston\\lib\\winston\\transports\\console.js:87:23)\n    at Console._write (C:\\AgoraHub\\Backend\\node_modules\\winston-transport\\modern.js:103:17)\n    at doWrite (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:390:139)\n    at writeOrBuffer (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:381:5)\n    at Writable.write (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:302:11)\n    at DerivedLogger.ondata (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_readable.js:629:20)"}
+2026-05-26 12:53:36 [INFO]: UNCAUGHT_EXCEPTION received, shutting down gracefully...
+2026-05-26 12:53:36 [ERROR]: Uncaught exception {"error":"EPIPE: broken pipe, write","stack":"Error: EPIPE: broken pipe, write\n    at Socket._write (node:internal/net:63:18)\n    at writeOrBuffer (node:internal/streams/writable:572:12)\n    at _write (node:internal/streams/writable:501:10)\n    at Writable.write (node:internal/streams/writable:510:10)\n    at Console.log (C:\\AgoraHub\\Backend\\node_modules\\winston\\lib\\winston\\transports\\console.js:87:23)\n    at Console._write (C:\\AgoraHub\\Backend\\node_modules\\winston-transport\\modern.js:103:17)\n    at doWrite (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:390:139)\n    at writeOrBuffer (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:381:5)\n    at Writable.write (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:302:11)\n    at DerivedLogger.ondata (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_readable.js:629:20)"}
+2026-05-26 12:53:36 [INFO]: UNCAUGHT_EXCEPTION received, shutting down gracefully...
+2026-05-26 12:53:36 [ERROR]: Uncaught exception {"error":"EPIPE: broken pipe, write","stack":"Error: EPIPE: broken pipe, write\n    at Socket._write (node:internal/net:63:18)\n    at writeOrBuffer (node:internal/streams/writable:572:12)\n    at _write (node:internal/streams/writable:501:10)\n    at Writable.write (node:internal/streams/writable:510:10)\n    at Console.log (C:\\AgoraHub\\Backend\\node_modules\\winston\\lib\\winston\\transports\\console.js:87:23)\n    at Console._write (C:\\AgoraHub\\Backend\\node_modules\\winston-transport\\modern.js:103:17)\n    at doWrite (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:390:139)\n    at writeOrBuffer (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:381:5)\n    at Writable.write (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:302:11)\n    at DerivedLogger.ondata (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_readable.js:629:20)"}
+2026-05-26 12:53:36 [INFO]: UNCAUGHT_EXCEPTION received, shutting down gracefully...
+2026-05-26 12:53:36 [ERROR]: Uncaught exception {"error":"EPIPE: broken pipe, write","stack":"Error: EPIPE: broken pipe, write\n    at Socket._write (node:internal/net:63:18)\n    at writeOrBuffer (node:internal/streams/writable:572:12)\n    at _write (node:internal/streams/writable:501:10)\n    at Writable.write (node:internal/streams/writable:510:10)\n    at Console.log (C:\\AgoraHub\\Backend\\node_modules\\winston\\lib\\winston\\transports\\console.js:87:23)\n    at Console._write (C:\\AgoraHub\\Backend\\node_modules\\winston-transport\\modern.js:103:17)\n    at doWrite (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:390:139)\n    at writeOrBuffer (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:381:5)\n    at Writable.write (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:302:11)\n    at DerivedLogger.ondata (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_readable.js:629:20)"}
+2026-05-26 12:53:36 [INFO]: UNCAUGHT_EXCEPTION received, shutting down gracefully...
+2026-05-26 12:53:36 [ERROR]: Uncaught exception {"error":"EPIPE: broken pipe, write","stack":"Error: EPIPE: broken pipe, write\n    at Socket._write (node:internal/net:63:18)\n    at writeOrBuffer (node:internal/streams/writable:572:12)\n    at _write (node:internal/streams/writable:501:10)\n    at Writable.write (node:internal/streams/writable:510:10)\n    at Console.log (C:\\AgoraHub\\Backend\\node_modules\\winston\\lib\\winston\\transports\\console.js:87:23)\n    at Console._write (C:\\AgoraHub\\Backend\\node_modules\\winston-transport\\modern.js:103:17)\n    at doWrite (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:390:139)\n    at writeOrBuffer (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:381:5)\n    at Writable.write (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:302:11)\n    at DerivedLogger.ondata (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_readable.js:629:20)"}
+2026-05-26 12:53:36 [INFO]: UNCAUGHT_EXCEPTION received, shutting down gracefully...
+2026-05-26 12:53:36 [ERROR]: Uncaught exception {"error":"EPIPE: broken pipe, write","stack":"Error: EPIPE: broken pipe, write\n    at Socket._write (node:internal/net:63:18)\n    at writeOrBuffer (node:internal/streams/writable:572:12)\n    at _write (node:internal/streams/writable:501:10)\n    at Writable.write (node:internal/streams/writable:510:10)\n    at Console.log (C:\\AgoraHub\\Backend\\node_modules\\winston\\lib\\winston\\transports\\console.js:87:23)\n    at Console._write (C:\\AgoraHub\\Backend\\node_modules\\winston-transport\\modern.js:103:17)\n    at doWrite (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:390:139)\n    at writeOrBuffer (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:381:5)\n    at Writable.write (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:302:11)\n    at DerivedLogger.ondata (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_readable.js:629:20)"}
+2026-05-26 12:53:36 [INFO]: UNCAUGHT_EXCEPTION received, shutting down gracefully...
+2026-05-26 12:53:36 [ERROR]: Uncaught exception {"error":"EPIPE: broken pipe, write","stack":"Error: EPIPE: broken pipe, write\n    at Socket._write (node:internal/net:63:18)\n    at writeOrBuffer (node:internal/streams/writable:572:12)\n    at _write (node:internal/streams/writable:501:10)\n    at Writable.write (node:internal/streams/writable:510:10)\n    at Console.log (C:\\AgoraHub\\Backend\\node_modules\\winston\\lib\\winston\\transports\\console.js:87:23)\n    at Console._write (C:\\AgoraHub\\Backend\\node_modules\\winston-transport\\modern.js:103:17)\n    at doWrite (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:390:139)\n    at writeOrBuffer (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:381:5)\n    at Writable.write (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:302:11)\n    at DerivedLogger.ondata (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_readable.js:629:20)"}
+2026-05-26 12:53:36 [INFO]: UNCAUGHT_EXCEPTION received, shutting down gracefully...
+2026-05-26 12:53:36 [ERROR]: Uncaught exception {"error":"EPIPE: broken pipe, write","stack":"Error: EPIPE: broken pipe, write\n    at Socket._write (node:internal/net:63:18)\n    at writeOrBuffer (node:internal/streams/writable:572:12)\n    at _write (node:internal/streams/writable:501:10)\n    at Writable.write (node:internal/streams/writable:510:10)\n    at Console.log (C:\\AgoraHub\\Backend\\node_modules\\winston\\lib\\winston\\transports\\console.js:87:23)\n    at Console._write (C:\\AgoraHub\\Backend\\node_modules\\winston-transport\\modern.js:103:17)\n    at doWrite (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:390:139)\n    at writeOrBuffer (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:381:5)\n    at Writable.write (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:302:11)\n    at DerivedLogger.ondata (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_readable.js:629:20)"}
+2026-05-26 12:53:36 [INFO]: UNCAUGHT_EXCEPTION received, shutting down gracefully...
+2026-05-26 12:53:36 [ERROR]: Uncaught exception {"error":"EPIPE: broken pipe, write","stack":"Error: EPIPE: broken pipe, write\n    at Socket._write (node:internal/net:63:18)\n    at writeOrBuffer (node:internal/streams/writable:572:12)\n    at _write (node:internal/streams/writable:501:10)\n    at Writable.write (node:internal/streams/writable:510:10)\n    at Console.log (C:\\AgoraHub\\Backend\\node_modules\\winston\\lib\\winston\\transports\\console.js:87:23)\n    at Console._write (C:\\AgoraHub\\Backend\\node_modules\\winston-transport\\modern.js:103:17)\n    at doWrite (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:390:139)\n    at writeOrBuffer (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:381:5)\n    at Writable.write (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:302:11)\n    at DerivedLogger.ondata (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_readable.js:629:20)"}
+2026-05-26 12:53:36 [INFO]: UNCAUGHT_EXCEPTION received, shutting down gracefully...
+2026-05-26 12:53:36 [ERROR]: Uncaught exception {"error":"EPIPE: broken pipe, write","stack":"Error: EPIPE: broken pipe, write\n    at Socket._write (node:internal/net:63:18)\n    at writeOrBuffer (node:internal/streams/writable:572:12)\n    at _write (node:internal/streams/writable:501:10)\n    at Writable.write (node:internal/streams/writable:510:10)\n    at Console.log (C:\\AgoraHub\\Backend\\node_modules\\winston\\lib\\winston\\transports\\console.js:87:23)\n    at Console._write (C:\\AgoraHub\\Backend\\node_modules\\winston-transport\\modern.js:103:17)\n    at doWrite (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:390:139)\n    at writeOrBuffer (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:381:5)\n    at Writable.write (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_writable.js:302:11)\n    at DerivedLogger.ondata (C:\\AgoraHub\\Backend\\node_modules\\readable-stream\\lib\\_stream_readable.js:629:20)"}
+2026-05-26 12:53:36 [INFO]: UNCAUGHT_EXCEPTION received, shutting down gracefully...
+2026-05-26 14:13:49 [INFO]: ✅ PostgreSQL connected
+2026-05-26 14:13:49 [INFO]: ✅ PostgreSQL connected
+2026-05-26 14:13:49 [INFO]: ✅ Redis connected (NLP service available)
+2026-05-26 14:13:49 [INFO]: Preloading NLP models...
+2026-05-26 14:13:49 [INFO]: Preloading NLP models...
+2026-05-26 14:13:49 [INFO]: Loading sentiment analysis model...
+2026-05-26 14:13:49 [INFO]: Loading toxicity detection model...
+2026-05-26 14:13:49 [INFO]: ✅ Sentiment analysis model loaded {"duration":"454ms"}
+2026-05-26 14:13:50 [INFO]: ✅ Toxicity detection model loaded {"duration":"870ms"}
+2026-05-26 14:13:50 [INFO]: ✅ All NLP models preloaded
+2026-05-26 14:13:50 [INFO]: Available Ollama models: {"models":["aya:8b","llama3.2:1b","llama3.1:8b"]}
+2026-05-26 14:13:50 [INFO]: ✅ All required Ollama models are available
+2026-05-26 14:13:50 [INFO]: 🚀 Civix Platform running on port 3002
+2026-05-26 14:13:50 [INFO]: Environment: development
+2026-05-26 14:13:50 [INFO]: Accessible at http://localhost:3002 (local)
+2026-05-26 14:13:50 [INFO]: Socket.io enabled for real-time features
+2026-05-26 14:13:50 [INFO]: NLP ChatBot service: OPTIONAL
+2026-05-26 14:20:04 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"10ms","ip":"10.154.25.57"}
+2026-05-26 14:20:18 [INFO]: ✅ PostgreSQL connected
+2026-05-26 14:20:18 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"358ms","ip":"10.154.25.57"}
+2026-05-26 14:20:18 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":304,"duration":"23ms","ip":"10.154.25.57"}
+2026-05-26 14:20:18 [INFO]: ✅ PostgreSQL connected
+2026-05-26 14:20:18 [INFO]: ✅ PostgreSQL connected
+2026-05-26 14:20:18 [INFO]: ✅ PostgreSQL connected
+2026-05-26 14:20:18 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/15","status":304,"duration":"95ms","ip":"10.154.25.57"}
+2026-05-26 14:20:18 [INFO]: ✅ PostgreSQL connected
+2026-05-26 14:20:18 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"202ms","ip":"10.154.25.57"}
+2026-05-26 14:20:18 [INFO]: ✅ PostgreSQL connected
+2026-05-26 14:20:18 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"214ms","ip":"10.154.25.57"}
+2026-05-26 14:20:18 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"37ms","ip":"10.154.25.57"}
+2026-05-26 14:20:18 [INFO]: ✅ PostgreSQL connected
+2026-05-26 14:20:18 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"13ms","ip":"10.154.25.57"}
+2026-05-26 14:20:18 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/15","status":304,"duration":"157ms","ip":"10.154.25.57"}

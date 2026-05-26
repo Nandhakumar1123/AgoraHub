@@ -12,6 +12,8 @@ import { AppContext } from './_layout';
 import { useContext } from 'react';
 
 const BASE_URL = API_BASE_URL;
+const MIN_COMMUNITY_REASON_LENGTH = 20;
+const MAX_COMMUNITIES_PER_USER = 5;
 
 
 type Community = {
@@ -73,7 +75,6 @@ export default function CommunityScreen() {
   const [groupChatEnabled, setGroupChatEnabled] = useState(true);
   const [eventsEnabled, setEventsEnabled] = useState(true);
 
-  const isAllowedToCreate = currentUser?.role === 'ADMIN' || currentUser?.role === 'HEAD' || currentUser?.can_create_community === true;
 
   const createdCommunities = communities.filter(c => c.role === 'HEAD' && !c.is_archived && c.status !== 'ARCHIVED');
   const joinedCommunities = communities.filter(c => c.role === 'MEMBER' && !c.is_archived && c.status !== 'ARCHIVED');
@@ -240,10 +241,31 @@ export default function CommunityScreen() {
   // 🔹 Create Community
   async function handleCreateCommunity() {
     if (!currentUser?.user_id) return Alert.alert('Error', 'Please login first');
-    if (!isAllowedToCreate) {
-      return Alert.alert('Error', 'Only authorized admins can create communities.');
-    }
     if (!newCommunityName.trim()) return Alert.alert('Error', 'Enter a community name');
+
+    const trimmedName = newCommunityName.trim();
+    const trimmedReason = description.trim();
+
+    if (trimmedReason.length < MIN_COMMUNITY_REASON_LENGTH) {
+      return Alert.alert(
+        'Reason required',
+        `Please explain why this community is needed (at least ${MIN_COMMUNITY_REASON_LENGTH} characters).`
+      );
+    }
+
+    const duplicateName = createdCommunities.some(
+      (community) => community.name.trim().toLowerCase() === trimmedName.toLowerCase()
+    );
+    if (duplicateName) {
+      return Alert.alert('Duplicate name', 'You have already created a community with this name.');
+    }
+
+    if (createdCommunities.length >= MAX_COMMUNITIES_PER_USER) {
+      return Alert.alert(
+        'Limit reached',
+        `You can create up to ${MAX_COMMUNITIES_PER_USER} active communities. Archive an existing one before creating another.`
+      );
+    }
 
     const token = await AsyncStorage.getItem('authToken');
     if (!token) {
@@ -259,8 +281,8 @@ export default function CommunityScreen() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          name: newCommunityName,
-          description,
+          name: trimmedName,
+          description: trimmedReason,
           community_type: communityType,
           created_by: currentUser.user_id,
           complaints_enabled: complaintsEnabled,
@@ -491,11 +513,9 @@ export default function CommunityScreen() {
             <TouchableOpacity onPress={() => setView('joinCommunity')} style={styles.headerButton}>
               <Text style={styles.headerButtonText}>Join</Text>
             </TouchableOpacity>
-            {isAllowedToCreate && (
-              <TouchableOpacity onPress={() => setView('create')} style={[styles.headerButton, styles.createHeaderButton]}>
-                <Text style={styles.createButtonText}>Create</Text>
-              </TouchableOpacity>
-            )}
+            <TouchableOpacity onPress={() => setView('create')} style={[styles.headerButton, styles.createHeaderButton]}>
+              <Text style={styles.createButtonText}>Create</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -513,12 +533,17 @@ export default function CommunityScreen() {
             {activeTab === 'created' && (
               createdCommunities.length === 0
                 ? <View style={styles.emptyState}>
-                    <Text style={{ color: '#94a3b8', fontSize: 15, fontWeight: '600' }}>No Created Communities</Text>
-                    {!isAllowedToCreate && (
-                      <Text style={{ color: '#ef4444', marginTop: 10, fontSize: 13, fontWeight: '600', textAlign: 'center', paddingHorizontal: 16 }}>
-                        ⚠️ Only authorized admins can create communities.
-                      </Text>
-                    )}
+                    <Icon name="shield" size={48} color="#94a3b8" style={{ marginBottom: 16 }} />
+                    <Text style={{ color: '#f8fafc', fontSize: 16, fontWeight: '700', marginBottom: 6 }}>No Created Communities</Text>
+                    <Text style={{ color: '#94a3b8', fontSize: 14, textAlign: 'center', lineHeight: 20, marginBottom: 16, paddingHorizontal: 20 }}>
+                      Start a community for your club, apartment, school, or organization. You will need a clear reason and a unique name.
+                    </Text>
+                    <TouchableOpacity 
+                      onPress={() => setView('create')} 
+                      style={[styles.primaryButton, { width: 'auto', paddingHorizontal: 24, paddingVertical: 12, marginTop: 12 }]}
+                    >
+                      <Text style={styles.primaryButtonText}>Create a Community</Text>
+                    </TouchableOpacity>
                   </View>
                 : createdCommunities.map((community, index) => (
                   <TouchableOpacity key={community.id} style={[styles.communityCard, index > 0 && styles.communityCardMargin]} onPress={() => openCommunityApp(community)}>
@@ -574,27 +599,6 @@ export default function CommunityScreen() {
 
   // ================= CREATE COMMUNITY SCREEN =================
   if (view === 'create') {
-    if (!isAllowedToCreate) {
-      return (
-        <View style={styles.safeArea}>
-          <View style={[styles.container, { paddingTop: insets.top, flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0f172a' }]}>
-            <View style={styles.accessDeniedCard}>
-              <View style={styles.accessDeniedIconContainer}>
-                <Icon name="shield-off" size={48} color="#ef4444" />
-              </View>
-              <Text style={styles.accessDeniedTitle}>Access Denied</Text>
-              <Text style={styles.accessDeniedText}>
-                Only authorized admins can create communities. If you believe this is an error, please contact support or a head administrator.
-              </Text>
-              <TouchableOpacity onPress={() => setView('main')} style={styles.primaryButton}>
-                <Text style={styles.primaryButtonText}>Return to Main</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      );
-    }
-
     return (
       <View style={styles.safeArea}>
         <View
@@ -643,14 +647,20 @@ export default function CommunityScreen() {
             })}
           </View>
 
-          <Text style={styles.label}>Description</Text>
+          <Text style={styles.label}>Reason for creating</Text>
+          <Text style={styles.helperText}>
+            Explain why this community is needed (minimum {MIN_COMMUNITY_REASON_LENGTH} characters). Generic or empty reasons are not allowed.
+          </Text>
           <TextInput
-            style={[styles.input, { height: 80 }]}
-            placeholder="Briefly describe your community"
+            style={[styles.input, { height: 100 }]}
+            placeholder="e.g., Our apartment block needs a shared space to coordinate maintenance requests and resident meetings."
             multiline
             value={description}
             onChangeText={setDescription}
           />
+          <Text style={styles.charCountText}>
+            {description.trim().length}/{MIN_COMMUNITY_REASON_LENGTH} characters
+          </Text>
 
           {/* 🌟 Feature Settings */}
           <Text style={styles.sectionTitle}>Feature Settings</Text>
@@ -975,6 +985,8 @@ const styles = StyleSheet.create({
   headInfo: { marginTop: 6, color: '#94a3b8', fontWeight: '500' },
   formContainer: { padding: 20 },
   label: { marginBottom: 8, color: '#e2e8f0', fontWeight: '600', fontSize: 15 },
+  helperText: { marginBottom: 8, color: '#94a3b8', fontSize: 13, lineHeight: 18 },
+  charCountText: { marginTop: -12, marginBottom: 20, color: '#64748b', fontSize: 12, textAlign: 'right' },
   input: {
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
