@@ -1,12 +1,14 @@
 # AgoraHub (Civix)
 
-A full-stack community governance platform designed for hostels, apartments, clubs, campuses, and residential communities. AgoraHub centralizes communication, complaint management, petitions, voting, announcements, and AI-powered assistance into one unified digital ecosystem.
+A full-stack community governance platform for hostels, apartments, clubs, campuses, and residential communities.
+
+AgoraHub centralizes communication, complaints, petitions, voting, announcements, and AI-powered assistance into one unified digital ecosystem.
 
 ---
 
 # Overview
 
-AgoraHub is a modern digital platform developed to simplify and improve community governance. Traditional communication systems such as notice boards, paper-based complaints, and scattered messaging groups often lead to delays, poor transparency, and inefficient issue handling.
+AgoraHub is a modern digital platform developed to simplify and improve community governance. Traditional communication systems such as notice boards, paper-based complaints, and scattered messaging groups often lead to delays, lack of transparency, and inefficient issue handling.
 
 AgoraHub replaces these outdated approaches with a centralized mobile-based solution where community members and administrators can interact efficiently through structured workflows, real-time communication, and AI-powered assistance.
 
@@ -21,221 +23,208 @@ The platform supports:
 * Role-based access control
 * Community-specific intelligent responses using RAG + LLM
 
-The system is designed with scalability, modularity, security, and transparency in mind, making it suitable for various types of communities.
+The system is designed with scalability, modularity, security, and transparency in mind, making it suitable for different types of communities.
 
 ---
 
-# Objectives
-
-* Improve communication between members and administrators
-* Replace manual community management systems
-* Ensure transparency in complaints and petitions
-* Provide intelligent AI-based assistance
-* Enable organized participation and governance
-* Support secure and scalable community operations
-* Reduce dependency on external messaging platforms
-
----
-
-# Key Features
+# Features
 
 ## Community Management
 
-* Create and manage multiple communities
+* Create and manage communities
 * Join communities using invite codes
-* Role-based access (Head, Admin, Member)
-* Community-specific feature controls
-* Member approval and management
+* Role-based access control
+* Member approval system
+* Community feature management
 
 ## Real-Time Communication
 
 * Group chat using Socket.IO
 * Community announcements
-* Real-time updates and notifications
-* Message storage and history tracking
+* Real-time updates
+* Message history tracking
 
 ## Complaint Management
 
-* Raise and manage complaints
-* Complaint categorization and status tracking
+* Raise complaints
+* Complaint categorization
+* Status tracking
 * Follow-up discussions
-* AI-generated summaries and suggestions
+* AI-assisted summaries
 
 ## Petition System
 
-* Submit community petitions
-* Review and approval workflows
-* AI-assisted petition analysis
-* Petition tracking and transparency
+* Submit petitions
+* Petition review workflow
+* AI-generated suggestions
+* Status management
 
 ## Events Management
 
 * Create and manage events
-* Publish announcements and schedules
-* Improve participation and coordination
+* Publish announcements
+* Event scheduling
+* Community participation tracking
 
-## Voting & Polling
+## Voting System
 
-* Real-time voting system
-* Dynamic poll result visualization
-* Poll duration and visibility controls
-* Community-wide participation
+* Real-time polling
+* Dynamic result visualization
+* Poll privacy settings
+* Vote synchronization
 
 ## AI Assistance
 
 * Community-aware chatbot
 * Complaint AI assistant
 * Petition AI assistant
-* Sentiment and toxicity detection
-* RAG-based intelligent responses
+* Sentiment analysis
+* Toxicity detection
 * Multilingual support
 
 ---
 
-# System Architecture
+# Architecture
 
-The platform follows a modular multi-layer architecture.
-
-| Layer                   | Technology                      |
-| ----------------------- | ------------------------------- |
-| Frontend                | React Native (Expo), TypeScript |
-| Backend API             | Node.js, Express.js             |
-| Authentication          | JWT                             |
-| Database                | PostgreSQL + pgvector           |
-| Real-Time Communication | Socket.IO                       |
-| AI Service              | Ollama / OpenAI                 |
-| NLP Processing          | RAG + Embeddings                |
-| Cache                   | Redis                           |
-| Containerization        | Docker Compose                  |
+| Layer                   | Technology                     |
+| ----------------------- | ------------------------------ |
+| Frontend                | React Native, Expo, TypeScript |
+| Backend                 | Node.js, Express.js            |
+| Authentication          | JWT                            |
+| Database                | PostgreSQL + pgvector          |
+| Real-Time Communication | Socket.IO                      |
+| AI Service              | Ollama / OpenAI                |
+| Cache                   | Redis                          |
+| Containerization        | Docker Compose                 |
 
 ---
 
 # Modules
 
-## 1. User Authentication & Registration Module
+## User Authentication & Registration Module
 
-This module manages secure registration and login functionality using JWT-based authentication. It validates credentials and assigns appropriate roles such as Head, Admin, or Member. Session management ensures both security and smooth user experience.
+This module manages secure user registration and login using JWT-based authentication. It validates user credentials and assigns roles such as Head, Admin, and Member.
 
-### Features
+### Functions
 
 * User registration
 * Secure login
 * JWT authentication
 * Role-based authorization
-* Session handling
+* Session management
 
 ---
 
-## 2. Community Management Module
+## Community Management Module
 
-This module allows Heads or Admins to create and manage community spaces such as hostels, apartments, and clubs. Members can join communities using invite codes or approval requests.
+This module allows users to create and join communities such as hostels, apartments, and clubs.
 
-### Features
+### Functions
 
 * Create community spaces
 * Join using invite codes
-* Community feature toggles
+* Community approvals
 * Member management
-* Access control
+* Feature toggles
 
 ---
 
-## 3. Chat & Announcement Module
+## Chat & Announcement Module
 
-This module provides real-time communication between members using Socket.IO. Heads and Admins can publish important announcements visible to all community members.
+This module enables real-time communication between members using Socket.IO.
 
-### Features
+### Functions
 
-* Real-time group chat
-* Announcements
-* Message history
-* Moderation support
-* Notification system
+* Group messaging
+* Real-time communication
+* Community announcements
+* Message storage
+* Notification support
 
 ---
 
-## 4. Complaint & Petition Module
+## Complaint & Petition Module
 
-This module enables structured issue reporting and request management within communities.
+This module provides structured workflows for issue reporting and community requests.
 
-### Complaint Features
+### Complaint Functions
 
 * Raise complaints
 * Track complaint status
-* Follow-up discussions
-* AI-assisted complaint summaries
+* Follow-up communication
+* AI-generated complaint summaries
 
-### Petition Features
+### Petition Functions
 
 * Submit petitions
-* Petition approval workflow
-* AI-generated suggestions
-* Status tracking
+* Petition review workflow
+* Approval and rejection process
+* AI-generated recommendations
 
 ---
 
-## 5. Events Module
+## Events Module
 
-The Events module allows administrators to create and manage meetings, maintenance activities, celebrations, and announcements.
+This module helps administrators organize community activities and announcements.
 
-### Features
+### Functions
 
 * Event scheduling
+* Event announcements
 * Date and time management
-* Event descriptions
-* Member notifications
+* Participation coordination
 
 ---
 
-## 6. AI Module
+## AI Module
 
-The AI module is an independent NLP service developed using Node.js and integrated with Ollama/OpenAI models.
+The AI module is an independent NLP service built using Node.js and integrated with Ollama/OpenAI models.
 
 It performs:
 
 * Sentiment analysis
 * Toxicity detection
-* Community-aware AI assistance
+* Community-aware AI responses
 * Retrieval-Augmented Generation (RAG)
 * Multilingual processing
 
 ### AI Workflow
 
 1. User submits a query
-2. Relevant community documents are retrieved using pgvector embeddings
-3. Context is combined with user query
-4. LLM generates intelligent response
-5. Results are cached using Redis
-6. Final responses are stored in PostgreSQL
+2. Relevant community documents are retrieved
+3. Context is combined with the query
+4. LLM generates intelligent responses
+5. Responses are cached using Redis
+6. Final results are stored in PostgreSQL
 
 ---
 
-## 7. Voting Module
+## Voting Module
 
-The voting system allows communities to conduct interactive polls with synchronized real-time results.
+The voting module enables communities to conduct interactive polls with synchronized real-time results.
 
-### Features
+### Functions
 
 * Create polls
 * Vote management
-* Dynamic result visualization
-* Poll visibility control
+* Result visualization
+* Poll privacy control
 * Real-time synchronization
 
 ---
 
 # AI & RAG Integration
 
-AgoraHub integrates Large Language Models (LLMs) with Retrieval-Augmented Generation (RAG) to provide intelligent and context-aware assistance.
+AgoraHub integrates Large Language Models (LLMs) with Retrieval-Augmented Generation (RAG) to generate intelligent and context-aware responses.
 
-Instead of generating generic answers, the AI system retrieves relevant community-specific documents and data before generating responses.
+Instead of generating generic responses, the AI retrieves community-specific documents and information before generating answers.
 
 This improves:
 
 * Accuracy
 * Transparency
 * Relevance
-* Community-specific understanding
+* Community understanding
 
 The AI system supports:
 
@@ -247,29 +236,29 @@ The AI system supports:
 
 ---
 
-# Project Workflow
+# Workflow
 
 1. User registers and logs in
 2. User joins or creates a community
-3. Members interact through chat, complaints, petitions, and events
+3. Members interact using chat, complaints, petitions, and events
 4. Admins manage workflows and approvals
 5. AI services analyze and assist interactions
-6. Real-time updates synchronize across users
+6. Real-time updates synchronize across all users
 
 ---
 
 # Database Features
 
-The system uses PostgreSQL with pgvector extension for storing:
+The system uses PostgreSQL with pgvector for storing:
 
 * User data
-* Community information
+* Community details
 * Complaints and petitions
 * Chat messages
-* AI histories
+* AI interaction history
 * Embeddings for semantic search
 
-Redis is optionally used for:
+Redis is used for:
 
 * AI caching
 * Rate limiting
@@ -282,15 +271,15 @@ Redis is optionally used for:
 * JWT Authentication
 * Password hashing using bcrypt
 * Role-based authorization
-* Community-scoped access control
-* AI moderation support
+* Community-level access control
 * Secure API communication
+* AI moderation support
 
 ---
 
 # Screenshots
 
-## Frontend Screens
+## Application Screens
 
 * Front Page
 * Community Creation
@@ -305,9 +294,9 @@ Redis is optionally used for:
 * Complaint Status Tracking
 * Petition Forms
 
-## Architecture & Diagrams
+## Diagrams
 
-* System Architecture Diagram
+* Architecture Diagram
 * Use Case Diagram
 
 ---
@@ -319,30 +308,27 @@ Redis is optionally used for:
 * Transparent complaint tracking
 * AI-assisted administration
 * Secure and scalable architecture
-* Improved community participation
-* Reduced communication delays
+* Improved participation
+* Organized community management
 
 ---
 
 # Future Enhancements
 
 * Advanced analytics dashboard
-* Multilingual UI support
-* Mobile push notifications
+* Multilingual UI
+* Push notifications
 * Video/audio meetings
+* Cloud deployment
 * Smart recommendation systems
-* Cloud deployment scaling
-* Blockchain-based voting verification
 
 ---
 
 # Conclusion
 
-AgoraHub provides a modern and intelligent approach to digital community governance by integrating communication, administration, participation, and AI assistance into one unified platform.
+AgoraHub provides a modern and intelligent solution for digital community governance by integrating communication, administration, participation, and AI assistance into one unified platform.
 
 By combining real-time technologies, secure architecture, and Retrieval-Augmented Generation (RAG)-based AI, the platform transforms traditional community management into a transparent, organized, and efficient digital ecosystem.
-
-AgoraHub demonstrates how modern technologies such as AI, WebSockets, vector databases, and modular backend systems can be applied to improve civic participation and community coordination in real-world environments.
 
 ---
 
@@ -369,8 +355,8 @@ AgoraHub demonstrates how modern technologies such as AI, WebSockets, vector dat
 
 * Ollama
 * OpenAI
-* RAG
 * Redis
+* RAG
 
 ## Security
 
@@ -382,5 +368,6 @@ AgoraHub demonstrates how modern technologies such as AI, WebSockets, vector dat
 * Docker Compose
 
 ---
+
 
 
