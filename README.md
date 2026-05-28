@@ -8,6 +8,65 @@ The platform integrates Large Language Models (LLMs) with Retrieval-Augmented Ge
 
 ---
 
+# System Architecture
+
+<p align="center">
+  <img src="architecture.jpeg" width="1000">
+</p>
+
+AgoraHub follows a modular multi-layer architecture consisting of frontend applications, backend services, AI systems, databases, and caching layers.
+
+| Layer                   | Technology            |
+| ----------------------- | --------------------- |
+| Frontend                | React Native, Expo    |
+| Backend                 | Node.js, Express.js   |
+| Authentication          | JWT                   |
+| Database                | PostgreSQL + pgvector |
+| Real-Time Communication | Socket.IO             |
+| AI Services             | Ollama / OpenAI       |
+| Cache                   | Redis                 |
+| Containerization        | Docker Compose        |
+
+The architecture ensures:
+
+* Scalability
+* Real-time communication
+* AI integration
+* Security
+* Efficient data processing
+
+---
+
+# Use Case Diagram
+
+<p align="center">
+  <img src="use_case_diagram.jpeg" width="1000">
+</p>
+
+The Use Case Diagram represents interactions between users and the AgoraHub system.
+
+### Main Actors
+
+* Member
+* Admin
+* Head
+* AI System
+
+### Main Functionalities
+
+* Registration and Login
+* Community Creation
+* Complaint Management
+* Petition Handling
+* Voting and Polling
+* Event Management
+* Real-Time Communication
+* AI Assistance
+
+The diagram illustrates how users interact with different modules while maintaining proper role-based access control.
+
+---
+
 # Overview
 
 AgoraHub improves communication between administrators and community members by providing a structured environment for participation, issue tracking, and coordination. The platform centralizes all important community operations and reduces dependency on external messaging applications.
@@ -71,65 +130,6 @@ The platform supports:
 * Sentiment analysis
 * Toxicity detection
 * Multilingual support
-
----
-
-# System Architecture
-
-<p align="center">
-  <img src="Results/architecture.jpeg" width="1000">
-</p>
-
-AgoraHub follows a modular multi-layer architecture consisting of frontend applications, backend services, AI systems, databases, and caching layers.
-
-| Layer                   | Technology            |
-| ----------------------- | --------------------- |
-| Frontend                | React Native, Expo    |
-| Backend                 | Node.js, Express.js   |
-| Authentication          | JWT                   |
-| Database                | PostgreSQL + pgvector |
-| Real-Time Communication | Socket.IO             |
-| AI Services             | Ollama / OpenAI       |
-| Cache                   | Redis                 |
-| Containerization        | Docker Compose        |
-
-The architecture ensures:
-
-* Scalability
-* Real-time communication
-* AI integration
-* Security
-* Efficient data processing
-
----
-
-# Use Case Diagram
-
-<p align="center">
-  <img src="Results/use_case_diagram.jpeg" width="1000">
-</p>
-
-The Use Case Diagram represents interactions between users and the AgoraHub system.
-
-### Main Actors
-
-* Member
-* Admin
-* Head
-* AI System
-
-### Main Functionalities
-
-* Registration and Login
-* Community Creation
-* Complaint Management
-* Petition Handling
-* Voting and Polling
-* Event Management
-* Real-Time Communication
-* AI Assistance
-
-The diagram illustrates how users interact with different modules while maintaining proper role-based access control.
 
 ---
 
