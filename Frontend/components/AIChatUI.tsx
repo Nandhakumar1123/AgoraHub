@@ -216,6 +216,7 @@ const AIChatUI: React.FC<AIChatUIProps> = ({
   const scrollRef = useRef<ScrollView>(null);
   const [inputText, setInputText] = useState('');
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const [showPreviousChats, setShowPreviousChats] = useState(false);
 
   // Edit states
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -343,32 +344,54 @@ const AIChatUI: React.FC<AIChatUIProps> = ({
         </View>
 
         {!!onSelectThread && isNarrowLayout && (
-          <View style={styles.threadPanel}>
-            <Text style={styles.threadPanelTitle}>All Previous Chats</Text>
-            <ScrollView showsVerticalScrollIndicator={false} style={styles.threadList}>
-              {chatThreads.length === 0 ? (
-                <Text style={styles.threadEmptyText}>No previous chats yet.</Text>
-              ) : (
-                orderedDayLabels.map((dayLabel) => (
-                  <View key={dayLabel} style={styles.threadDayGroup}>
-                    <Text style={[styles.threadGroupLabel, { color: accentColor }]}>{dayLabel}</Text>
-                    {groupedThreads[dayLabel].map((thread) => (
-                      <TouchableOpacity
-                        key={thread.id}
-                        style={[
-                          styles.threadItem,
-                          currentThreadId === thread.id && { borderColor: accentColor, backgroundColor: accentColor + '18' },
-                        ]}
-                        onPress={() => onSelectThread(thread.id)}
-                      >
-                        <Text style={styles.threadTitle} numberOfLines={1}>{thread.title}</Text>
-                        {!!thread.subtitle && <Text style={styles.threadSubtitle} numberOfLines={1}>{thread.subtitle}</Text>}
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                ))
-              )}
-            </ScrollView>
+          <View style={styles.mobileHistoryWrap}>
+            <TouchableOpacity
+              style={[styles.historyToggleBtn, { borderColor: accentColor + '55' }]}
+              activeOpacity={0.8}
+              onPress={() => setShowPreviousChats((prev) => !prev)}
+            >
+              <Ionicons
+                name={showPreviousChats ? 'chevron-up' : 'chevron-down'}
+                size={16}
+                color={accentColor}
+              />
+              <Text style={[styles.historyToggleText, { color: accentColor }]}>
+                {showPreviousChats ? 'Hide Previous Messages' : 'Show Previous Messages'}
+              </Text>
+            </TouchableOpacity>
+
+            {showPreviousChats && (
+              <View style={styles.threadPanel}>
+                <Text style={styles.threadPanelTitle}>All Previous Chats</Text>
+                <ScrollView showsVerticalScrollIndicator={false} style={styles.threadList}>
+                  {chatThreads.length === 0 ? (
+                    <Text style={styles.threadEmptyText}>No previous chats yet.</Text>
+                  ) : (
+                    orderedDayLabels.map((dayLabel) => (
+                      <View key={dayLabel} style={styles.threadDayGroup}>
+                        <Text style={[styles.threadGroupLabel, { color: accentColor }]}>{dayLabel}</Text>
+                        {groupedThreads[dayLabel].map((thread) => (
+                          <TouchableOpacity
+                            key={thread.id}
+                            style={[
+                              styles.threadItem,
+                              currentThreadId === thread.id && { borderColor: accentColor, backgroundColor: accentColor + '18' },
+                            ]}
+                            onPress={() => {
+                              onSelectThread(thread.id);
+                              setShowPreviousChats(false);
+                            }}
+                          >
+                            <Text style={styles.threadTitle} numberOfLines={1}>{thread.title}</Text>
+                            {!!thread.subtitle && <Text style={styles.threadSubtitle} numberOfLines={1}>{thread.subtitle}</Text>}
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    ))
+                  )}
+                </ScrollView>
+              </View>
+            )}
           </View>
         )}
 
@@ -787,6 +810,25 @@ const styles = StyleSheet.create({
     color: '#94a3b8',
     fontSize: 12,
     paddingVertical: 6,
+  },
+  mobileHistoryWrap: {
+    marginHorizontal: 12,
+    marginTop: 10,
+  },
+  historyToggleBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+    backgroundColor: 'rgba(255,255,255,0.03)',
+  },
+  historyToggleText: {
+    fontSize: 13,
+    fontWeight: '700',
+    marginLeft: 6,
   },
 
   // ── Messages area

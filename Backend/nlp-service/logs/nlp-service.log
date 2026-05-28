@@ -39658,3 +39658,510 @@
 2026-05-26 14:20:18 [INFO]: ✅ PostgreSQL connected
 2026-05-26 14:20:18 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"13ms","ip":"10.154.25.57"}
 2026-05-26 14:20:18 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/15","status":304,"duration":"157ms","ip":"10.154.25.57"}
+2026-05-27 21:00:26 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:00:26 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:00:26 [INFO]: ✅ Redis connected (NLP service available)
+2026-05-27 21:00:26 [INFO]: Preloading NLP models...
+2026-05-27 21:00:26 [INFO]: Preloading NLP models...
+2026-05-27 21:00:26 [INFO]: Loading sentiment analysis model...
+2026-05-27 21:00:26 [INFO]: Loading toxicity detection model...
+2026-05-27 21:00:27 [INFO]: ✅ Sentiment analysis model loaded {"duration":"744ms"}
+2026-05-27 21:00:28 [WARN]: Slow operation {"operation":"Toxicity model initialization","duration":"1282ms"}
+2026-05-27 21:00:28 [INFO]: ✅ Toxicity detection model loaded {"duration":"1282ms"}
+2026-05-27 21:00:28 [INFO]: ✅ All NLP models preloaded
+2026-05-27 21:00:28 [INFO]: Available Ollama models: {"models":["aya:8b","llama3.2:1b","llama3.1:8b"]}
+2026-05-27 21:00:28 [INFO]: ✅ All required Ollama models are available
+2026-05-27 21:00:28 [INFO]: 🚀 Civix Platform running on port 3002
+2026-05-27 21:00:28 [INFO]: Environment: development
+2026-05-27 21:00:28 [INFO]: Accessible at http://localhost:3002 (local)
+2026-05-27 21:00:28 [INFO]: Socket.io enabled for real-time features
+2026-05-27 21:00:28 [INFO]: NLP ChatBot service: OPTIONAL
+2026-05-27 21:24:28 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"9ms","ip":"10.154.25.147"}
+2026-05-27 21:24:38 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:24:38 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"193ms","ip":"10.154.25.147"}
+2026-05-27 21:24:39 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":200,"duration":"45ms","ip":"10.154.25.147"}
+2026-05-27 21:24:39 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:24:39 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:24:39 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:24:39 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:24:39 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/15","status":200,"duration":"107ms","ip":"10.154.25.147"}
+2026-05-27 21:24:39 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:24:39 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":200,"duration":"175ms","ip":"10.154.25.147"}
+2026-05-27 21:24:39 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:24:39 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:24:39 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:24:39 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/15","status":304,"duration":"4ms","ip":"10.154.25.147"}
+2026-05-27 21:24:39 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":200,"duration":"6ms","ip":"10.154.25.147"}
+2026-05-27 21:24:39 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":200,"duration":"204ms","ip":"10.154.25.147"}
+2026-05-27 21:24:39 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:24:39 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":200,"duration":"203ms","ip":"10.154.25.147"}
+2026-05-27 21:25:07 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"2ms","ip":"10.154.25.147"}
+2026-05-27 21:25:17 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:25:17 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":401,"duration":"235ms","ip":"10.154.25.147"}
+2026-05-27 21:25:22 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"178ms","ip":"10.154.25.147"}
+2026-05-27 21:25:23 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/15","status":304,"duration":"8ms","ip":"10.154.25.147"}
+2026-05-27 21:25:23 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:25:23 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":304,"duration":"124ms","ip":"10.154.25.147"}
+2026-05-27 21:25:23 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:25:23 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"136ms","ip":"10.154.25.147"}
+2026-05-27 21:25:23 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:25:23 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/15","status":304,"duration":"6ms","ip":"10.154.25.147"}
+2026-05-27 21:25:23 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:25:23 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:25:23 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:25:23 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"174ms","ip":"10.154.25.147"}
+2026-05-27 21:25:23 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:25:23 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"155ms","ip":"10.154.25.147"}
+2026-05-27 21:25:23 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"154ms","ip":"10.154.25.147"}
+2026-05-27 21:25:25 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/58","status":200,"duration":"10ms","ip":"10.154.25.147"}
+2026-05-27 21:25:26 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":200,"duration":"10ms","ip":"10.154.25.147"}
+2026-05-27 21:25:26 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"9ms","ip":"10.154.25.147"}
+2026-05-27 21:25:26 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/messages","status":200,"duration":"47ms","ip":"10.154.25.147"}
+2026-05-27 21:25:26 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/58","status":304,"duration":"6ms","ip":"10.154.25.147"}
+2026-05-27 21:25:26 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"10ms","ip":"10.154.25.147"}
+2026-05-27 21:25:26 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/11","status":200,"duration":"64ms","ip":"10.154.25.147"}
+2026-05-27 21:25:26 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/12","status":200,"duration":"62ms","ip":"10.154.25.147"}
+2026-05-27 21:25:34 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/58","status":304,"duration":"8ms","ip":"10.154.25.147"}
+2026-05-27 21:25:39 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:25:39 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:25:39 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:25:39 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"84ms","ip":"10.154.25.147"}
+2026-05-27 21:25:40 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/58","status":304,"duration":"7ms","ip":"10.154.25.147"}
+2026-05-27 21:25:40 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/11","status":304,"duration":"31ms","ip":"10.154.25.147"}
+2026-05-27 21:25:40 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"20ms","ip":"10.154.25.147"}
+2026-05-27 21:25:40 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/12","status":304,"duration":"24ms","ip":"10.154.25.147"}
+2026-05-27 21:25:42 [INFO]: HTTP Request {"method":"GET","path":"/history/58","status":200,"duration":"123ms","ip":"10.154.25.147"}
+2026-05-27 21:25:55 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:25:55 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:25:55 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:25:55 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:25:55 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"235ms","ip":"10.154.25.147"}
+2026-05-27 21:25:55 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"6ms","ip":"10.154.25.147"}
+2026-05-27 21:25:55 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/58","status":304,"duration":"6ms","ip":"10.154.25.147"}
+2026-05-27 21:25:56 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"14ms","ip":"10.154.25.147"}
+2026-05-27 21:25:56 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/11","status":304,"duration":"21ms","ip":"10.154.25.147"}
+2026-05-27 21:25:56 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/12","status":304,"duration":"18ms","ip":"10.154.25.147"}
+2026-05-27 21:25:59 [INFO]: HTTP Request {"method":"GET","path":"/history/58","status":304,"duration":"7ms","ip":"10.154.25.147"}
+2026-05-27 21:26:11 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:26:11 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"62ms","ip":"10.154.25.147"}
+2026-05-27 21:26:22 [INFO]: Querying Ollama {"model":"aya:8b","promptLength":164,"host":"http://127.0.0.1:11434"}
+2026-05-27 21:26:26 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:26:26 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"76ms","ip":"10.154.25.147"}
+2026-05-27 21:26:42 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:26:42 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"841ms","ip":"10.154.25.147"}
+2026-05-27 21:26:56 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:26:56 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"121ms","ip":"10.154.25.147"}
+2026-05-27 21:26:56 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:26:56 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:26:56 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:26:56 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"215ms","ip":"10.154.25.147"}
+2026-05-27 21:26:56 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/58","status":304,"duration":"24ms","ip":"10.154.25.147"}
+2026-05-27 21:26:57 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"9ms","ip":"10.154.25.147"}
+2026-05-27 21:26:57 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/12","status":304,"duration":"30ms","ip":"10.154.25.147"}
+2026-05-27 21:26:57 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/11","status":304,"duration":"47ms","ip":"10.154.25.147"}
+2026-05-27 21:27:06 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"7ms","ip":"10.154.25.147"}
+2026-05-27 21:27:06 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/58","status":304,"duration":"16ms","ip":"10.154.25.147"}
+2026-05-27 21:27:07 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/11","status":304,"duration":"24ms","ip":"10.154.25.147"}
+2026-05-27 21:27:07 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"10ms","ip":"10.154.25.147"}
+2026-05-27 21:27:07 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/12","status":304,"duration":"25ms","ip":"10.154.25.147"}
+2026-05-27 21:27:14 [INFO]: Ollama Response Received {"duration":"51862ms","model":"aya:8b"}
+2026-05-27 21:27:14 [WARN]: Slow operation {"operation":"Ollama query","duration":"51862ms"}
+2026-05-27 21:27:14 [INFO]: Querying Ollama {"model":"llama3.2:1b","promptLength":1473,"host":"http://127.0.0.1:11434"}
+2026-05-27 21:27:19 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:27:19 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:27:19 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/58","status":304,"duration":"118ms","ip":"10.154.25.147"}
+2026-05-27 21:27:19 [INFO]: HTTP Request {"method":"GET","path":"/api/complaints/58","status":200,"duration":"152ms","ip":"10.154.25.147"}
+2026-05-27 21:27:22 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"9ms","ip":"10.154.25.147"}
+2026-05-27 21:27:28 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/my-role","status":200,"duration":"16ms","ip":"10.154.25.147"}
+2026-05-27 21:27:28 [INFO]: HTTP Request {"method":"GET","path":"/api/complaints/detail/38","status":200,"duration":"14ms","ip":"10.154.25.147"}
+2026-05-27 21:27:28 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:27:28 [INFO]: HTTP Request {"method":"GET","path":"/api/follow-up-messages","status":200,"duration":"98ms","ip":"10.154.25.147"}
+2026-05-27 21:27:28 [WARN]: Unauthorized role access attempt {"userId":15,"userRole":"MEMBER","requiredRoles":["HEAD","ADMIN"]}
+2026-05-27 21:27:28 [INFO]: HTTP Request {"method":"POST","path":"/suggest-action","status":403,"duration":"28ms","ip":"10.154.25.147"}
+2026-05-27 21:27:36 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/58","status":304,"duration":"8ms","ip":"10.154.25.147"}
+2026-05-27 21:27:36 [INFO]: HTTP Request {"method":"GET","path":"/api/complaints/58","status":304,"duration":"7ms","ip":"10.154.25.147"}
+2026-05-27 21:27:37 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"10ms","ip":"10.154.25.147"}
+2026-05-27 21:27:38 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:27:38 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"131ms","ip":"10.154.25.147"}
+2026-05-27 21:27:39 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/58","status":304,"duration":"27ms","ip":"10.154.25.147"}
+2026-05-27 21:27:39 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/12","status":304,"duration":"23ms","ip":"10.154.25.147"}
+2026-05-27 21:27:39 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/11","status":304,"duration":"30ms","ip":"10.154.25.147"}
+2026-05-27 21:27:39 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"11ms","ip":"10.154.25.147"}
+2026-05-27 21:27:41 [INFO]: HTTP Request {"method":"GET","path":"/api/petitions/58","status":200,"duration":"14ms","ip":"10.154.25.147"}
+2026-05-27 21:27:41 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/58","status":304,"duration":"10ms","ip":"10.154.25.147"}
+2026-05-27 21:27:54 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:27:54 [INFO]: HTTP Request {"method":"PUT","path":"/api/petitions/47/status","status":200,"duration":"239ms","ip":"10.154.25.147"}
+2026-05-27 21:27:54 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:27:54 [INFO]: HTTP Request {"method":"GET","path":"/api/petitions/58","status":200,"duration":"30ms","ip":"10.154.25.147"}
+2026-05-27 21:27:54 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"236ms","ip":"10.154.25.147"}
+2026-05-27 21:28:01 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/my-role","status":304,"duration":"4ms","ip":"10.154.25.147"}
+2026-05-27 21:28:01 [INFO]: HTTP Request {"method":"GET","path":"/api/petitions/detail/47","status":200,"duration":"9ms","ip":"10.154.25.147"}
+2026-05-27 21:28:01 [INFO]: HTTP Request {"method":"GET","path":"/api/follow-up-messages","status":200,"duration":"11ms","ip":"10.154.25.147"}
+2026-05-27 21:28:01 [WARN]: Unauthorized role access attempt {"userId":15,"userRole":"MEMBER","requiredRoles":["HEAD","ADMIN"]}
+2026-05-27 21:28:01 [INFO]: HTTP Request {"method":"POST","path":"/suggest-action","status":403,"duration":"8ms","ip":"10.154.25.147"}
+2026-05-27 21:28:08 [INFO]: HTTP Request {"method":"GET","path":"/api/petitions/58","status":304,"duration":"19ms","ip":"10.154.25.147"}
+2026-05-27 21:28:08 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/58","status":304,"duration":"22ms","ip":"10.154.25.147"}
+2026-05-27 21:28:09 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"7ms","ip":"10.154.25.147"}
+2026-05-27 21:28:10 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:28:10 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:28:10 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"113ms","ip":"10.154.25.147"}
+2026-05-27 21:28:11 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/58","status":304,"duration":"9ms","ip":"10.154.25.147"}
+2026-05-27 21:28:11 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/11","status":304,"duration":"28ms","ip":"10.154.25.147"}
+2026-05-27 21:28:11 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/12","status":304,"duration":"24ms","ip":"10.154.25.147"}
+2026-05-27 21:28:11 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"8ms","ip":"10.154.25.147"}
+2026-05-27 21:28:14 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls","status":200,"duration":"33ms","ip":"10.154.25.147"}
+2026-05-27 21:28:14 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/11","status":304,"duration":"9ms","ip":"10.154.25.147"}
+2026-05-27 21:28:14 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/12","status":304,"duration":"15ms","ip":"10.154.25.147"}
+2026-05-27 21:28:14 [INFO]: Ollama Response Received {"duration":"60864ms","model":"llama3.2:1b"}
+2026-05-27 21:28:14 [WARN]: Slow operation {"operation":"Ollama query","duration":"60864ms"}
+2026-05-27 21:28:15 [ERROR]: Failed to save bot history for chat {"error":"value too long for type character varying(32)"}
+2026-05-27 21:28:15 [INFO]: API Request {"method":"POST","path":"/ask","userId":15,"communityId":58,"ip":"10.154.25.147","duration":113114}
+2026-05-27 21:28:15 [INFO]: HTTP Request {"method":"POST","path":"/ask","status":200,"duration":"113182ms","ip":"10.154.25.147"}
+2026-05-27 21:28:16 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/12","status":304,"duration":"15ms","ip":"10.154.25.147"}
+2026-05-27 21:28:16 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/12/my-vote","status":200,"duration":"7ms","ip":"10.154.25.147"}
+2026-05-27 21:28:23 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:28:23 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:28:23 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"86ms","ip":"10.154.25.147"}
+2026-05-27 21:28:23 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/58","status":304,"duration":"11ms","ip":"10.154.25.147"}
+2026-05-27 21:28:24 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/11","status":304,"duration":"24ms","ip":"10.154.25.147"}
+2026-05-27 21:28:24 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"11ms","ip":"10.154.25.147"}
+2026-05-27 21:28:24 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/12","status":304,"duration":"25ms","ip":"10.154.25.147"}
+2026-05-27 21:28:25 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls","status":304,"duration":"9ms","ip":"10.154.25.147"}
+2026-05-27 21:28:26 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/12","status":304,"duration":"18ms","ip":"10.154.25.147"}
+2026-05-27 21:28:26 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/11","status":304,"duration":"19ms","ip":"10.154.25.147"}
+2026-05-27 21:28:27 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"10ms","ip":"10.154.25.147"}
+2026-05-27 21:28:27 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/58","status":304,"duration":"10ms","ip":"10.154.25.147"}
+2026-05-27 21:28:27 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"11ms","ip":"10.154.25.147"}
+2026-05-27 21:28:27 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/12","status":304,"duration":"18ms","ip":"10.154.25.147"}
+2026-05-27 21:28:27 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/11","status":304,"duration":"13ms","ip":"10.154.25.147"}
+2026-05-27 21:28:30 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/events","status":200,"duration":"17ms","ip":"10.154.25.147"}
+2026-05-27 21:28:31 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/events","status":304,"duration":"7ms","ip":"10.154.25.147"}
+2026-05-27 21:28:37 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:28:37 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"98ms","ip":"10.154.25.147"}
+2026-05-27 21:28:38 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/58","status":304,"duration":"10ms","ip":"10.154.25.147"}
+2026-05-27 21:28:38 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/11","status":304,"duration":"30ms","ip":"10.154.25.147"}
+2026-05-27 21:28:38 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"12ms","ip":"10.154.25.147"}
+2026-05-27 21:28:38 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/12","status":304,"duration":"21ms","ip":"10.154.25.147"}
+2026-05-27 21:28:41 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/events","status":304,"duration":"9ms","ip":"10.154.25.147"}
+2026-05-27 21:28:53 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:28:53 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"96ms","ip":"10.154.25.147"}
+2026-05-27 21:29:08 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:29:08 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"77ms","ip":"10.154.25.147"}
+2026-05-27 21:29:23 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:29:23 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"71ms","ip":"10.154.25.147"}
+2026-05-27 21:29:38 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:29:38 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"85ms","ip":"10.154.25.147"}
+2026-05-27 21:29:53 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:29:53 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"77ms","ip":"10.154.25.147"}
+2026-05-27 21:30:08 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:30:08 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"70ms","ip":"10.154.25.147"}
+2026-05-27 21:30:23 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:30:23 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"68ms","ip":"10.154.25.147"}
+2026-05-27 21:30:38 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:30:38 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"80ms","ip":"10.154.25.147"}
+2026-05-27 21:30:53 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:30:53 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"61ms","ip":"10.154.25.147"}
+2026-05-27 21:31:03 [INFO]: HTTP Request {"method":"POST","path":"/api/communities/58/events","status":201,"duration":"28ms","ip":"10.154.25.147"}
+2026-05-27 21:31:03 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/events","status":200,"duration":"7ms","ip":"10.154.25.147"}
+2026-05-27 21:31:07 [INFO]: HTTP Request {"method":"DELETE","path":"/api/communities/58/events/6","status":200,"duration":"23ms","ip":"10.154.25.147"}
+2026-05-27 21:31:07 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/events","status":200,"duration":"5ms","ip":"10.154.25.147"}
+2026-05-27 21:31:08 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"9ms","ip":"10.154.25.147"}
+2026-05-27 21:31:23 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:31:23 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"51ms","ip":"10.154.25.147"}
+2026-05-27 21:37:30 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"1ms","ip":"10.154.25.147"}
+2026-05-27 21:37:43 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:37:43 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"209ms","ip":"10.154.25.147"}
+2026-05-27 21:37:44 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/24","status":200,"duration":"4ms","ip":"10.154.25.147"}
+2026-05-27 21:37:44 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":200,"duration":"4ms","ip":"10.154.25.147"}
+2026-05-27 21:37:44 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/24","status":200,"duration":"2ms","ip":"10.154.25.147"}
+2026-05-27 21:37:44 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:37:44 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/24","status":200,"duration":"72ms","ip":"10.154.25.147"}
+2026-05-27 21:37:44 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:37:44 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:37:44 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/24","status":200,"duration":"77ms","ip":"10.154.25.147"}
+2026-05-27 21:37:44 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/24","status":200,"duration":"78ms","ip":"10.154.25.147"}
+2026-05-27 21:37:44 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:37:44 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/24","status":200,"duration":"76ms","ip":"10.154.25.147"}
+2026-05-27 21:37:48 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/58","status":200,"duration":"24ms","ip":"10.154.25.147"}
+2026-05-27 21:37:48 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/messages","status":304,"duration":"16ms","ip":"10.154.25.147"}
+2026-05-27 21:37:48 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/12","status":304,"duration":"13ms","ip":"10.154.25.147"}
+2026-05-27 21:37:48 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/11","status":200,"duration":"34ms","ip":"10.154.25.147"}
+2026-05-27 21:37:50 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/58","status":304,"duration":"5ms","ip":"10.154.25.147"}
+2026-05-27 21:37:57 [INFO]: HTTP Request {"method":"GET","path":"/api/complaints/58","status":200,"duration":"8ms","ip":"10.154.25.147"}
+2026-05-27 21:37:57 [INFO]: HTTP Request {"method":"GET","path":"/api/complaints/58","status":200,"duration":"7ms","ip":"10.154.25.147"}
+2026-05-27 21:38:01 [INFO]: HTTP Request {"method":"GET","path":"/api/complaints/detail/35","status":200,"duration":"2ms","ip":"10.154.25.147"}
+2026-05-27 21:38:01 [INFO]: HTTP Request {"method":"GET","path":"/api/follow-up-messages","status":200,"duration":"4ms","ip":"10.154.25.147"}
+2026-05-27 21:38:01 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/my-role","status":200,"duration":"2ms","ip":"10.154.25.147"}
+2026-05-27 21:38:04 [INFO]: HTTP Request {"method":"GET","path":"/api/complaints/58","status":304,"duration":"5ms","ip":"10.154.25.147"}
+2026-05-27 21:38:07 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/58","status":304,"duration":"6ms","ip":"10.154.25.147"}
+2026-05-27 21:38:11 [INFO]: HTTP Request {"method":"GET","path":"/api/petitions/58","status":200,"duration":"9ms","ip":"10.154.25.147"}
+2026-05-27 21:38:11 [INFO]: HTTP Request {"method":"GET","path":"/api/petitions/58","status":200,"duration":"6ms","ip":"10.154.25.147"}
+2026-05-27 21:38:14 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/events","status":304,"duration":"26ms","ip":"10.154.25.147"}
+2026-05-27 21:38:22 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls","status":304,"duration":"9ms","ip":"10.154.25.147"}
+2026-05-27 21:38:23 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/12","status":304,"duration":"8ms","ip":"10.154.25.147"}
+2026-05-27 21:38:23 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/11","status":304,"duration":"9ms","ip":"10.154.25.147"}
+2026-05-27 21:38:24 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/12","status":304,"duration":"3ms","ip":"10.154.25.147"}
+2026-05-27 21:38:24 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/12/my-vote","status":304,"duration":"1ms","ip":"10.154.25.147"}
+2026-05-27 21:38:26 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/11","status":304,"duration":"7ms","ip":"10.154.25.147"}
+2026-05-27 21:38:26 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/11/my-vote","status":200,"duration":"4ms","ip":"10.154.25.147"}
+2026-05-27 21:38:30 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/12","status":304,"duration":"7ms","ip":"10.154.25.147"}
+2026-05-27 21:38:30 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/12/my-vote","status":304,"duration":"3ms","ip":"10.154.25.147"}
+2026-05-27 21:38:37 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/24","status":304,"duration":"8ms","ip":"10.154.25.147"}
+2026-05-27 21:38:37 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:38:37 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/24","status":304,"duration":"63ms","ip":"10.154.25.147"}
+2026-05-27 21:38:37 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:38:37 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/24","status":304,"duration":"93ms","ip":"10.154.25.147"}
+2026-05-27 21:38:53 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"1ms","ip":"10.154.25.147"}
+2026-05-27 21:39:06 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:39:06 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"264ms","ip":"10.154.25.147"}
+2026-05-27 21:39:07 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:39:07 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:39:07 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:39:07 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":200,"duration":"127ms","ip":"10.154.25.147"}
+2026-05-27 21:39:07 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:39:07 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"138ms","ip":"10.154.25.147"}
+2026-05-27 21:39:07 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:39:07 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:39:07 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"205ms","ip":"10.154.25.147"}
+2026-05-27 21:39:07 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"140ms","ip":"10.154.25.147"}
+2026-05-27 21:39:07 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:39:07 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/15","status":304,"duration":"145ms","ip":"10.154.25.147"}
+2026-05-27 21:39:07 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/15","status":304,"duration":"4ms","ip":"10.154.25.147"}
+2026-05-27 21:39:07 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"11ms","ip":"10.154.25.147"}
+2026-05-27 21:39:08 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/58","status":200,"duration":"9ms","ip":"10.154.25.147"}
+2026-05-27 21:39:08 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"15ms","ip":"10.154.25.147"}
+2026-05-27 21:39:08 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/messages","status":304,"duration":"12ms","ip":"10.154.25.147"}
+2026-05-27 21:39:08 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"16ms","ip":"10.154.25.147"}
+2026-05-27 21:39:08 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/58","status":304,"duration":"6ms","ip":"10.154.25.147"}
+2026-05-27 21:39:09 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"20ms","ip":"10.154.25.147"}
+2026-05-27 21:39:09 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/12","status":304,"duration":"17ms","ip":"10.154.25.147"}
+2026-05-27 21:39:09 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/11","status":200,"duration":"33ms","ip":"10.154.25.147"}
+2026-05-27 21:39:10 [INFO]: HTTP Request {"method":"GET","path":"/history/58","status":304,"duration":"74ms","ip":"10.154.25.147"}
+2026-05-27 21:39:24 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:39:24 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"63ms","ip":"10.154.25.147"}
+2026-05-27 21:39:30 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:39:30 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:39:30 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:39:30 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"122ms","ip":"10.154.25.147"}
+2026-05-27 21:39:30 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/58","status":304,"duration":"4ms","ip":"10.154.25.147"}
+2026-05-27 21:39:31 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"9ms","ip":"10.154.25.147"}
+2026-05-27 21:39:31 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/11","status":304,"duration":"16ms","ip":"10.154.25.147"}
+2026-05-27 21:39:31 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/12","status":304,"duration":"16ms","ip":"10.154.25.147"}
+2026-05-27 21:39:32 [INFO]: HTTP Request {"method":"GET","path":"/api/complaints/58","status":304,"duration":"7ms","ip":"10.154.25.147"}
+2026-05-27 21:39:32 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/58","status":304,"duration":"8ms","ip":"10.154.25.147"}
+2026-05-27 21:39:34 [INFO]: HTTP Request {"method":"GET","path":"/history/58","status":200,"duration":"16ms","ip":"10.154.25.147"}
+2026-05-27 21:39:46 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:39:46 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"52ms","ip":"10.154.25.147"}
+2026-05-27 21:40:01 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:40:01 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"65ms","ip":"10.154.25.147"}
+2026-05-27 21:40:16 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:40:16 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"38ms","ip":"10.154.25.147"}
+2026-05-27 21:40:31 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:40:31 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"160ms","ip":"10.154.25.147"}
+2026-05-27 21:40:46 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:40:46 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"58ms","ip":"10.154.25.147"}
+2026-05-27 21:41:01 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:41:01 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"66ms","ip":"10.154.25.147"}
+2026-05-27 21:41:16 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:41:16 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"95ms","ip":"10.154.25.147"}
+2026-05-27 21:41:31 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:41:31 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"110ms","ip":"10.154.25.147"}
+2026-05-27 21:41:46 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:41:46 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"56ms","ip":"10.154.25.147"}
+2026-05-27 21:42:01 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:42:01 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"90ms","ip":"10.154.25.147"}
+2026-05-27 21:42:16 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:42:16 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"53ms","ip":"10.154.25.147"}
+2026-05-27 21:42:31 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:42:31 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"67ms","ip":"10.154.25.147"}
+2026-05-27 21:42:46 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:42:46 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"69ms","ip":"10.154.25.147"}
+2026-05-27 21:43:01 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:43:01 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"62ms","ip":"10.154.25.147"}
+2026-05-27 21:43:16 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:43:16 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"50ms","ip":"10.154.25.147"}
+2026-05-27 21:43:31 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:43:31 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"61ms","ip":"10.154.25.147"}
+2026-05-27 21:43:45 [INFO]: SIGINT received, shutting down gracefully...
+2026-05-27 21:43:45 [INFO]: ✅ All connections closed
+2026-05-27 21:43:48 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:43:48 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:43:48 [INFO]: ✅ Redis connected (NLP service available)
+2026-05-27 21:43:48 [INFO]: Preloading NLP models...
+2026-05-27 21:43:48 [INFO]: Preloading NLP models...
+2026-05-27 21:43:48 [INFO]: Loading sentiment analysis model...
+2026-05-27 21:43:48 [INFO]: Loading toxicity detection model...
+2026-05-27 21:43:49 [INFO]: ✅ Sentiment analysis model loaded {"duration":"344ms"}
+2026-05-27 21:43:49 [INFO]: ✅ Toxicity detection model loaded {"duration":"680ms"}
+2026-05-27 21:43:49 [INFO]: ✅ All NLP models preloaded
+2026-05-27 21:43:49 [INFO]: Available Ollama models: {"models":["aya:8b","llama3.2:1b","llama3.1:8b"]}
+2026-05-27 21:43:49 [INFO]: ✅ All required Ollama models are available
+2026-05-27 21:43:49 [INFO]: 🚀 Civix Platform running on port 3002
+2026-05-27 21:43:49 [INFO]: Environment: development
+2026-05-27 21:43:49 [INFO]: Accessible at http://localhost:3002 (local)
+2026-05-27 21:43:49 [INFO]: Socket.io enabled for real-time features
+2026-05-27 21:43:49 [INFO]: NLP ChatBot service: OPTIONAL
+2026-05-27 21:43:53 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"27ms","ip":"10.154.25.147"}
+2026-05-27 21:44:22 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"3ms","ip":"10.154.25.147"}
+2026-05-27 21:44:33 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:44:33 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":401,"duration":"94ms","ip":"10.154.25.147"}
+2026-05-27 21:44:39 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"91ms","ip":"10.154.25.147"}
+2026-05-27 21:44:40 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":304,"duration":"6ms","ip":"10.154.25.147"}
+2026-05-27 21:44:40 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:44:40 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:44:40 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/15","status":304,"duration":"99ms","ip":"10.154.25.147"}
+2026-05-27 21:44:40 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:44:40 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:44:40 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"113ms","ip":"10.154.25.147"}
+2026-05-27 21:44:40 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"116ms","ip":"10.154.25.147"}
+2026-05-27 21:44:40 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:44:40 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"140ms","ip":"10.154.25.147"}
+2026-05-27 21:44:40 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:44:40 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:44:40 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"165ms","ip":"10.154.25.147"}
+2026-05-27 21:44:40 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:44:40 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/15","status":304,"duration":"62ms","ip":"10.154.25.147"}
+2026-05-27 21:44:42 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/58","status":200,"duration":"15ms","ip":"10.154.25.147"}
+2026-05-27 21:44:42 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"39ms","ip":"10.154.25.147"}
+2026-05-27 21:44:42 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/messages","status":304,"duration":"40ms","ip":"10.154.25.147"}
+2026-05-27 21:44:42 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"40ms","ip":"10.154.25.147"}
+2026-05-27 21:44:42 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/58","status":304,"duration":"6ms","ip":"10.154.25.147"}
+2026-05-27 21:44:42 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/12","status":304,"duration":"22ms","ip":"10.154.25.147"}
+2026-05-27 21:44:42 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/11","status":304,"duration":"19ms","ip":"10.154.25.147"}
+2026-05-27 21:44:43 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"7ms","ip":"10.154.25.147"}
+2026-05-27 21:44:43 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/12","status":304,"duration":"14ms","ip":"10.154.25.147"}
+2026-05-27 21:44:43 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/11","status":304,"duration":"11ms","ip":"10.154.25.147"}
+2026-05-27 21:44:44 [INFO]: HTTP Request {"method":"GET","path":"/history/58","status":304,"duration":"89ms","ip":"10.154.25.147"}
+2026-05-27 21:45:31 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:45:31 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"165ms","ip":"10.154.25.147"}
+2026-05-27 21:46:04 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:46:04 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"47ms","ip":"10.154.25.147"}
+2026-05-27 21:46:19 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:46:19 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"61ms","ip":"10.154.25.147"}
+2026-05-27 21:46:34 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:46:34 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"68ms","ip":"10.154.25.147"}
+2026-05-27 21:46:49 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:46:49 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"61ms","ip":"10.154.25.147"}
+2026-05-27 21:47:04 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:47:04 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"92ms","ip":"10.154.25.147"}
+2026-05-27 21:47:19 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:47:19 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"69ms","ip":"10.154.25.147"}
+2026-05-27 21:47:28 [INFO]: SIGINT received, shutting down gracefully...
+2026-05-27 21:47:28 [INFO]: ✅ All connections closed
+2026-05-27 21:47:31 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:47:31 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:47:31 [INFO]: ✅ Redis connected (NLP service available)
+2026-05-27 21:47:31 [INFO]: Preloading NLP models...
+2026-05-27 21:47:31 [INFO]: Preloading NLP models...
+2026-05-27 21:47:31 [INFO]: Loading sentiment analysis model...
+2026-05-27 21:47:31 [INFO]: Loading toxicity detection model...
+2026-05-27 21:47:31 [INFO]: ✅ Sentiment analysis model loaded {"duration":"274ms"}
+2026-05-27 21:47:31 [INFO]: ✅ Toxicity detection model loaded {"duration":"565ms"}
+2026-05-27 21:47:31 [INFO]: ✅ All NLP models preloaded
+2026-05-27 21:47:31 [INFO]: Available Ollama models: {"models":["aya:8b","llama3.2:1b","llama3.1:8b"]}
+2026-05-27 21:47:31 [INFO]: ✅ All required Ollama models are available
+2026-05-27 21:47:31 [INFO]: 🚀 Civix Platform running on port 3002
+2026-05-27 21:47:31 [INFO]: Environment: development
+2026-05-27 21:47:31 [INFO]: Accessible at http://localhost:3002 (local)
+2026-05-27 21:47:31 [INFO]: Socket.io enabled for real-time features
+2026-05-27 21:47:31 [INFO]: NLP ChatBot service: OPTIONAL
+2026-05-27 21:47:45 [INFO]: HTTP Request {"method":"GET","path":"/health","status":200,"duration":"8ms","ip":"10.154.25.147"}
+2026-05-27 21:47:55 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:47:55 [INFO]: HTTP Request {"method":"POST","path":"/api/login","status":200,"duration":"232ms","ip":"10.154.25.147"}
+2026-05-27 21:47:56 [INFO]: HTTP Request {"method":"GET","path":"/api/profile","status":304,"duration":"34ms","ip":"10.154.25.147"}
+2026-05-27 21:47:56 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:47:56 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:47:56 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"126ms","ip":"10.154.25.147"}
+2026-05-27 21:47:56 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:47:56 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:47:56 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:47:56 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"137ms","ip":"10.154.25.147"}
+2026-05-27 21:47:56 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/15","status":304,"duration":"132ms","ip":"10.154.25.147"}
+2026-05-27 21:47:56 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"112ms","ip":"10.154.25.147"}
+2026-05-27 21:47:56 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:47:56 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"177ms","ip":"10.154.25.147"}
+2026-05-27 21:47:56 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/15","status":304,"duration":"7ms","ip":"10.154.25.147"}
+2026-05-27 21:47:58 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/58","status":200,"duration":"12ms","ip":"10.154.25.147"}
+2026-05-27 21:47:58 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"12ms","ip":"10.154.25.147"}
+2026-05-27 21:47:58 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"18ms","ip":"10.154.25.147"}
+2026-05-27 21:47:58 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/messages","status":304,"duration":"15ms","ip":"10.154.25.147"}
+2026-05-27 21:47:58 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/58","status":304,"duration":"5ms","ip":"10.154.25.147"}
+2026-05-27 21:47:59 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"6ms","ip":"10.154.25.147"}
+2026-05-27 21:47:59 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/11","status":304,"duration":"21ms","ip":"10.154.25.147"}
+2026-05-27 21:47:59 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/12","status":304,"duration":"17ms","ip":"10.154.25.147"}
+2026-05-27 21:48:00 [INFO]: HTTP Request {"method":"GET","path":"/history/58","status":304,"duration":"69ms","ip":"10.154.25.147"}
+2026-05-27 21:48:14 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:48:14 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"56ms","ip":"10.154.25.147"}
+2026-05-27 21:48:15 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:48:15 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:48:15 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:48:15 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"82ms","ip":"10.154.25.147"}
+2026-05-27 21:48:16 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/58","status":304,"duration":"5ms","ip":"10.154.25.147"}
+2026-05-27 21:48:16 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/11","status":304,"duration":"19ms","ip":"10.154.25.147"}
+2026-05-27 21:48:16 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"9ms","ip":"10.154.25.147"}
+2026-05-27 21:48:16 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/12","status":304,"duration":"13ms","ip":"10.154.25.147"}
+2026-05-27 21:48:18 [INFO]: HTTP Request {"method":"GET","path":"/api/petitions/58","status":304,"duration":"7ms","ip":"10.154.25.147"}
+2026-05-27 21:48:18 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/58","status":304,"duration":"8ms","ip":"10.154.25.147"}
+2026-05-27 21:48:19 [INFO]: HTTP Request {"method":"GET","path":"/history/58","status":200,"duration":"31ms","ip":"10.154.25.147"}
+2026-05-27 21:48:31 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:48:31 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"53ms","ip":"10.154.25.147"}
+2026-05-27 21:48:46 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:48:46 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"54ms","ip":"10.154.25.147"}
+2026-05-27 21:48:46 [INFO]: HTTP Request {"method":"GET","path":"/api/petitions/58","status":304,"duration":"5ms","ip":"10.154.25.147"}
+2026-05-27 21:48:46 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/58","status":304,"duration":"8ms","ip":"10.154.25.147"}
+2026-05-27 21:48:48 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:48:48 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:48:48 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:48:48 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"80ms","ip":"10.154.25.147"}
+2026-05-27 21:48:48 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/58","status":304,"duration":"4ms","ip":"10.154.25.147"}
+2026-05-27 21:48:48 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"7ms","ip":"10.154.25.147"}
+2026-05-27 21:48:48 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/12","status":304,"duration":"18ms","ip":"10.154.25.147"}
+2026-05-27 21:48:48 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/11","status":304,"duration":"19ms","ip":"10.154.25.147"}
+2026-05-27 21:48:52 [INFO]: HTTP Request {"method":"GET","path":"/api/complaints/58","status":304,"duration":"3ms","ip":"10.154.25.147"}
+2026-05-27 21:48:52 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/58","status":304,"duration":"5ms","ip":"10.154.25.147"}
+2026-05-27 21:48:53 [INFO]: HTTP Request {"method":"GET","path":"/history/58","status":304,"duration":"63ms","ip":"10.154.25.147"}
+2026-05-27 21:49:03 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:49:03 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"64ms","ip":"10.154.25.147"}
+2026-05-27 21:49:11 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/58","status":304,"duration":"5ms","ip":"10.154.25.147"}
+2026-05-27 21:49:12 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:49:12 [INFO]: HTTP Request {"method":"GET","path":"/api/complaints/58","status":304,"duration":"48ms","ip":"10.154.25.147"}
+2026-05-27 21:49:13 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:49:13 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:49:13 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"69ms","ip":"10.154.25.147"}
+2026-05-27 21:49:13 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/58","status":304,"duration":"8ms","ip":"10.154.25.147"}
+2026-05-27 21:49:13 [INFO]: HTTP Request {"method":"GET","path":"/api/community/58/join_requests","status":304,"duration":"11ms","ip":"10.154.25.147"}
+2026-05-27 21:49:13 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/12","status":304,"duration":"21ms","ip":"10.154.25.147"}
+2026-05-27 21:49:13 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/58/polls/11","status":304,"duration":"17ms","ip":"10.154.25.147"}
+2026-05-27 21:49:14 [INFO]: HTTP Request {"method":"GET","path":"/api/archived_communities/15","status":304,"duration":"7ms","ip":"10.154.25.147"}
+2026-05-27 21:49:14 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:49:14 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:49:14 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"92ms","ip":"10.154.25.147"}
+2026-05-27 21:49:14 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:49:14 [INFO]: HTTP Request {"method":"GET","path":"/api/joined_communities/15","status":304,"duration":"96ms","ip":"10.154.25.147"}
+2026-05-27 21:49:17 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":200,"duration":"8ms","ip":"10.154.25.147"}
+2026-05-27 21:49:17 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":200,"duration":"11ms","ip":"10.154.25.147"}
+2026-05-27 21:49:17 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"10ms","ip":"10.154.25.147"}
+2026-05-27 21:49:17 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/messages","status":200,"duration":"15ms","ip":"10.154.25.147"}
+2026-05-27 21:49:17 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"7ms","ip":"10.154.25.147"}
+2026-05-27 21:49:18 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"9ms","ip":"10.154.25.147"}
+2026-05-27 21:49:18 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":200,"duration":"29ms","ip":"10.154.25.147"}
+2026-05-27 21:49:18 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/9","status":200,"duration":"25ms","ip":"10.154.25.147"}
+2026-05-27 21:49:18 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/8","status":200,"duration":"27ms","ip":"10.154.25.147"}
+2026-05-27 21:49:18 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/10","status":200,"duration":"21ms","ip":"10.154.25.147"}
+2026-05-27 21:49:20 [INFO]: HTTP Request {"method":"GET","path":"/api/petitions/46","status":200,"duration":"6ms","ip":"10.154.25.147"}
+2026-05-27 21:49:20 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"6ms","ip":"10.154.25.147"}
+2026-05-27 21:49:21 [INFO]: HTTP Request {"method":"GET","path":"/history/46","status":200,"duration":"4ms","ip":"10.154.25.147"}
+2026-05-27 21:49:32 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:49:32 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"53ms","ip":"10.154.25.147"}
+2026-05-27 21:49:32 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:49:32 [INFO]: HTTP Request {"method":"GET","path":"/api/petitions/46","status":304,"duration":"53ms","ip":"10.154.25.147"}
+2026-05-27 21:49:33 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"9ms","ip":"10.154.25.147"}
+2026-05-27 21:49:34 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:49:34 [INFO]: ✅ PostgreSQL connected
+2026-05-27 21:49:34 [INFO]: HTTP Request {"method":"GET","path":"/api/created_communities/15","status":304,"duration":"67ms","ip":"10.154.25.147"}
+2026-05-27 21:49:34 [INFO]: HTTP Request {"method":"GET","path":"/api/community_members/46","status":304,"duration":"10ms","ip":"10.154.25.147"}
+2026-05-27 21:49:36 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/1","status":304,"duration":"13ms","ip":"10.154.25.147"}
+2026-05-27 21:49:36 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/9","status":304,"duration":"10ms","ip":"10.154.25.147"}
+2026-05-27 21:49:36 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/10","status":304,"duration":"8ms","ip":"10.154.25.147"}
+2026-05-27 21:49:36 [INFO]: HTTP Request {"method":"GET","path":"/api/communities/46/polls/8","status":304,"duration":"10ms","ip":"10.154.25.147"}
+2026-05-27 21:49:36 [INFO]: HTTP Request {"method":"GET","path":"/api/community/46/join_requests","status":304,"duration":"7ms","ip":"10.154.25.147"}
